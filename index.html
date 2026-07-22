@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Abastecimiento L001 · TASA Matarani</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="engine.js" defer></script>
+<script src="file-parser.js" defer></script>
+<script src="storage.js" defer></script>
+<script src="github-sync.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+
+<div id="loading-overlay" style="display:none">
+  <div class="loader-content">
+    <div class="pulse-dot"></div>
+    <p id="loading-msg">Calando datos…</p>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark">L001</span>
+      <div>
+        <h1>Abastecimiento &middot; Matarani</h1>
+        <p class="brand-sub">Estacional · SS · ROP · EOQ · Inmovilizados</p>
+      </div>
+    </div>
+  </div>
+  <div class="wave-divider">
+    <svg viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,30 C240,60 480,0 720,30 C960,60 1200,0 1440,30 L1440,60 L0,60 Z" fill="#007696" opacity="0.9"></path>
+      <path d="M0,42 C240,18 480,54 720,36 C960,18 1200,54 1440,36 L1440,60 L0,60 Z" fill="#5cbdeb" opacity="0.7"></path>
+    </svg>
+  </div>
+</header>
+
+<!-- ===================== PANTALLA DE CARGA ===================== -->
+<div id="pantalla-carga">
+  <div class="carga-inner">
+    <div id="banner-publicado" class="banner-publicado" style="display:none">
+      <p><strong>Hay una versión publicada</strong> — <span id="publicado-fecha"></span></p>
+      <button type="button" id="btn-ver-publicado" class="btn-secundario">Ver esta versión</button>
+    </div>
+
+    <h2>Suelta tus 3 archivos de SAP</h2>
+    <p class="carga-sub">MRP, DATA (movimientos históricos) y MB52 (stock actual). Los detecto automáticamente, no importa el orden ni el nombre exacto del archivo.</p>
+
+    <div id="dropzone" class="dropzone">
+      <input type="file" id="file-input" multiple accept=".xlsx,.xls" hidden />
+      <div class="dropzone-icon">⇩</div>
+      <p class="dropzone-texto"><strong>Arrastra aquí</strong> tus archivos .xlsx, o haz clic para elegirlos</p>
+    </div>
+
+    <div class="chips-archivos">
+      <div class="chip-archivo" id="chip-MRP">
+        <div class="chip-texto">
+          <span class="chip-nombre">MRP</span>
+          <span class="chip-status">Esperando archivo…</span>
+        </div>
+        <button type="button" class="btn-reemplazar" data-tipo="MRP">Reemplazar</button>
+        <input type="file" class="input-individual" data-tipo="MRP" accept=".xlsx,.xls" hidden />
+      </div>
+      <div class="chip-archivo" id="chip-DATA">
+        <div class="chip-texto">
+          <span class="chip-nombre">DATA (movimientos)</span>
+          <span class="chip-status">Esperando archivo…</span>
+        </div>
+        <button type="button" class="btn-reemplazar" data-tipo="DATA">Reemplazar</button>
+        <input type="file" class="input-individual" data-tipo="DATA" accept=".xlsx,.xls" hidden />
+      </div>
+      <div class="chip-archivo" id="chip-MB52">
+        <div class="chip-texto">
+          <span class="chip-nombre">MB52 (stock)</span>
+          <span class="chip-status">Esperando archivo…</span>
+        </div>
+        <button type="button" class="btn-reemplazar" data-tipo="MB52">Reemplazar</button>
+        <input type="file" class="input-individual" data-tipo="MB52" accept=".xlsx,.xls" hidden />
+      </div>
+    </div>
+
+    <button type="button" id="btn-continuar" class="btn-continuar" disabled>Continuar con estos archivos</button>
+
+    <p id="aviso-archivos" class="aviso-archivos" style="display:none"></p>
+
+    <p class="carga-nota">
+      Todo se procesa en tu navegador — ningún archivo se sube a ningún servidor. Los archivos que sueltes
+      quedan guardados en este navegador para la próxima vez que abras la página; usa "Reemplazar" en
+      cualquiera de los tres si quieres cargar una versión nueva.
+    </p>
+    <button type="button" id="btn-borrar-cache" class="btn-texto">Borrar todos los datos guardados en este navegador</button>
+  </div>
+</div>
+
+<!-- ===================== DASHBOARD ===================== -->
+<div id="dashboard" style="display:none">
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="resumen">Resumen</button>
+    <button class="tab-btn" data-tab="estacionalidad">Estacionalidad</button>
+    <button class="tab-btn" data-tab="materiales">Materiales</button>
+    <button class="tab-btn" data-tab="inmovilizados">Inmovilizados</button>
+    <button class="tab-btn" data-tab="parametros">Parámetros</button>
+    <button class="tab-btn" data-tab="compartir">Compartir</button>
+    <div class="tabs-acciones">
+      <button id="btn-exportar" class="btn-secundario">Exportar Excel</button>
+      <button id="btn-nuevos-archivos" class="btn-secundario">Cargar mis archivos</button>
+    </div>
+  </nav>
+
+  <div id="aviso-modo-publicado" class="aviso-modo-publicado" style="display:none">
+    Estás viendo una versión publicada (solo lectura) — <span id="publicado-fecha-2"></span>.
+    Para ajustar parámetros o ver tus propios datos, usa "Cargar mis archivos".
+  </div>
+
+  <main>
+
+    <!-- ===================== RESUMEN ===================== -->
+    <section id="tab-resumen" class="tab-panel active">
+      <p class="linea-temporada">Temporada vigente este mes: <span class="chip" id="temporada-actual">—</span></p>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">Materiales analizados</span>
+          <span class="kpi-value" id="kpi-total">—</span>
+        </div>
+        <div class="kpi-card kpi-rojo">
+          <span class="kpi-label">Riesgo de quiebre</span>
+          <span class="kpi-value" id="kpi-rojo">—</span>
+        </div>
+        <div class="kpi-card kpi-amarillo">
+          <span class="kpi-label">A vigilar</span>
+          <span class="kpi-value" id="kpi-amarillo">—</span>
+        </div>
+        <div class="kpi-card kpi-verde">
+          <span class="kpi-label">OK</span>
+          <span class="kpi-value" id="kpi-verde">—</span>
+        </div>
+      </div>
+      <p class="confianza-linea">Confianza del dato histórico: <span id="kpi-confianza">—</span></p>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Top 25 prioritarios</h2>
+          <p class="panel-sub">Riesgo real de quiebre + historial de consumo confiable (Alta/Media), usando la demanda de la temporada objetivo de cada material según su lead time.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th><th>Descripción</th><th>Clasificación</th><th>Temp. Objetivo</th>
+                <th class="num">Stock Real</th><th class="num">ROP Calculado</th><th>Confianza</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-prioritarios-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== ESTACIONALIDAD ===================== -->
+    <section id="tab-estacionalidad" class="tab-panel">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Índice de estacionalidad — derivado de tus datos</h2>
+          <p class="panel-sub">Consumo promedio de cada mes-calendario (a través de todos los años en tus archivos) vs. el promedio general. Rango analizado: <span id="rango-fechas">—</span></p>
+        </div>
+        <div id="grafico-estacional" class="grafico-estacional"></div>
+        <p class="leyenda-estacional">
+          <span class="leyenda-item"><span class="dot dot-roja"></span> Alta</span>
+          <span class="leyenda-item"><span class="dot dot-amarilla"></span> Media</span>
+          <span class="leyenda-item"><span class="dot dot-verde"></span> Baja</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ===================== MATERIALES ===================== -->
+    <section id="tab-materiales" class="tab-panel">
+      <div class="filtros">
+        <input type="text" id="buscar-material" placeholder="Buscar por código o descripción…" />
+        <select id="filtro-riesgo">
+          <option value="TODOS">Todos los riesgos</option>
+          <option value="ROJO">Riesgo de quiebre</option>
+          <option value="AMARILLO">Vigilar</option>
+          <option value="VERDE">OK</option>
+        </select>
+        <select id="filtro-confianza">
+          <option value="TODAS">Toda confianza</option>
+          <option value="Alta">Alta</option>
+          <option value="Media">Media</option>
+          <option value="Baja">Baja</option>
+          <option value="Sin datos">Sin datos</option>
+        </select>
+        <span class="conteo" id="conteo-materiales"></span>
+      </div>
+      <div class="panel">
+        <div class="table-wrap tall">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th><th>Descripción</th><th>Clasif.</th><th>Temp.</th>
+                <th class="num">LT (días)</th><th class="num">Stock Real</th>
+                <th class="num">SS SAP</th><th class="num">SS Calc.</th>
+                <th class="num">ROP SAP</th><th class="num">ROP Calc.</th>
+                <th>Confianza</th><th class="num">Costo Unit.</th><th class="num">EOQ</th><th>Riesgo</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-materiales-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== INMOVILIZADOS ===================== -->
+    <section id="tab-inmovilizados" class="tab-panel">
+      <div class="panel umbrales">
+        <label>Umbral moderado (días sin consumo)
+          <input type="number" id="umbral-moderado" value="180" min="30" step="10" />
+        </label>
+        <label>Umbral crítico (días sin consumo)
+          <input type="number" id="umbral-critico" value="365" min="60" step="10" />
+        </label>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">Materiales inmovilizados</span>
+          <span class="kpi-value" id="kpi-inmov-total">—</span>
+        </div>
+        <div class="kpi-card kpi-rojo">
+          <span class="kpi-label">Crítico</span>
+          <span class="kpi-value" id="kpi-inmov-critico">—</span>
+        </div>
+        <div class="kpi-card kpi-amarillo">
+          <span class="kpi-label">Moderado</span>
+          <span class="kpi-value" id="kpi-inmov-moderado">—</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Valor estimado inmovilizado</span>
+          <span class="kpi-value kpi-value-small" id="kpi-inmov-valor">—</span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Materiales con stock físico y sin consumo real reciente</h2>
+          <p class="panel-sub">Costo unitario ya viene de MB52 (ponderado por lote) — no hace falta cargarlo a mano.</p>
+        </div>
+        <div class="table-wrap tall">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th><th>Descripción</th><th>Clasif.</th>
+                <th class="num">Stock Real</th><th class="num">Días sin mov.</th>
+                <th>Último consumo</th><th>Severidad</th><th class="num">Valor</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-inmovilizados-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PARAMETROS ===================== -->
+    <section id="tab-parametros" class="tab-panel">
+      <div class="panel panel-form">
+        <div class="panel-header">
+          <h2>Parámetros del modelo</h2>
+          <p class="panel-sub">Se guardan en este navegador. Al guardar, se vuelve a calcular todo automáticamente.</p>
+        </div>
+        <form id="form-parametros">
+          <label>Nivel de servicio — Z
+            <input type="number" id="input-z" step="0.001" />
+            <span class="hint">1.645 ≈ 95% · 1.881 ≈ 97% · 2.05 ≈ 98%</span>
+          </label>
+          <label>Costo de ordenar S (S/. por orden)
+            <input type="number" id="input-s" step="1" />
+          </label>
+          <label>Costo de mantener H (% anual)
+            <input type="number" id="input-h" step="0.5" />
+          </label>
+          <label>Umbral Temporada Alta (índice ≥)
+            <input type="number" id="input-umbral-alta" step="0.05" />
+          </label>
+          <label>Umbral Temporada Baja (índice &lt;)
+            <input type="number" id="input-umbral-baja" step="0.05" />
+          </label>
+          <button type="submit">Guardar y recalcular</button>
+          <span class="guardado-msg" id="guardado-msg">Guardado ✓</span>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== COMPARTIR ===================== -->
+    <section id="tab-compartir" class="tab-panel">
+      <div class="panel panel-form">
+        <div class="panel-header">
+          <h2>Publicar esta versión para compartir por link</h2>
+          <p class="panel-sub">
+            Sube los resultados calculados al repositorio de GitHub donde vive esta página.
+            Cualquiera que abra el link va a ver esta versión sin necesitar los archivos de SAP
+            ni configurar nada. Solo tú necesitas el token para publicar.
+          </p>
+        </div>
+        <form id="form-github">
+          <label>Usuario/organización de GitHub
+            <input type="text" id="input-gh-owner" placeholder="tu-usuario" />
+          </label>
+          <label>Nombre del repositorio
+            <input type="text" id="input-gh-repo" placeholder="abastecimiento-l001" />
+          </label>
+          <label>Rama
+            <input type="text" id="input-gh-branch" placeholder="main" value="main" />
+          </label>
+          <label class="label-ancho">Token de acceso personal (fine-grained, solo este repo, permiso "Contents: Read and write")
+            <input type="password" id="input-gh-token" placeholder="github_pat_..." />
+          </label>
+          <button type="submit">Guardar configuración</button>
+          <span class="guardado-msg" id="guardado-gh-msg">Guardado ✓</span>
+        </form>
+        <div class="acciones-publicar">
+          <button type="button" id="btn-publicar" class="btn-continuar">Publicar esta versión</button>
+          <span id="estado-publicar" class="estado-publicar"></span>
+        </div>
+        <p class="datos-info">
+          <strong>Cómo crear el token:</strong> en GitHub, ve a Settings → Developer settings →
+          Personal access tokens → Fine-grained tokens → Generate new token. Limita el "Repository access"
+          solo a este repositorio, y en "Permissions" dale a "Contents" el nivel "Read and write". No le des
+          acceso a otros repos.
+        </p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <span class="tagline">Garantizamos la nutrición del mañana</span>
+  Almacén L001 (Matarani) · Todo el cálculo corre en tu navegador, ningún dato sale de tu equipo
+</footer>
+
+</body>
+</html>
