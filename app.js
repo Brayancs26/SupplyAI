@@ -499,6 +499,7 @@ function renderTablaMateriales() {
       <td class="num">${fmtNum(m.ropActual, 0)}</td>
       <td class="num">${fmtNum(m.ropCalculado, 1)}</td>
       <td>${confianzaChip(m.confianza)}</td>
+      <td>${m.ultimaFechaConsumo || '<span class="muted">sin consumo</span>'}</td>
       <td class="num">${m.costoUnitario ? fmtSoles(m.costoUnitario) : '<span class="muted">—</span>'}</td>
       <td class="num">${m.eoq !== null ? fmtNum(m.eoq, 0) : '<span class="muted">—</span>'}</td>
       <td>${riesgoChip(m.riesgo)}</td>
@@ -507,7 +508,7 @@ function renderTablaMateriales() {
     .join('');
 
   if (rows.length > MAX_FILAS) {
-    tbody.innerHTML += `<tr><td colspan="14" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — afina el filtro para ver más.</td></tr>`;
+    tbody.innerHTML += `<tr><td colspan="15" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — afina el filtro para ver más.</td></tr>`;
   }
 }
 
