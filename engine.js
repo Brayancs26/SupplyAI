@@ -285,6 +285,24 @@ function calcularInmovilizados(calculados, umbralModerado, umbralCritico, totalD
     .sort((a, b) => b.diasSinMovimientoEfectivo - a.diasSinMovimientoEfectivo);
 }
 
+/**
+ * Serie mensual de consumo real para UN material específico — usada en la
+ * pestaña "Tendencia por Producto". Devuelve [{mes:'YYYY-MM', total}, ...]
+ * ordenado cronológicamente, solo con los meses donde hubo al menos un
+ * movimiento (no rellena huecos con cero, a diferencia del cálculo de SS).
+ */
+function serieMensualPorMaterial(consumoReal, material) {
+  const mapa = new Map();
+  for (const r of consumoReal) {
+    if (r.material !== material) continue;
+    const clave = r.fechaISO.slice(0, 7);
+    mapa.set(clave, (mapa.get(clave) || 0) + r.demanda);
+  }
+  return Array.from(mapa.entries())
+    .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+    .map(([mes, total]) => ({ mes, total }));
+}
+
 const SupplyEngine = {
   NOMBRES_MES,
   CODIGOS_CONSUMO,
@@ -298,6 +316,7 @@ const SupplyEngine = {
   agregarMB52,
   calcularMateriales,
   calcularInmovilizados,
+  serieMensualPorMaterial,
   confianza,
 };
 
