@@ -20,8 +20,6 @@ const state = {
   filtroTexto: '',
   filtroRiesgo: 'TODOS',
   filtroConfianza: 'TODAS',
-  modoPublicado: false,
-  publicadoEn: null,
 };
 
 const fmtNum = (n, dec = 1) =>
@@ -41,84 +39,6 @@ function formatearFecha(iso) {
   const d = new Date(iso);
   return d.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }) +
     ' ' + d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
-}
-
-// ---------------- COMPARTIR (GitHub como backend) ----------------
-async function revisarSnapshotPublicado() {
-  const repoInfo = GitHubSync.detectarRepoDesdeURL();
-  if (!repoInfo) return; // no estamos en GitHub Pages (ej. abierto como archivo local)
-  const snapshot = await GitHubSync.obtenerSnapshotPublicado(repoInfo.owner, repoInfo.repo, repoInfo.branch);
-  if (!snapshot) return;
-
-  const banner = document.getElementById('banner-publicado');
-  banner.style.display = 'flex';
-  document.getElementById('publicado-fecha').textContent = 'publicada el ' + formatearFecha(snapshot.publicadoEn);
-
-  document.getElementById('btn-ver-publicado').addEventListener('click', () => {
-    cargarSnapshotEnState(snapshot);
-    mostrarDashboard();
-    renderTodo();
-  });
-}
-
-function cargarSnapshotEnState(snapshot) {
-  state.modoPublicado = true;
-  state.publicadoEn = snapshot.publicadoEn;
-  state.fechaMin = snapshot.fechaMin;
-  state.fechaMax = snapshot.fechaMax;
-  state.indiceEstacional = snapshot.indiceEstacional;
-  state.mesATemporada = snapshot.mesATemporada;
-  state.calculados = snapshot.calculados;
-  state.params = snapshot.params || state.params;
-
-  const aviso = document.getElementById('aviso-modo-publicado');
-  aviso.style.display = 'block';
-  document.getElementById('publicado-fecha-2').textContent = 'publicada el ' + formatearFecha(snapshot.publicadoEn);
-}
-
-function bindGitHubForm() {
-  const cfg = GitHubSync.obtenerConfigGitHub();
-  const detectado = GitHubSync.detectarRepoDesdeURL();
-  document.getElementById('input-gh-owner').value = (cfg && cfg.owner) || (detectado && detectado.owner) || '';
-  document.getElementById('input-gh-repo').value = (cfg && cfg.repo) || (detectado && detectado.repo) || '';
-  document.getElementById('input-gh-branch').value = (cfg && cfg.branch) || 'main';
-  document.getElementById('input-gh-token').value = (cfg && cfg.token) || '';
-
-  document.getElementById('form-github').addEventListener('submit', (e) => {
-    e.preventDefault();
-    GitHubSync.guardarConfigGitHub(
-      document.getElementById('input-gh-owner').value.trim(),
-      document.getElementById('input-gh-repo').value.trim(),
-      document.getElementById('input-gh-token').value.trim(),
-      document.getElementById('input-gh-branch').value.trim() || 'main'
-    );
-    const el = document.getElementById('guardado-gh-msg');
-    el.style.opacity = '1';
-    setTimeout(() => (el.style.opacity = '0'), 1800);
-  });
-
-  document.getElementById('btn-publicar').addEventListener('click', async () => {
-    const estadoEl = document.getElementById('estado-publicar');
-    estadoEl.className = 'estado-publicar';
-    estadoEl.textContent = 'Publicando…';
-    try {
-      const payload = {
-        publicadoEn: new Date().toISOString(),
-        fechaMin: state.fechaMin,
-        fechaMax: state.fechaMax,
-        params: state.params,
-        indiceEstacional: state.indiceEstacional,
-        mesATemporada: state.mesATemporada,
-        calculados: state.calculados,
-      };
-      await GitHubSync.publicarSnapshot(payload);
-      estadoEl.textContent = 'Publicado ✓ — ya está disponible para quien abra el link';
-      estadoEl.classList.add('ok');
-    } catch (err) {
-      estadoEl.textContent = err.message;
-      estadoEl.classList.add('error');
-    }
-  });
 }
 
 // ---------------- CACHÉ (IndexedDB) ----------------
@@ -266,8 +186,6 @@ function setEstadoCarga(on, mensaje) {
 
 // ---------------- CÁLCULO ----------------
 function calcularTodo() {
-  state.modoPublicado = false;
-  document.getElementById('aviso-modo-publicado').style.display = 'none';
   setEstadoCarga(true, 'Calculando estacionalidad y SS/ROP/EOQ…');
   // pequeño timeout para que el navegador pinte el overlay antes de bloquear el hilo
   setTimeout(() => {
@@ -323,6 +241,7 @@ function renderTodo() {
   renderParametros();
   renderTablaMateriales();
   renderInmovilizados();
+  poblarListaTendencia();
 }
 
 // ---------------- NAV ----------------
@@ -353,6 +272,13 @@ function renderResumen() {
   document.getElementById('kpi-amarillo').textContent = amarillo;
   document.getElementById('kpi-verde').textContent = verde;
   document.getElementById('kpi-confianza').textContent = `${alta} alta · ${media} media · ${baja} baja · ${sinDatos} sin datos`;
+
+  const pctSalud = total > 0 ? Math.round((verde / total) * 100) : 0;
+  const gauge = document.getElementById('gauge-salud');
+  const color = pctSalud >= 80 ? '#22c55e' : pctSalud >= 60 ? '#f5a623' : '#ef4444';
+  gauge.style.setProperty('--pct', pctSalud);
+  gauge.style.setProperty('--gauge-color', color);
+  document.getElementById('gauge-valor').textContent = `${pctSalud}%`;
 
   const tempHoy = state.mesATemporada[new Date().getMonth() + 1];
   document.getElementById('temporada-actual').textContent = tempHoy;
@@ -411,10 +337,6 @@ function renderParametros() {
 function bindFormularios() {
   document.getElementById('form-parametros').addEventListener('submit', (e) => {
     e.preventDefault();
-    if (state.modoPublicado) {
-      alert('Estás viendo una versión publicada — no hay datos crudos cargados para recalcular. Usa "Cargar mis archivos" primero.');
-      return;
-    }
     state.params.Z = Number(document.getElementById('input-z').value);
     state.params.S = Number(document.getElementById('input-s').value);
     state.params.H = Number(document.getElementById('input-h').value) / 100;
@@ -442,13 +364,15 @@ function bindFormularios() {
   document.getElementById('umbral-critico').addEventListener('change', renderInmovilizados);
 
   document.getElementById('btn-nuevos-archivos').addEventListener('click', () => {
-    state.modoPublicado = false;
-    document.getElementById('aviso-modo-publicado').style.display = 'none';
     document.getElementById('dashboard').style.display = 'none';
     document.getElementById('pantalla-carga').style.display = 'block';
   });
 
   document.getElementById('btn-exportar').addEventListener('click', exportarExcel);
+
+  document.getElementById('buscar-tendencia').addEventListener('change', (e) => {
+    mostrarTendenciaMaterial(e.target.value);
+  });
 }
 
 function flashGuardado() {
@@ -548,6 +472,99 @@ function renderInmovilizados() {
     .join('');
 }
 
+// ---------------- TENDENCIA POR PRODUCTO ----------------
+function poblarListaTendencia() {
+  const datalist = document.getElementById('lista-materiales-tendencia');
+  datalist.innerHTML = state.calculados
+    .map((m) => `<option value="${m.material} — ${(m.descripcion || '').replace(/"/g, '')}"></option>`)
+    .join('');
+}
+
+function mostrarTendenciaMaterial(valorInput) {
+  const codigo = (valorInput || '').split('—')[0].trim();
+  const material = state.calculados.find((m) => m.material === codigo);
+
+  if (!material) {
+    document.getElementById('tendencia-vacio').style.display = 'block';
+    document.getElementById('tendencia-contenido').style.display = 'none';
+    return;
+  }
+
+  const serie = SupplyEngine.serieMensualPorMaterial(state.consumoReal, codigo);
+
+  document.getElementById('tendencia-vacio').style.display = 'none';
+  document.getElementById('tendencia-contenido').style.display = 'block';
+  document.getElementById('tendencia-material-nombre').textContent = `${material.material} — ${material.descripcion || ''}`;
+  document.getElementById('tendencia-material-clasif').textContent = `${material.clasificacion} · Temporada objetivo: ${material.temporadaObjetivo}`;
+
+  if (serie.length === 0) {
+    document.getElementById('tendencia-total').textContent = '0';
+    document.getElementById('tendencia-promedio').textContent = '0';
+    document.getElementById('tendencia-pico').textContent = '—';
+    document.getElementById('tendencia-valle').textContent = '—';
+    document.getElementById('tendencia-grafico').innerHTML = '<p class="muted centrado">Este material no registra consumo real en el período analizado.</p>';
+    return;
+  }
+
+  const total = serie.reduce((a, p) => a + p.total, 0);
+  const promedio = total / serie.length;
+  const pico = serie.reduce((a, b) => (b.total > a.total ? b : a));
+  const valle = serie.reduce((a, b) => (b.total < a.total ? b : a));
+
+  document.getElementById('tendencia-total').textContent = fmtNum(total, 0);
+  document.getElementById('tendencia-promedio').textContent = fmtNum(promedio, 1);
+  document.getElementById('tendencia-pico').textContent = `${pico.mes} (${fmtNum(pico.total, 0)})`;
+  document.getElementById('tendencia-valle').textContent = `${valle.mes} (${fmtNum(valle.total, 0)})`;
+
+  document.getElementById('tendencia-grafico').innerHTML = construirGraficoLinea(serie);
+}
+
+function construirGraficoLinea(serie) {
+  const W = 1000;
+  const H = 260;
+  const PAD_L = 50;
+  const PAD_B = 30;
+  const PAD_T = 20;
+  const maxVal = Math.max(...serie.map((p) => p.total), 1);
+
+  const puntos = serie.map((p, i) => {
+    const x = PAD_L + (i / Math.max(serie.length - 1, 1)) * (W - PAD_L - 20);
+    const y = PAD_T + (1 - p.total / maxVal) * (H - PAD_T - PAD_B);
+    return { x, y, ...p };
+  });
+
+  const linea = puntos.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const area = `${PAD_L},${H - PAD_B} ${linea} ${puntos[puntos.length - 1].x.toFixed(1)},${H - PAD_B}`;
+
+  const circulos = puntos
+    .map((p) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#22d3ee" />`)
+    .join('');
+
+  const etiquetasX = puntos
+    .filter((_, i) => i % Math.ceil(puntos.length / 12) === 0)
+    .map((p) => `<text x="${p.x.toFixed(1)}" y="${H - 8}" font-size="10" fill="#8b96ab" text-anchor="middle">${p.mes.slice(2)}</text>`)
+    .join('');
+
+  const lineasGuia = [0, 0.25, 0.5, 0.75, 1].map((f) => {
+    const y = PAD_T + f * (H - PAD_T - PAD_B);
+    return `<line x1="${PAD_L}" y1="${y.toFixed(1)}" x2="${W - 20}" y2="${y.toFixed(1)}" stroke="#232d40" stroke-width="1" />`;
+  }).join('');
+
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">
+    <defs>
+      <linearGradient id="gradTendencia" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.35" />
+        <stop offset="100%" stop-color="#22d3ee" stop-opacity="0" />
+      </linearGradient>
+    </defs>
+    ${lineasGuia}
+    <polygon points="${area}" fill="url(#gradTendencia)" />
+    <polyline points="${linea}" fill="none" stroke="#22d3ee" stroke-width="2.5" />
+    ${circulos}
+    ${etiquetasX}
+  </svg>`;
+}
+
 // ---------------- EXPORTAR ----------------
 function exportarExcel() {
   const headers = [
@@ -573,7 +590,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindDropzone();
   bindTabs();
   bindFormularios();
-  bindGitHubForm();
   await cargarCacheAlIniciar();
-  await revisarSnapshotPublicado();
 });
