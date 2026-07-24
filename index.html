@@ -3,15 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Abastecimiento L001 · TASA Matarani</title>
+<title>Abastecimiento L001 · Matarani</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
 <script src="vendor/xlsx.full.min.js"></script>
 <script src="engine.js" defer></script>
 <script src="file-parser.js" defer></script>
 <script src="storage.js" defer></script>
-<script src="github-sync.js" defer></script>
 <script src="app.js" defer></script>
 </head>
 <body>
@@ -28,27 +27,16 @@
     <div class="brand">
       <span class="brand-mark">L001</span>
       <div>
-        <h1>Abastecimiento &middot; Matarani</h1>
+        <h1>ABASTECIMIENTO <span class="accent">MATARANI</span></h1>
         <p class="brand-sub">Estacional · SS · ROP · EOQ · Inmovilizados</p>
       </div>
     </div>
-  </div>
-  <div class="wave-divider">
-    <svg viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0,30 C240,60 480,0 720,30 C960,60 1200,0 1440,30 L1440,60 L0,60 Z" fill="#007696" opacity="0.9"></path>
-      <path d="M0,42 C240,18 480,54 720,36 C960,18 1200,54 1440,36 L1440,60 L0,60 Z" fill="#5cbdeb" opacity="0.7"></path>
-    </svg>
   </div>
 </header>
 
 <!-- ===================== PANTALLA DE CARGA ===================== -->
 <div id="pantalla-carga">
   <div class="carga-inner">
-    <div id="banner-publicado" class="banner-publicado" style="display:none">
-      <p><strong>Hay una versión publicada</strong> — <span id="publicado-fecha"></span></p>
-      <button type="button" id="btn-ver-publicado" class="btn-secundario">Ver esta versión</button>
-    </div>
-
     <h2>Suelta tus 3 archivos de SAP</h2>
     <p class="carga-sub">MRP, DATA (movimientos históricos) y MB52 (stock actual). Los detecto automáticamente, no importa el orden ni el nombre exacto del archivo.</p>
 
@@ -105,41 +93,51 @@
     <button class="tab-btn active" data-tab="resumen">Resumen</button>
     <button class="tab-btn" data-tab="estacionalidad">Estacionalidad</button>
     <button class="tab-btn" data-tab="materiales">Materiales</button>
+    <button class="tab-btn" data-tab="tendencia">Tendencia por Producto</button>
     <button class="tab-btn" data-tab="inmovilizados">Inmovilizados</button>
     <button class="tab-btn" data-tab="parametros">Parámetros</button>
-    <button class="tab-btn" data-tab="compartir">Compartir</button>
     <div class="tabs-acciones">
       <button id="btn-exportar" class="btn-secundario">Exportar Excel</button>
       <button id="btn-nuevos-archivos" class="btn-secundario">Cargar mis archivos</button>
     </div>
   </nav>
 
-  <div id="aviso-modo-publicado" class="aviso-modo-publicado" style="display:none">
-    Estás viendo una versión publicada (solo lectura) — <span id="publicado-fecha-2"></span>.
-    Para ajustar parámetros o ver tus propios datos, usa "Cargar mis archivos".
-  </div>
-
   <main>
 
     <!-- ===================== RESUMEN ===================== -->
     <section id="tab-resumen" class="tab-panel active">
       <p class="linea-temporada">Temporada vigente este mes: <span class="chip" id="temporada-actual">—</span></p>
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <span class="kpi-label">Materiales analizados</span>
-          <span class="kpi-value" id="kpi-total">—</span>
+
+      <div class="resumen-top">
+        <div class="gauge-card">
+          <div class="gauge-wrap">
+            <div class="gauge" id="gauge-salud" style="--pct:0">
+              <div class="gauge-inner">
+                <span class="gauge-valor" id="gauge-valor">—</span>
+                <span class="gauge-label">Salud de abastecimiento</span>
+              </div>
+            </div>
+          </div>
+          <p class="gauge-nota">% de materiales en VERDE (stock por encima del punto de reorden)</p>
         </div>
-        <div class="kpi-card kpi-rojo">
-          <span class="kpi-label">Riesgo de quiebre</span>
-          <span class="kpi-value" id="kpi-rojo">—</span>
-        </div>
-        <div class="kpi-card kpi-amarillo">
-          <span class="kpi-label">A vigilar</span>
-          <span class="kpi-value" id="kpi-amarillo">—</span>
-        </div>
-        <div class="kpi-card kpi-verde">
-          <span class="kpi-label">OK</span>
-          <span class="kpi-value" id="kpi-verde">—</span>
+
+        <div class="kpi-grid kpi-grid-resumen">
+          <div class="kpi-card">
+            <span class="kpi-label">Materiales analizados</span>
+            <span class="kpi-value" id="kpi-total">—</span>
+          </div>
+          <div class="kpi-card kpi-rojo">
+            <span class="kpi-label">Riesgo de quiebre</span>
+            <span class="kpi-value" id="kpi-rojo">—</span>
+          </div>
+          <div class="kpi-card kpi-amarillo">
+            <span class="kpi-label">A vigilar</span>
+            <span class="kpi-value" id="kpi-amarillo">—</span>
+          </div>
+          <div class="kpi-card kpi-verde">
+            <span class="kpi-label">OK</span>
+            <span class="kpi-value" id="kpi-verde">—</span>
+          </div>
         </div>
       </div>
       <p class="confianza-linea">Confianza del dato histórico: <span id="kpi-confianza">—</span></p>
@@ -207,11 +205,41 @@
                 <th class="num">LT (días)</th><th class="num">Stock Real</th>
                 <th class="num">SS SAP</th><th class="num">SS Calc.</th>
                 <th class="num">ROP SAP</th><th class="num">ROP Calc.</th>
-                <th>Confianza</th><th class="num">Costo Unit.</th><th class="num">EOQ</th><th>Riesgo</th>
+                <th>Confianza</th><th>Últ. Movimiento</th><th class="num">Costo Unit.</th><th class="num">EOQ</th><th>Riesgo</th>
               </tr>
             </thead>
             <tbody id="tabla-materiales-body"></tbody>
           </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== TENDENCIA POR PRODUCTO ===================== -->
+    <section id="tab-tendencia" class="tab-panel">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Tendencia de consumo por producto</h2>
+          <p class="panel-sub">Elige un material para ver su historial de consumo real mes a mes.</p>
+        </div>
+        <div class="buscador-tendencia">
+          <input type="text" id="buscar-tendencia" list="lista-materiales-tendencia" placeholder="Busca por código o descripción…" />
+          <datalist id="lista-materiales-tendencia"></datalist>
+        </div>
+        <div id="tendencia-vacio" class="tendencia-vacio">Selecciona un material para ver su tendencia.</div>
+        <div id="tendencia-contenido" style="display:none">
+          <div class="tendencia-info">
+            <div>
+              <span class="tendencia-material" id="tendencia-material-nombre">—</span>
+              <span class="tendencia-material-clasif" id="tendencia-material-clasif">—</span>
+            </div>
+            <div class="tendencia-stats">
+              <div><span class="stat-label">Total período</span><span class="stat-valor" id="tendencia-total">—</span></div>
+              <div><span class="stat-label">Promedio mensual</span><span class="stat-valor" id="tendencia-promedio">—</span></div>
+              <div><span class="stat-label">Mes pico</span><span class="stat-valor" id="tendencia-pico">—</span></div>
+              <div><span class="stat-label">Mes valle</span><span class="stat-valor" id="tendencia-valle">—</span></div>
+            </div>
+          </div>
+          <div id="tendencia-grafico" class="tendencia-grafico"></div>
         </div>
       </div>
     </section>
@@ -294,51 +322,10 @@
       </div>
     </section>
 
-    <!-- ===================== COMPARTIR ===================== -->
-    <section id="tab-compartir" class="tab-panel">
-      <div class="panel panel-form">
-        <div class="panel-header">
-          <h2>Publicar esta versión para compartir por link</h2>
-          <p class="panel-sub">
-            Sube los resultados calculados al repositorio de GitHub donde vive esta página.
-            Cualquiera que abra el link va a ver esta versión sin necesitar los archivos de SAP
-            ni configurar nada. Solo tú necesitas el token para publicar.
-          </p>
-        </div>
-        <form id="form-github">
-          <label>Usuario/organización de GitHub
-            <input type="text" id="input-gh-owner" placeholder="tu-usuario" />
-          </label>
-          <label>Nombre del repositorio
-            <input type="text" id="input-gh-repo" placeholder="abastecimiento-l001" />
-          </label>
-          <label>Rama
-            <input type="text" id="input-gh-branch" placeholder="main" value="main" />
-          </label>
-          <label class="label-ancho">Token de acceso personal (fine-grained, solo este repo, permiso "Contents: Read and write")
-            <input type="password" id="input-gh-token" placeholder="github_pat_..." />
-          </label>
-          <button type="submit">Guardar configuración</button>
-          <span class="guardado-msg" id="guardado-gh-msg">Guardado ✓</span>
-        </form>
-        <div class="acciones-publicar">
-          <button type="button" id="btn-publicar" class="btn-continuar">Publicar esta versión</button>
-          <span id="estado-publicar" class="estado-publicar"></span>
-        </div>
-        <p class="datos-info">
-          <strong>Cómo crear el token:</strong> en GitHub, ve a Settings → Developer settings →
-          Personal access tokens → Fine-grained tokens → Generate new token. Limita el "Repository access"
-          solo a este repositorio, y en "Permissions" dale a "Contents" el nivel "Read and write". No le des
-          acceso a otros repos.
-        </p>
-      </div>
-    </section>
-
   </main>
 </div>
 
 <footer>
-  <span class="tagline">Garantizamos la nutrición del mañana</span>
   Almacén L001 (Matarani) · Todo el cálculo corre en tu navegador, ningún dato sale de tu equipo
 </footer>
 
