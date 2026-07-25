@@ -21,7 +21,7 @@
     background-image:radial-gradient(900px 460px at 8% -12%,rgba(34,211,238,.09),transparent 60%),
                      radial-gradient(700px 400px at 100% 0%,rgba(129,140,248,.08),transparent 60%);}
   a{color:inherit;text-decoration:none}
-  .screen{max-width:1320px;margin:0 auto;padding:20px 16px 64px}
+  .screen{max-width:1480px;margin:0 auto;padding:20px 16px 64px}
   button,select,input{font-family:inherit}
   button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 
@@ -53,39 +53,43 @@
 
   /* matriz */
   .grid-scroll{overflow-x:auto}
-  .grid{min-width:1060px;display:grid;grid-template-columns:158px repeat(7,1fr);background:var(--line-soft);gap:1px;padding:1px}
-  .hcell{background:var(--panel-3);padding:10px;text-align:center}
-  .hcell .d{font-size:10.5px;text-transform:uppercase;letter-spacing:.16em;color:var(--dim)}
-  .hcell .n{font-family:var(--head);font-weight:600;font-size:14.5px;font-variant-numeric:tabular-nums;margin-top:2px}
+  .grid{min-width:0;display:grid;grid-template-columns:122px repeat(7,minmax(0,1fr));background:var(--line-soft);gap:1px;padding:1px}
+  .hcell{background:var(--panel-3);padding:8px 4px;text-align:center}
+  .hcell .d{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim)}
+  .hcell .n{font-family:var(--head);font-weight:600;font-size:13px;font-variant-numeric:tabular-nums;margin-top:1px}
   .hcell.corner{background:#0b111d}
   .hcell.hoy{box-shadow:inset 0 -2px 0 var(--cyan)}
   .hcell.hoy .d,.hcell.hoy .n{color:var(--cyan)}
 
-  .rowlabel{display:flex;flex-direction:column;justify-content:center;padding:15px 13px}
+  .rowlabel{display:flex;flex-direction:column;justify-content:center;padding:11px 10px}
   .rowlabel.t1{background:linear-gradient(150deg,rgba(34,211,238,.20),rgba(14,116,144,.10));border-left:2px solid var(--cyan)}
   .rowlabel.t2{background:linear-gradient(150deg,rgba(129,140,248,.20),rgba(63,63,138,.10));border-left:2px solid var(--violet)}
-  .rowlabel .t{font-family:var(--head);font-weight:600;font-size:17px;letter-spacing:-.01em}
-  .rowlabel .h{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px}
-  .rowlabel .g{margin-top:9px;font-size:10.5px;text-transform:uppercase;letter-spacing:.13em;align-self:flex-start;
-    padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--text)}
+  .rowlabel.jef{background:linear-gradient(150deg,rgba(245,158,11,.16),rgba(120,80,10,.07));border-left:2px solid var(--amber)}
+  .rowlabel .t{font-family:var(--head);font-weight:600;font-size:14.5px;letter-spacing:-.01em}
+  .rowlabel .h{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px}
+  .rowlabel .g{margin-top:7px;font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;align-self:flex-start;
+    padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--text)}
   .rowlabel.t1 .g{background:rgba(34,211,238,.14);border-color:rgba(34,211,238,.4);color:var(--cyan)}
   .rowlabel.t2 .g{background:rgba(129,140,248,.14);border-color:rgba(129,140,248,.4);color:var(--violet)}
 
-  .cell{background:rgba(34,211,238,.045);padding:7px;display:flex;flex-direction:column;gap:6px}
+  .cell{background:rgba(34,211,238,.045);padding:5px;display:flex;flex-direction:column;gap:5px}
   .cell.n2{background:rgba(129,140,248,.05)}
   .cell.dom{background:rgba(245,158,11,.07)}
-  .cell .when{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--amber);font-weight:600}
-  .cell.libre{align-items:center;justify-content:center;text-align:center;color:var(--dim);font-size:11px;
-    text-transform:uppercase;letter-spacing:.14em;background:var(--panel-3)}
+  .cell.jefe{grid-column:span 7;background:rgba(245,158,11,.045);flex-direction:row;align-items:center;flex-wrap:wrap;gap:10px;padding:9px 10px}
+  .cell.jefe .person{max-width:290px;flex:0 0 auto}
+  .cell.jefe .meta{font-size:11.5px;color:var(--dim)}
+  .cell .when{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);font-weight:600;line-height:1.25}
+  .cell.libre{align-items:center;justify-content:center;text-align:center;color:var(--dim);font-size:10px;
+    text-transform:uppercase;letter-spacing:.1em;background:var(--panel-3)}
 
-  .person{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:8px;padding:5px 8px;
-    display:flex;align-items:center;gap:8px}
-  .av{flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#04121a;
-    font-size:11px;font-weight:700;overflow:hidden}
+  .person{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:7px;padding:4px 6px;
+    display:flex;align-items:center;gap:7px;min-width:0}
+  .av{flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#04121a;
+    font-size:10px;font-weight:700;overflow:hidden}
   .av img{width:100%;height:100%;object-fit:cover;display:block}
   .person .txt{min-width:0}
-  .person .nm{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .person .cg{font-size:10.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .person .nm{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .person .cg{font-size:9.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
   .legend{display:flex;justify-content:flex-end;gap:18px;flex-wrap:wrap;padding:11px 18px;font-size:12px;
     color:var(--dim);border-top:1px solid var(--line);background:var(--panel-3)}
@@ -149,6 +153,7 @@
     box-shadow:0 10px 30px rgba(0,0,0,.5)}
   .toast.show{opacity:1}
 
+  @media (max-width:900px){ .grid{min-width:880px} }
   @media (max-width:780px){ .teams,.kpis{grid-template-columns:1fr} .bar h1{font-size:17px} }
   @media print{
     body{background:#fff;color:#111;background-image:none}
@@ -202,6 +207,15 @@
   <h2 class="sec">Horas de la semana</h2>
   <div class="kpis" id="kpis"></div>
 
+  <h2 class="sec noprint">Jefatura</h2>
+  <div class="panel newform noprint">
+    <button class="photo-pick" id="jefePhoto" title="Foto del jefe">Subir<br>foto</button>
+    <div class="field"><label for="jName">Nombre del jefe</label><input id="jName" placeholder="Ej. Brayan Cárdenas"></div>
+    <div class="field"><label for="jCargo">Cargo</label><input id="jCargo" placeholder="Ej. Jefe de Almacén"></div>
+    <button class="btn" id="jefeClear" style="padding:10px 14px">Quitar foto</button>
+    <p class="hint">Aparece en la fila inferior del tablero como responsable del rol de turnos.</p>
+  </div>
+
   <h2 class="sec noprint">Nuevo trabajador</h2>
   <div class="panel newform noprint">
     <button class="photo-pick" id="newPhoto" title="Elegir foto">Subir<br>foto</button>
@@ -229,7 +243,7 @@
 const DAYS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
 const KEY="supplyai-turnos-v1";
 const AVC=["#22d3ee","#818cf8","#f59e0b","#34d399","#f472b6","#60a5fa","#a3e635","#fb923c"];
-let state={offset:0,weekStart:mondayOf(new Date()),people:[
+let state={offset:0,weekStart:mondayOf(new Date()),jefe:{nombre:"",cargo:"Jefe de Almacén",foto:""},people:[
   {id:1,nombre:"Colaborador 1",cargo:"Op. montacargas",grupo:"A",foto:""},
   {id:2,nombre:"Colaborador 2",cargo:"Almacenero",grupo:"A",foto:""},
   {id:3,nombre:"Colaborador 3",cargo:"Estibador",grupo:"A",foto:""},
@@ -271,6 +285,10 @@ function render(){
   for(let i=0;i<5;i++) g+=`<div class="cell n2">${groupCards(N)}</div>`;
   g+=`<div class="cell dom"><div class="when">Sáb 19:30 → Dom 13:30 · 18 h</div>${groupCards(N)}</div>`;
   g+=`<div class="cell libre">Descanso<br>hasta el lunes</div>`;
+  const J=state.jefe||{};
+  g+=`<div class="rowlabel jef"><div class="t">Jefatura</div><div class="h">Responsable del rol</div></div>`;
+  g+=`<div class="cell jefe">${cardHTML({id:"jefe",nombre:J.nombre||"Sin asignar",cargo:J.cargo||"",foto:J.foto||""})}
+      <span class="meta">Aprueba la programación semanal y los cambios de rotación.</span></div>`;
   document.getElementById("grid").innerHTML=g;
 
   document.getElementById("kpis").innerHTML=`
@@ -327,9 +345,18 @@ fileInput.addEventListener("change",async()=>{
   try{
     const data=await processImage(f);
     if(photoTarget==="new"){newPhoto=data;document.getElementById("newPhoto").innerHTML=`<img src="${data}" alt="">`;}
+    else if(photoTarget==="jefe"){state.jefe.foto=data;syncJefe();render();toast("Foto de jefatura actualizada.");}
     else{const p=state.people.find(p=>p.id==photoTarget);if(p){p.foto=data;render();toast("Foto actualizada.");}}
   }catch(err){toast(err.message);}
 });
+function syncJefe(){
+  const b=document.getElementById("jefePhoto");
+  b.innerHTML=state.jefe.foto?`<img src="${state.jefe.foto}" alt="">`:"Subir<br>foto";
+}
+document.getElementById("jefePhoto").onclick=()=>pickPhoto("jefe");
+document.getElementById("jefeClear").onclick=()=>{state.jefe.foto="";syncJefe();render();toast("Foto quitada.");};
+document.getElementById("jName").addEventListener("input",e=>{state.jefe.nombre=e.target.value;render();});
+document.getElementById("jCargo").addEventListener("input",e=>{state.jefe.cargo=e.target.value;render();});
 document.getElementById("newPhoto").onclick=()=>pickPhoto("new");
 document.getElementById("addWorker").onclick=()=>{
   const n=document.getElementById("nName"),c=document.getElementById("nCargo"),g=document.getElementById("nGroup");
@@ -378,7 +405,7 @@ let tt;
 function toast(t){const el=document.getElementById("toast");el.textContent=t;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),2600);}
 function msg(t){document.getElementById("saveState").textContent=t;}
 async function save(){
-  const data=JSON.stringify({offset:state.offset,people:state.people});
+  const data=JSON.stringify({offset:state.offset,jefe:state.jefe,people:state.people});
   try{await window.storage.set(KEY,data);msg("Cambios guardados ("+(data.length/1024).toFixed(0)+" KB con fotos).");}
   catch(err){
     try{localStorage.setItem(KEY,data);msg("Cambios guardados en este navegador.");}
@@ -391,7 +418,11 @@ async function save(){
   if(!raw){try{raw=localStorage.getItem(KEY);}catch(e){}}
   if(raw){try{const d=JSON.parse(raw);
     if(d.people)state.people=d.people.map(p=>({foto:"",...p}));
+    if(d.jefe)state.jefe={nombre:"",cargo:"",foto:"",...d.jefe};
     if(typeof d.offset==="number")state.offset=d.offset;}catch(e){}}
+  document.getElementById("jName").value=state.jefe.nombre||"";
+  document.getElementById("jCargo").value=state.jefe.cargo||"";
+  syncJefe();
   render();
 })();
 </script>
