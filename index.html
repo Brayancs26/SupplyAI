@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Supply AI — TASA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e17; --panel:#111826; --panel-2:#0e141f;
+    --line:#1e293b; --line-soft:#172032;
+    --cyan:#22d3ee; --cyan-deep:#0e7490;
+    --violet:#818cf8; --amber:#f59e0b;
+    --text:#e2e8f0; --muted:#8496ad; --dim:#5b6b81;
+    --head:"Poppins",-apple-system,system-ui,sans-serif;
+    --body:"Inter",-apple-system,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.5;
+    background-image:radial-gradient(900px 480px at 12% -10%,rgba(34,211,238,.10),transparent 60%),
+                     radial-gradient(760px 420px at 100% 0%,rgba(129,140,248,.09),transparent 60%);}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:38px 20px 70px}
+
+  /* marca */
+  .brand{display:flex;align-items:center;gap:13px}
+  .mark{width:40px;height:40px;border-radius:11px;background:linear-gradient(145deg,var(--cyan),var(--cyan-deep));
+    display:grid;place-items:center;box-shadow:0 0 26px rgba(34,211,238,.35)}
+  .mark svg{width:22px;height:22px}
+  .brand .n{font-family:var(--head);font-weight:700;font-size:21px;letter-spacing:-.01em}
+  .brand .n span{color:var(--cyan)}
+  .brand .s{font-size:11.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.2em;margin-top:1px}
+
+  .hero{margin:42px 0 8px;max-width:660px}
+  .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.24em;color:var(--cyan);font-weight:600}
+  .hero h1{font-family:var(--head);font-weight:600;font-size:36px;line-height:1.15;margin:12px 0 12px;letter-spacing:-.02em}
+  .hero p{color:var(--muted);margin:0;font-size:15.5px}
+
+  /* módulos */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:34px}
+  .mod{position:relative;background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);
+    border-radius:14px;padding:22px 22px 20px;display:flex;flex-direction:column;gap:14px;min-height:238px;
+    transition:border-color .18s,transform .18s,box-shadow .18s;overflow:hidden}
+  .mod:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--accent);opacity:.75}
+  .mod:after{content:"";position:absolute;width:190px;height:190px;right:-70px;top:-70px;border-radius:50%;
+    background:var(--accent);opacity:.09;filter:blur(8px)}
+  .mod:hover,.mod:focus-visible{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 16px 40px rgba(0,0,0,.45);outline:none}
+  .ico{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;background:rgba(255,255,255,.045);
+    border:1px solid var(--line);color:var(--accent);position:relative;z-index:1}
+  .ico svg{width:22px;height:22px}
+  .mod h2{font-family:var(--head);font-weight:600;font-size:20px;margin:0;letter-spacing:-.01em;position:relative;z-index:1}
+  .mod p{margin:0;color:var(--muted);font-size:13.5px;position:relative;z-index:1}
+  .tags{display:flex;gap:7px;flex-wrap:wrap;position:relative;z-index:1}
+  .tag{font-size:10.5px;text-transform:uppercase;letter-spacing:.11em;color:var(--dim);
+    border:1px solid var(--line);border-radius:999px;padding:3px 9px}
+  .go{margin-top:auto;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--accent);
+    position:relative;z-index:1}
+  .go .arrow{transition:transform .18s}
+  .mod:hover .go .arrow{transform:translateX(4px)}
+
+  .mod-plan{--accent:var(--cyan)}
+  .mod-abas{--accent:var(--violet)}
+
+  /* pie */
+  .strip{margin-top:30px;display:flex;gap:26px;flex-wrap:wrap;padding-top:18px;border-top:1px solid var(--line-soft);
+    font-size:12.5px;color:var(--dim)}
+  .strip b{color:var(--muted);font-weight:600}
+  footer{margin-top:26px;font-size:12px;color:var(--dim)}
+  @media (max-width:720px){ .grid{grid-template-columns:1fr} .hero h1{font-size:28px} }
+</style>
+
+<div class="wrap">
+  <div class="brand">
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#04121a" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 17l5-6 4 3 5-7 4 4"/><circle cx="8" cy="11" r="1.4" fill="#04121a"/>
+      </svg>
+    </div>
+    <div>
+      <div class="n">Supply<span>AI</span></div>
+      <div class="s">Almacén Matarani · TASA</div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="kicker">Plataforma interna</div>
+    <h1>Decisiones de almacén con datos, no con intuición.</h1>
+    <p>Dos módulos operativos sobre la misma base: uno organiza a la gente, el otro organiza el material. Elige por dónde empezar.</p>
+  </div>
+
+  <div class="grid">
+    <a class="mod mod-plan" href="rol-de-turnos.html">
+      <div class="ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+          <rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 3v3M16 3v3"/>
+          <path d="M8 14h3M13.5 14h2.5M8 17.5h5"/>
+        </svg>
+      </div>
+      <h2>Planificación Operativa</h2>
+      <p>Rol de turnos del personal: dos grupos de 12 horas de lunes a sábado y el relevo dominical de 18 horas. Rotación automática semana a semana.</p>
+      <div class="tags"><span class="tag">Turnos</span><span class="tag">Personal</span><span class="tag">Relevo 18 h</span></div>
+      <div class="go">Abrir módulo <span class="arrow">→</span></div>
+    </a>
+
+    <a class="mod mod-abas" href="abastecimiento.html">
+      <div class="ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 20V11m5 9V5m5 15v-6m5 6V8"/><path d="M2.5 20h19"/>
+        </svg>
+      </div>
+      <h2>Abastecimiento</h2>
+      <p>Motor de reposición sobre datos de SAP: stock de seguridad, punto de reorden y EOQ con estacionalidad, prioridades de compra e inmovilizados.</p>
+      <div class="tags"><span class="tag">SS · ROP · EOQ</span><span class="tag">Estacionalidad</span><span class="tag">Inmovilizados</span></div>
+      <div class="go">Abrir módulo <span class="arrow">→</span></div>
+    </a>
+  </div>
+
+  <div class="strip">
+    <span><b>Turno 1</b> 07:30 – 19:30</span>
+    <span><b>Turno 2</b> 19:30 – 07:30</span>
+    <span><b>Domingo</b> dos bloques de 18 h</span>
+    <span><b>Cobertura</b> 168 h por semana</span>
+  </div>
+
+  <footer>Uso interno · Almacén Matarani. Los datos se guardan en el navegador de cada usuario.</footer>
+</div>
+</html>
