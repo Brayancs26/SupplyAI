@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planificación Operativa — Supply AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e17; --panel:#111826; --panel-2:#0e141f; --panel-3:#0c1220;
+    --line:#1e293b; --line-soft:#172032;
+    --cyan:#22d3ee; --cyan-deep:#0e7490; --violet:#818cf8; --violet-deep:#3f3f8a;
+    --amber:#f59e0b; --red:#f87171;
+    --text:#e2e8f0; --muted:#8496ad; --dim:#5b6b81;
+    --head:"Poppins",-apple-system,system-ui,sans-serif;
+    --body:"Inter",-apple-system,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;
+    background-image:radial-gradient(900px 460px at 8% -12%,rgba(34,211,238,.09),transparent 60%),
+                     radial-gradient(700px 400px at 100% 0%,rgba(129,140,248,.08),transparent 60%);}
+  a{color:inherit;text-decoration:none}
+  .screen{max-width:1320px;margin:0 auto;padding:20px 16px 64px}
+  button,select,input{font-family:inherit}
+  button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+  /* cabecera */
+  .crumb{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--dim);margin-bottom:14px}
+  .crumb a:hover{color:var(--cyan)}
+  .crumb .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(145deg,var(--cyan),var(--cyan-deep));display:grid;place-items:center}
+  .crumb .mark svg{width:14px;height:14px}
+  .crumb b{font-family:var(--head);color:var(--text);font-weight:600}
+
+  .board{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .bar{padding:15px 18px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);
+    background:linear-gradient(100deg,rgba(34,211,238,.08),transparent 55%)}
+  .bar h1{margin:0;font-family:var(--head);font-weight:600;font-size:20px;letter-spacing:-.01em}
+  .bar .sub{font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--cyan);font-weight:600}
+  .bar .right{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .btn{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:7px 12px;font-size:13px;cursor:pointer}
+  .btn:hover{border-color:var(--cyan);color:var(--cyan)}
+  .btn-cyan{background:var(--cyan);border-color:var(--cyan);color:#04121a;font-weight:600}
+  .btn-cyan:hover{background:#67e8f9;color:#04121a}
+
+  .weekstrip{padding:10px 18px;display:flex;align-items:center;gap:11px;font-size:14px;border-bottom:1px solid var(--line);background:var(--panel-3)}
+  .cal{width:16px;height:16px;border:1.6px solid var(--cyan);border-radius:3px;position:relative}
+  .cal:before{content:"";position:absolute;left:0;right:0;top:2px;height:1.6px;background:var(--cyan)}
+  .weekstrip b{font-family:var(--head);font-weight:600}
+  .weekstrip span{color:var(--dim)}
+  .weekstrip .nav{margin-left:auto;display:flex;gap:6px}
+  .weekstrip .nav .btn{padding:4px 10px}
+
+  /* matriz */
+  .grid-scroll{overflow-x:auto}
+  .grid{min-width:1060px;display:grid;grid-template-columns:158px repeat(7,1fr);background:var(--line-soft);gap:1px;padding:1px}
+  .hcell{background:var(--panel-3);padding:10px;text-align:center}
+  .hcell .d{font-size:10.5px;text-transform:uppercase;letter-spacing:.16em;color:var(--dim)}
+  .hcell .n{font-family:var(--head);font-weight:600;font-size:14.5px;font-variant-numeric:tabular-nums;margin-top:2px}
+  .hcell.corner{background:#0b111d}
+  .hcell.hoy{box-shadow:inset 0 -2px 0 var(--cyan)}
+  .hcell.hoy .d,.hcell.hoy .n{color:var(--cyan)}
+
+  .rowlabel{display:flex;flex-direction:column;justify-content:center;padding:15px 13px}
+  .rowlabel.t1{background:linear-gradient(150deg,rgba(34,211,238,.20),rgba(14,116,144,.10));border-left:2px solid var(--cyan)}
+  .rowlabel.t2{background:linear-gradient(150deg,rgba(129,140,248,.20),rgba(63,63,138,.10));border-left:2px solid var(--violet)}
+  .rowlabel .t{font-family:var(--head);font-weight:600;font-size:17px;letter-spacing:-.01em}
+  .rowlabel .h{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px}
+  .rowlabel .g{margin-top:9px;font-size:10.5px;text-transform:uppercase;letter-spacing:.13em;align-self:flex-start;
+    padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--text)}
+  .rowlabel.t1 .g{background:rgba(34,211,238,.14);border-color:rgba(34,211,238,.4);color:var(--cyan)}
+  .rowlabel.t2 .g{background:rgba(129,140,248,.14);border-color:rgba(129,140,248,.4);color:var(--violet)}
+
+  .cell{background:rgba(34,211,238,.045);padding:7px;display:flex;flex-direction:column;gap:6px}
+  .cell.n2{background:rgba(129,140,248,.05)}
+  .cell.dom{background:rgba(245,158,11,.07)}
+  .cell .when{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--amber);font-weight:600}
+  .cell.libre{align-items:center;justify-content:center;text-align:center;color:var(--dim);font-size:11px;
+    text-transform:uppercase;letter-spacing:.14em;background:var(--panel-3)}
+
+  .person{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:8px;padding:5px 8px;
+    display:flex;align-items:center;gap:8px}
+  .av{flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#04121a;
+    font-size:11px;font-weight:700;overflow:hidden}
+  .av img{width:100%;height:100%;object-fit:cover;display:block}
+  .person .txt{min-width:0}
+  .person .nm{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .person .cg{font-size:10.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .legend{display:flex;justify-content:flex-end;gap:18px;flex-wrap:wrap;padding:11px 18px;font-size:12px;
+    color:var(--dim);border-top:1px solid var(--line);background:var(--panel-3)}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:6px}
+
+  h2.sec{font-family:var(--head);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.2em;
+    color:var(--dim);margin:30px 0 12px;display:flex;align-items:center;gap:12px}
+  h2.sec:after{content:"";flex:1;height:1px;background:var(--line-soft)}
+
+  .panel{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:12px}
+  .newform{padding:16px 18px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+  .field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:150px}
+  .field label{font-size:10.5px;text-transform:uppercase;letter-spacing:.13em;color:var(--dim)}
+  .field input,.field select{font-size:14px;border:1px solid var(--line);border-radius:8px;padding:9px 10px;
+    background:var(--panel-3);color:var(--text)}
+  .field input::placeholder{color:#4a5a70}
+  .field input:focus,.field select:focus{border-color:var(--cyan);outline:none}
+  .photo-pick{width:58px;height:58px;border-radius:50%;border:1.6px dashed var(--line);background:var(--panel-3);
+    display:grid;place-items:center;cursor:pointer;color:var(--dim);font-size:10px;text-align:center;overflow:hidden;padding:0;flex:0 0 auto}
+  .photo-pick img{width:100%;height:100%;object-fit:cover}
+  .photo-pick:hover{border-color:var(--cyan);color:var(--cyan)}
+  .hint{width:100%;font-size:12px;color:var(--dim);margin:2px 0 0}
+
+  .teams{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .team{padding:16px 18px}
+  .team header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .team h3{margin:0;font-family:var(--head);font-weight:600;font-size:16px}
+  .badge{font-size:10px;text-transform:uppercase;letter-spacing:.12em;padding:3px 9px;border-radius:999px;border:1px solid}
+  .badge.b1{color:var(--cyan);border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.12)}
+  .badge.b2{color:var(--violet);border-color:rgba(129,140,248,.4);background:rgba(129,140,248,.12)}
+  .count{margin-left:auto;font-size:12px;color:var(--dim)}
+  ul.rows{list-style:none;margin:0;padding:0}
+  ul.rows li{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line-soft)}
+  .avbtn{width:38px;height:38px;border-radius:50%;border:0;padding:0;cursor:pointer;overflow:hidden;position:relative;
+    flex:0 0 auto;display:grid;place-items:center;color:#04121a;font-weight:700;font-size:12px}
+  .avbtn img{width:100%;height:100%;object-fit:cover}
+  .avbtn:after{content:"Foto";position:absolute;inset:0;background:rgba(4,18,26,.78);color:var(--cyan);
+    font-size:9px;text-transform:uppercase;letter-spacing:.1em;display:grid;place-items:center;opacity:0;transition:opacity .15s}
+  .avbtn:hover:after,.avbtn:focus-visible:after{opacity:1}
+  .fields{flex:1;min-width:0;display:flex;gap:6px;flex-wrap:wrap}
+  .fields input{flex:1;min-width:90px;font-size:13px;border:1px solid transparent;background:transparent;
+    padding:5px 7px;border-radius:6px;color:var(--text)}
+  .fields input.cargo{font-size:12px;color:var(--muted)}
+  .fields input:hover{border-color:var(--line)}
+  .fields input:focus{border-color:var(--cyan);background:var(--panel-3);outline:none}
+  .mini{border:1px solid var(--line);background:transparent;border-radius:6px;font-size:11px;padding:5px 8px;
+    cursor:pointer;color:var(--dim);white-space:nowrap}
+  .mini:hover{border-color:var(--cyan);color:var(--cyan)}
+  .mini.danger:hover{border-color:var(--red);color:var(--red)}
+  .empty{color:var(--dim);font-size:13px;padding:8px 0}
+
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .kpi{padding:16px 18px}
+  .kpi .n{font-family:var(--head);font-weight:600;font-size:30px;font-variant-numeric:tabular-nums;line-height:1}
+  .kpi .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--dim);margin-top:6px}
+  .kpi .d{font-size:12px;color:var(--muted);margin-top:8px}
+
+  .foot{margin-top:26px;font-size:12px;color:var(--dim);line-height:1.6}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0f1b2a;border:1px solid var(--cyan);
+    color:var(--text);padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;
+    box-shadow:0 10px 30px rgba(0,0,0,.5)}
+  .toast.show{opacity:1}
+
+  @media (max-width:780px){ .teams,.kpis{grid-template-columns:1fr} .bar h1{font-size:17px} }
+  @media print{
+    body{background:#fff;color:#111;background-image:none}
+    .noprint{display:none!important}
+    .board,.panel{background:#fff;border-color:#ccc}
+    .grid{min-width:0}
+    .person .nm,.rowlabel .t,.hcell .n{color:#111}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+
+<div class="screen">
+  <div class="crumb noprint">
+    <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#04121a" stroke-width="2.3" stroke-linecap="round"><path d="M3 17l5-6 4 3 5-7 4 4"/></svg></div>
+    <a href="index.html"><b>Supply AI</b></a> <span>/</span> <span>Planificación Operativa</span>
+    <a href="index.html" class="btn" style="margin-left:auto">← Inicio</a>
+  </div>
+
+  <div class="board">
+    <div class="bar">
+      <div>
+        <div class="sub">Planificación Operativa</div>
+        <h1>Rol de turnos — Almacén Matarani</h1>
+      </div>
+      <div class="right noprint">
+        <button class="btn" id="swap">Invertir grupos</button>
+        <button class="btn" id="csv">CSV</button>
+        <button class="btn btn-cyan" id="print">Imprimir</button>
+      </div>
+    </div>
+
+    <div class="weekstrip">
+      <div class="cal" aria-hidden="true"></div>
+      <b id="wnum">Semana —</b><span id="wrange">—</span>
+      <div class="nav noprint">
+        <button class="btn" id="prev" title="Semana anterior">◀</button>
+        <button class="btn" id="today">Hoy</button>
+        <button class="btn" id="next" title="Semana siguiente">▶</button>
+      </div>
+    </div>
+
+    <div class="grid-scroll"><div class="grid" id="grid"></div></div>
+
+    <div class="legend">
+      <span><i style="background:var(--cyan)"></i>Turno 1 · 07:30–19:30</span>
+      <span><i style="background:var(--violet)"></i>Turno 2 · 19:30–07:30</span>
+      <span><i style="background:var(--amber)"></i>Relevo dominical de 18 h</span>
+    </div>
+  </div>
+
+  <h2 class="sec">Horas de la semana</h2>
+  <div class="kpis" id="kpis"></div>
+
+  <h2 class="sec noprint">Nuevo trabajador</h2>
+  <div class="panel newform noprint">
+    <button class="photo-pick" id="newPhoto" title="Elegir foto">Subir<br>foto</button>
+    <div class="field"><label for="nName">Nombre y apellido</label><input id="nName" placeholder="Ej. Ana Rodríguez"></div>
+    <div class="field"><label for="nCargo">Cargo</label><input id="nCargo" placeholder="Ej. Op. montacargas"></div>
+    <div class="field" style="flex:0 0 150px"><label for="nGroup">Grupo</label>
+      <select id="nGroup"><option value="A">Grupo A</option><option value="B">Grupo B</option></select></div>
+    <button class="btn btn-cyan" id="addWorker" style="padding:10px 16px">Agregar trabajador</button>
+    <p class="hint">La foto es opcional: se recorta en cuadrado y se comprime, así queda liviana. Sin foto se usan las iniciales.</p>
+  </div>
+
+  <h2 class="sec noprint">Trabajadores</h2>
+  <div class="teams noprint" id="teams"></div>
+
+  <div class="foot">
+    <p><strong>Rotación:</strong> el grupo de Turno 1 cierra la semana con el bloque del <strong>domingo 13:30 → lunes 07:30</strong> y luego pasa a Turno 2. El grupo de Turno 2 entra el <strong>sábado 19:30 y sale el domingo 13:30</strong>, descansa 18 h y arranca el lunes en Turno 1.</p>
+    <p id="saveState"></p>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" hidden>
+<div class="toast" id="toast"></div>
+
+<script>
+const DAYS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+const KEY="supplyai-turnos-v1";
+const AVC=["#22d3ee","#818cf8","#f59e0b","#34d399","#f472b6","#60a5fa","#a3e635","#fb923c"];
+let state={offset:0,weekStart:mondayOf(new Date()),people:[
+  {id:1,nombre:"Colaborador 1",cargo:"Op. montacargas",grupo:"A",foto:""},
+  {id:2,nombre:"Colaborador 2",cargo:"Almacenero",grupo:"A",foto:""},
+  {id:3,nombre:"Colaborador 3",cargo:"Estibador",grupo:"A",foto:""},
+  {id:4,nombre:"Colaborador 4",cargo:"Op. montacargas",grupo:"B",foto:""},
+  {id:5,nombre:"Colaborador 5",cargo:"Almacenero",grupo:"B",foto:""},
+  {id:6,nombre:"Colaborador 6",cargo:"Estibador",grupo:"B",foto:""}
+]};
+let newPhoto="";
+
+function mondayOf(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-((x.getDay()+6)%7));return x;}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
+function fmt(d){return d.toLocaleDateString("es-PE",{day:"2-digit",month:"short"}).replace(".","");}
+function sameDay(a,b){return a.toDateString()===b.toDateString();}
+function isoWeek(d){const t=new Date(d);t.setDate(t.getDate()+3-((t.getDay()+6)%7));const w1=new Date(t.getFullYear(),0,4);return 1+Math.round(((t-w1)/864e5-3+((w1.getDay()+6)%7))/7);}
+function weekIndex(d){return Math.round((d-new Date(2024,0,1))/(7*864e5));}
+function dayGroup(){return (weekIndex(state.weekStart)+state.offset)%2===0?"A":"B";}
+function nightGroup(){return dayGroup()==="A"?"B":"A";}
+function members(g){return state.people.filter(p=>p.grupo===g);}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");}
+function initials(n){const p=String(n||"?").trim().split(/\s+/);return ((p[0]||"?")[0]+(p[1]?p[1][0]:"")).toUpperCase();}
+function avColor(n){let h=0;for(const c of String(n))h=(h*31+c.charCodeAt(0))%997;return AVC[h%AVC.length];}
+function avInner(p){return p.foto?`<img src="${p.foto}" alt="">`:initials(p.nombre);}
+function cardHTML(p){return `<div class="person"><div class="av" style="background:${p.foto?"#1e293b":avColor(p.nombre||p.id)}">${avInner(p)}</div>
+  <div class="txt"><div class="nm">${esc(p.nombre)||"Sin nombre"}</div><div class="cg">${esc(p.cargo)}</div></div></div>`;}
+function groupCards(g){const m=members(g);return m.length?m.map(cardHTML).join(""):'<div style="color:var(--dim);font-size:11px;text-align:center;padding:12px 0;text-transform:uppercase;letter-spacing:.12em">Sin personal</div>';}
+
+function render(){
+  const ws=state.weekStart,D=dayGroup(),N=nightGroup(),hoy=new Date();
+  document.getElementById("wnum").textContent="Semana "+isoWeek(ws)+" · "+ws.getFullYear();
+  document.getElementById("wrange").textContent="("+fmt(ws)+" al "+fmt(addDays(ws,6))+" de "+ws.getFullYear()+")";
+
+  let g='<div class="hcell corner"></div>';
+  for(let i=0;i<7;i++){const d=addDays(ws,i);
+    g+=`<div class="hcell ${sameDay(d,hoy)?"hoy":""}"><div class="d">${DAYS[i]}</div><div class="n">${fmt(d)}</div></div>`;}
+  g+=`<div class="rowlabel t1"><div class="t">Turno 1</div><div class="h">07:30 – 19:30</div><div class="g">Grupo ${D}</div></div>`;
+  for(let i=0;i<6;i++) g+=`<div class="cell">${groupCards(D)}</div>`;
+  g+=`<div class="cell dom"><div class="when">Dom 13:30 → Lun 07:30 · 18 h</div>${groupCards(D)}</div>`;
+  g+=`<div class="rowlabel t2"><div class="t">Turno 2</div><div class="h">19:30 – 07:30</div><div class="g">Grupo ${N}</div></div>`;
+  for(let i=0;i<5;i++) g+=`<div class="cell n2">${groupCards(N)}</div>`;
+  g+=`<div class="cell dom"><div class="when">Sáb 19:30 → Dom 13:30 · 18 h</div>${groupCards(N)}</div>`;
+  g+=`<div class="cell libre">Descanso<br>hasta el lunes</div>`;
+  document.getElementById("grid").innerHTML=g;
+
+  document.getElementById("kpis").innerHTML=`
+    <div class="panel kpi"><div class="n" style="color:var(--cyan)">90 h</div><div class="l">Grupo ${D} · Turno 1</div>
+      <div class="d">72 h de lunes a sábado más el bloque dominical de 18 h. La próxima semana pasa a Turno 2.</div></div>
+    <div class="panel kpi"><div class="n" style="color:var(--violet)">78 h</div><div class="l">Grupo ${N} · Turno 2</div>
+      <div class="d">60 h de lunes a viernes más 18 h del sábado 19:30 al domingo 13:30, y descansa hasta el lunes.</div></div>
+    <div class="panel kpi"><div class="n">168 h</div><div class="l">Cobertura total</div>
+      <div class="d">Operación continua toda la semana, sin huecos ni traslapes entre grupos.</div></div>`;
+
+  document.getElementById("teams").innerHTML=["A","B"].map(gr=>{
+    const rol=gr===D?'<span class="badge b1">Turno 1 esta semana</span>':'<span class="badge b2">Turno 2 esta semana</span>';
+    const m=members(gr);
+    const list=m.length?m.map(p=>`<li>
+        <button class="avbtn" data-photo="${p.id}" style="background:${p.foto?"#1e293b":avColor(p.nombre||p.id)}" title="Cambiar foto">${avInner(p)}</button>
+        <div class="fields">
+          <input value="${esc(p.nombre)}" data-id="${p.id}" data-f="nombre" placeholder="Nombre y apellido">
+          <input class="cargo" value="${esc(p.cargo)}" data-id="${p.id}" data-f="cargo" placeholder="Cargo">
+        </div>
+        ${p.foto?`<button class="mini" data-nophoto="${p.id}">Quitar foto</button>`:""}
+        <button class="mini" data-move="${p.id}">→ Grupo ${gr==="A"?"B":"A"}</button>
+        <button class="mini danger" data-del="${p.id}">Eliminar</button></li>`).join("")
+      :'<div class="empty">Sin trabajadores en este grupo. Agrégalos desde el formulario de arriba.</div>';
+    return `<div class="panel team"><header><h3>Grupo ${gr}</h3>${rol}<span class="count">${m.length} ${m.length===1?"persona":"personas"}</span></header>
+      <ul class="rows">${list}</ul></div>`;
+  }).join("");
+  save();
+}
+
+function processImage(file){
+  return new Promise((res,rej)=>{
+    if(!file.type.startsWith("image/")) return rej(new Error("El archivo no es una imagen."));
+    const fr=new FileReader();
+    fr.onerror=()=>rej(new Error("No se pudo leer el archivo."));
+    fr.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>rej(new Error("La imagen está dañada o no es compatible."));
+      img.onload=()=>{
+        const S=160,c=document.createElement("canvas");c.width=c.height=S;
+        const ctx=c.getContext("2d"),side=Math.min(img.width,img.height);
+        ctx.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,S,S);
+        res(c.toDataURL("image/jpeg",.75));
+      };
+      img.src=fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+const fileInput=document.getElementById("fileInput");
+let photoTarget=null;
+function pickPhoto(t){photoTarget=t;fileInput.value="";fileInput.click();}
+fileInput.addEventListener("change",async()=>{
+  const f=fileInput.files[0];if(!f)return;
+  try{
+    const data=await processImage(f);
+    if(photoTarget==="new"){newPhoto=data;document.getElementById("newPhoto").innerHTML=`<img src="${data}" alt="">`;}
+    else{const p=state.people.find(p=>p.id==photoTarget);if(p){p.foto=data;render();toast("Foto actualizada.");}}
+  }catch(err){toast(err.message);}
+});
+document.getElementById("newPhoto").onclick=()=>pickPhoto("new");
+document.getElementById("addWorker").onclick=()=>{
+  const n=document.getElementById("nName"),c=document.getElementById("nCargo"),g=document.getElementById("nGroup");
+  if(!n.value.trim()){toast("Escribe el nombre del trabajador.");n.focus();return;}
+  state.people.push({id:Date.now(),nombre:n.value.trim(),cargo:c.value.trim(),grupo:g.value,foto:newPhoto});
+  n.value="";c.value="";newPhoto="";document.getElementById("newPhoto").innerHTML="Subir<br>foto";
+  render();toast("Trabajador agregado al grupo "+g.value+".");n.focus();
+};
+document.addEventListener("click",e=>{
+  const ph=e.target.closest("[data-photo]"),np=e.target.closest("[data-nophoto]"),
+        mv=e.target.closest("[data-move]"),dl=e.target.closest("[data-del]");
+  if(ph) pickPhoto(ph.dataset.photo);
+  if(np){const p=state.people.find(p=>p.id==np.dataset.nophoto);if(p){p.foto="";render();toast("Foto quitada.");}}
+  if(mv){const p=state.people.find(p=>p.id==mv.dataset.move);if(p){p.grupo=p.grupo==="A"?"B":"A";render();toast((p.nombre||"Trabajador")+" pasó al grupo "+p.grupo+".");}}
+  if(dl){const p=state.people.find(p=>p.id==dl.dataset.del);
+    if(p&&confirm("¿Eliminar a "+(p.nombre||"este trabajador")+" del rol?")){
+      state.people=state.people.filter(x=>x.id!=dl.dataset.del);render();toast("Trabajador eliminado.");}}
+});
+document.addEventListener("input",e=>{
+  const t=e.target;if(!t.dataset.f)return;
+  const p=state.people.find(p=>p.id==t.dataset.id);if(!p)return;
+  p[t.dataset.f]=t.value;save();
+});
+document.addEventListener("change",e=>{if(e.target.dataset.f)render();});
+["nName","nCargo"].forEach(id=>document.getElementById(id).addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("addWorker").click();}));
+
+document.getElementById("prev").onclick=()=>{state.weekStart=addDays(state.weekStart,-7);render();};
+document.getElementById("next").onclick=()=>{state.weekStart=addDays(state.weekStart,7);render();};
+document.getElementById("today").onclick=()=>{state.weekStart=mondayOf(new Date());render();};
+document.getElementById("swap").onclick=()=>{state.offset=(state.offset+1)%2;render();};
+document.getElementById("print").onclick=()=>window.print();
+document.getElementById("csv").onclick=()=>{
+  const ws=state.weekStart,D=dayGroup(),N=nightGroup(),rows=[["Dia","Fecha","Turno","Horario","Horas","Grupo","Personal"]];
+  const nm=g=>members(g).map(p=>p.nombre).join(" / ");
+  for(let i=0;i<6;i++) rows.push([DAYS[i],addDays(ws,i).toLocaleDateString("es-PE"),"Turno 1","07:30-19:30",12,D,nm(D)]);
+  for(let i=0;i<5;i++) rows.push([DAYS[i],addDays(ws,i).toLocaleDateString("es-PE"),"Turno 2","19:30-07:30",12,N,nm(N)]);
+  rows.push(["Sábado",addDays(ws,5).toLocaleDateString("es-PE"),"Turno 2 relevo largo","19:30-13:30 dom",18,N,nm(N)]);
+  rows.push(["Domingo",addDays(ws,6).toLocaleDateString("es-PE"),"Turno 1 relevo largo","13:30-07:30 lun",18,D,nm(D)]);
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(";")).join("\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv"}));
+  a.download="rol-turnos-S"+isoWeek(ws)+".csv";a.click();
+};
+
+let tt;
+function toast(t){const el=document.getElementById("toast");el.textContent=t;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),2600);}
+function msg(t){document.getElementById("saveState").textContent=t;}
+async function save(){
+  const data=JSON.stringify({offset:state.offset,people:state.people});
+  try{await window.storage.set(KEY,data);msg("Cambios guardados ("+(data.length/1024).toFixed(0)+" KB con fotos).");}
+  catch(err){
+    try{localStorage.setItem(KEY,data);msg("Cambios guardados en este navegador.");}
+    catch(e){msg("Los cambios se mantienen mientras esta ventana esté abierta.");}
+  }
+}
+(async function(){
+  let raw=null;
+  try{const r=await window.storage.get(KEY);raw=r&&r.value;}catch(e){}
+  if(!raw){try{raw=localStorage.getItem(KEY);}catch(e){}}
+  if(raw){try{const d=JSON.parse(raw);
+    if(d.people)state.people=d.people.map(p=>({foto:"",...p}));
+    if(typeof d.offset==="number")state.offset=d.offset;}catch(e){}}
+  render();
+})();
+</script>
+</html>
