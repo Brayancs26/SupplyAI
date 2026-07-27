@@ -247,6 +247,8 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
       clasificacion: m['Den.Clasificación'] || 'Sin Clasificar',
       unidadNegocio: m['Unidad de Negocio'] || 'Sin Asignar',
       unidadMedida: m['Unidad medida base'],
+      grupoArticulo: m['Grupo de artículos'],
+      denomGrupoArticulo: m['Denom.gr-artículos'] || '',
       leadTime: lt,
       temporadaObjetivo: tempObjetivo,
       stockFisico: mb52.stockFisico,
@@ -303,6 +305,117 @@ function serieMensualPorMaterial(consumoReal, material) {
     .map(([mes, total]) => ({ mes, total }));
 }
 
+/**
+ * Estadísticas de demanda diaria GENERALES (sin segmentar por temporada) —
+ * se usan para el coeficiente de variación del análisis XYZ, que mide
+ * variabilidad de la demanda a través de todo el período, no de una sola
+ * temporada.
+ */
+function calcularStatsGenerales(consumoReal, totalDias) {
+  const porDia = new Map();
+  for (const r of consumoReal) {
+    if (!porDia.has(r.material)) porDia.set(r.material, new Map());
+    const m = porDia.get(r.material);
+    m.set(r.fechaISO, (m.get(r.fechaISO) || 0) + r.demanda);
+  }
+
+  const resultado = new Map();
+  for (const [material, mapaFechas] of porDia.entries()) {
+    let suma = 0;
+    let sumaSq = 0;
+    let diasConConsumo = 0;
+    for (const demanda of mapaFechas.values()) {
+      suma += demanda;
+      sumaSq += demanda * demanda;
+      if (demanda > 0) diasConConsumo += 1;
+    }
+    const media = suma / totalDias;
+    let varianza = (sumaSq - totalDias * media * media) / Math.max(totalDias - 1, 1);
+    if (varianza < 0 || !isFinite(varianza)) varianza = 0;
+    resultado.set(material, { media, desvest: Math.sqrt(varianza), diasConConsumo });
+  }
+  return resultado;
+}
+
+/**
+ * Categoriza un material en Combustibles / Insumos / Otros a partir de su
+ * "Denom.gr-artículos" (grupo de artículos de SAP) — así el diesel/petróleo
+ * no distorsiona el ranking de valor de los repuestos e insumos de almacén.
+ */
+function categorizarMaterial(denomGrupoArticulo) {
+  const d = (denomGrupoArticulo || '').toUpperCase();
+  if (/PETROLEO|COMBUST|DIESEL|GAS/.test(d)) return 'Combustibles';
+  if (/INSUMO|QUIMIC|REACTIVO/.test(d)) return 'Insumos';
+  return 'Otros';
+}
+
+/**
+ * Clasificación ABC (por valor de consumo anual: costo unitario × demanda
+ * anual estimada) y XYZ (por coeficiente de variación de la demanda diaria,
+ * medido sobre todo el período — no por temporada).
+ *
+ * El ABC corre el Pareto POR SEPARADO dentro de cada categoría (Combustibles /
+ * Insumos / Otros), para que un material de muy alto valor (ej. diesel) no
+ * arrastre a todo lo demás a la categoría C solo por dominar el valor total.
+ *
+ * ABC: Pareto clásico 80/95 — A = primer 80% del valor acumulado DE SU
+ * CATEGORÍA, B = siguiente 15% (hasta 95%), C = el resto (incluye
+ * materiales sin costo unitario conocido).
+ *
+ * XYZ: X = CV ≤ 0.5 (demanda predecible), Y = 0.5–1.0 (variable),
+ * Z = CV > 1.0 (errática). N/D = menos de 5 días con consumo registrado.
+ */
+function calcularABCXYZ(calculados, statsGenerales) {
+  const conCategoria = calculados.map((m) => ({
+    ...m,
+    categoria: categorizarMaterial(m.denomGrupoArticulo),
+  }));
+
+  const valorPorMaterial = new Map();
+  conCategoria.forEach((m) => {
+    const valor = m.costoUnitario && m.demandaAnual ? m.costoUnitario * m.demandaAnual : 0;
+    valorPorMaterial.set(m.material, valor);
+  });
+
+  const claseABC = new Map();
+  const categorias = [...new Set(conCategoria.map((m) => m.categoria))];
+  categorias.forEach((cat) => {
+    const items = conCategoria.filter((m) => m.categoria === cat);
+    const ordenado = items
+      .map((m) => [m.material, valorPorMaterial.get(m.material)])
+      .sort((a, b) => b[1] - a[1]);
+    const totalValor = ordenado.reduce((acc, [, v]) => acc + v, 0) || 1;
+    let acumulado = 0;
+    for (const [material, valor] of ordenado) {
+      const pctAcumAntes = acumulado / totalValor;
+      let clase;
+      if (valor === 0) clase = 'C';
+      else if (pctAcumAntes < 0.8) clase = 'A';
+      else if (pctAcumAntes < 0.95) clase = 'B';
+      else clase = 'C';
+      claseABC.set(material, clase);
+      acumulado += valor;
+    }
+  });
+
+  const claseXYZ = new Map();
+  for (const [material, s] of statsGenerales.entries()) {
+    if (s.diasConConsumo < 5 || s.media <= 0) {
+      claseXYZ.set(material, 'N/D');
+      continue;
+    }
+    const cv = s.desvest / s.media;
+    claseXYZ.set(material, cv <= 0.5 ? 'X' : cv <= 1.0 ? 'Y' : 'Z');
+  }
+
+  return conCategoria.map((m) => ({
+    ...m,
+    valorConsumoAnual: valorPorMaterial.get(m.material) || 0,
+    claseABC: claseABC.get(m.material) || 'C',
+    claseXYZ: claseXYZ.get(m.material) || 'N/D',
+  }));
+}
+
 const SupplyEngine = {
   NOMBRES_MES,
   CODIGOS_CONSUMO,
@@ -317,6 +430,9 @@ const SupplyEngine = {
   calcularMateriales,
   calcularInmovilizados,
   serieMensualPorMaterial,
+  calcularStatsGenerales,
+  calcularABCXYZ,
+  categorizarMaterial,
   confianza,
 };
 
