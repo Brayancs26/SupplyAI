@@ -93,6 +93,7 @@
     <button class="tab-btn active" data-tab="resumen">Resumen</button>
     <button class="tab-btn" data-tab="estacionalidad">Estacionalidad</button>
     <button class="tab-btn" data-tab="materiales">Materiales</button>
+    <button class="tab-btn" data-tab="abcxyz">ABC-XYZ</button>
     <button class="tab-btn" data-tab="tendencia">Tendencia por Producto</button>
     <button class="tab-btn" data-tab="inmovilizados">Inmovilizados</button>
     <button class="tab-btn" data-tab="parametros">Parámetros</button>
@@ -209,6 +210,53 @@
               </tr>
             </thead>
             <tbody id="tabla-materiales-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== ABC-XYZ ===================== -->
+    <section id="tab-abcxyz" class="tab-panel">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Análisis ABC-XYZ</h2>
+          <p class="panel-sub">
+            <strong>ABC</strong> clasifica por valor de consumo anual (costo unitario × demanda anual): A = el 80% del valor, B = el siguiente 15%, C = el resto.
+            El Pareto se calcula <strong>por separado dentro de cada categoría</strong> (Combustibles / Insumos / Otros), para que un material de muy alto valor
+            como el diesel no arrastre a todo lo demás a C.
+            <strong>XYZ</strong> clasifica por variabilidad de la demanda diaria a lo largo de todo el período: X = predecible, Y = variable, Z = errática, N/D = muy pocos datos.
+            Haz clic en una celda para filtrar la tabla; clic de nuevo para quitar el filtro.
+          </p>
+        </div>
+        <div class="filtros" style="padding: 0 20px 16px;">
+          <label style="display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:var(--text-muted);">
+            Categoría
+            <select id="filtro-categoria-abcxyz">
+              <option value="TODAS">Todas las categorías</option>
+              <option value="Combustibles">Combustibles</option>
+              <option value="Insumos">Insumos</option>
+              <option value="Otros">Otros (repuestos, EPP, ferretería, etc.)</option>
+            </select>
+          </label>
+        </div>
+        <div id="grid-abcxyz" class="abcxyz-grid"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Materiales <span id="conteo-abcxyz" class="conteo-inline"></span></h2>
+          <p class="panel-sub">Ordenados por valor de consumo anual (mayor a menor).</p>
+        </div>
+        <div class="table-wrap tall">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th><th>Descripción</th><th>Grupo de artículo</th><th>Categoría</th>
+                <th class="num">Valor Consumo Anual</th><th>ABC</th><th>XYZ</th>
+                <th class="num">Stock Real</th><th>Riesgo</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-abcxyz-body"></tbody>
           </table>
         </div>
       </div>
