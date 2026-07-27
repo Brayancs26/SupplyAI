@@ -20,6 +20,9 @@ const state = {
   filtroTexto: '',
   filtroRiesgo: 'TODOS',
   filtroConfianza: 'TODAS',
+  filtroABC: 'TODAS',
+  filtroXYZ: 'TODAS',
+  filtroCategoria: 'TODAS',
 };
 
 const fmtNum = (n, dec = 1) =>
@@ -214,6 +217,9 @@ function calcularTodo() {
         hoyISO()
       );
 
+      const statsGenerales = SupplyEngine.calcularStatsGenerales(state.consumoReal, diasTemp.Alta + diasTemp.Media + diasTemp.Baja);
+      state.calculados = SupplyEngine.calcularABCXYZ(state.calculados, statsGenerales);
+
       mostrarDashboard();
       renderTodo();
     } catch (err) {
@@ -241,6 +247,7 @@ function renderTodo() {
   renderParametros();
   renderTablaMateriales();
   renderInmovilizados();
+  renderABCXYZ();
   poblarListaTendencia();
 }
 
@@ -373,6 +380,13 @@ function bindFormularios() {
   document.getElementById('buscar-tendencia').addEventListener('change', (e) => {
     mostrarTendenciaMaterial(e.target.value);
   });
+
+  document.getElementById('filtro-categoria-abcxyz').addEventListener('change', (e) => {
+    state.filtroCategoria = e.target.value;
+    state.filtroABC = 'TODAS';
+    state.filtroXYZ = 'TODAS';
+    renderABCXYZ();
+  });
 }
 
 function flashGuardado() {
@@ -470,6 +484,98 @@ function renderInmovilizados() {
     </tr>`
     )
     .join('');
+}
+
+// ---------------- ABC-XYZ ----------------
+const DESCRIPCION_CELDA = {
+  AX: 'Alto valor, demanda predecible — control estricto, SS ajustado',
+  AY: 'Alto valor, demanda variable — vigilar de cerca',
+  AZ: 'Alto valor, demanda errática — el mayor riesgo financiero',
+  BX: 'Valor medio, predecible — control estándar',
+  BY: 'Valor medio, variable — revisión periódica',
+  BZ: 'Valor medio, errático — considerar mayor SS',
+  CX: 'Bajo valor, predecible — control simple',
+  CY: 'Bajo valor, variable — bajo esfuerzo de gestión',
+  CZ: 'Bajo valor, errático — mínimo esfuerzo, aceptar quiebres ocasionales',
+};
+
+function renderABCXYZ() {
+  const filasABC = ['A', 'B', 'C'];
+  const colsXYZ = ['X', 'Y', 'Z', 'N/D'];
+
+  const base = state.filtroCategoria === 'TODAS'
+    ? state.calculados
+    : state.calculados.filter((m) => m.categoria === state.filtroCategoria);
+
+  const conteos = {};
+  filasABC.forEach((a) => colsXYZ.forEach((x) => (conteos[a + x] = 0)));
+  base.forEach((m) => {
+    const clave = m.claseABC + m.claseXYZ;
+    if (conteos[clave] !== undefined) conteos[clave]++;
+  });
+
+  const grid = document.getElementById('grid-abcxyz');
+  let html = '<div class="abcxyz-row abcxyz-header"><div></div>' +
+    colsXYZ.map((x) => `<div class="abcxyz-col-label">${x}</div>`).join('') + '</div>';
+  filasABC.forEach((a) => {
+    html += `<div class="abcxyz-row"><div class="abcxyz-row-label">${a}</div>`;
+    colsXYZ.forEach((x) => {
+      const clave = a + x;
+      const n = conteos[clave];
+      const activa = state.filtroABC === a && state.filtroXYZ === x;
+      html += `<button type="button" class="abcxyz-celda celda-${x === 'N/D' ? 'ND' : x} ${activa ? 'activa' : ''}" data-abc="${a}" data-xyz="${x}" title="${DESCRIPCION_CELDA[a + x] || ''}">
+        <span class="celda-valor">${n}</span>
+      </button>`;
+    });
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.abcxyz-celda').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const abc = btn.dataset.abc;
+      const xyz = btn.dataset.xyz;
+      if (state.filtroABC === abc && state.filtroXYZ === xyz) {
+        state.filtroABC = 'TODAS';
+        state.filtroXYZ = 'TODAS';
+      } else {
+        state.filtroABC = abc;
+        state.filtroXYZ = xyz;
+      }
+      renderABCXYZ();
+    });
+  });
+
+  let rows = base;
+  if (state.filtroABC !== 'TODAS') rows = rows.filter((m) => m.claseABC === state.filtroABC);
+  if (state.filtroXYZ !== 'TODAS') rows = rows.filter((m) => m.claseXYZ === state.filtroXYZ);
+  rows = [...rows].sort((a, b) => b.valorConsumoAnual - a.valorConsumoAnual);
+
+  document.getElementById('conteo-abcxyz').textContent =
+    state.filtroABC === 'TODAS' ? `${base.length} materiales` : `${rows.length} materiales en ${state.filtroABC}${state.filtroXYZ}`;
+
+  const tbody = document.getElementById('tabla-abcxyz-body');
+  const MAX_FILAS = 300;
+  tbody.innerHTML = rows
+    .slice(0, MAX_FILAS)
+    .map(
+      (m) => `<tr>
+      <td>${m.material}</td>
+      <td class="desc">${m.descripcion || ''}</td>
+      <td>${m.denomGrupoArticulo || ''}</td>
+      <td><span class="chip chip-cat-${m.categoria.toLowerCase()}">${m.categoria}</span></td>
+      <td class="num">${m.valorConsumoAnual > 0 ? fmtSoles(m.valorConsumoAnual) : '<span class="muted">—</span>'}</td>
+      <td><span class="chip chip-abc">${m.claseABC}</span></td>
+      <td><span class="chip chip-xyz-${m.claseXYZ === 'N/D' ? 'nd' : m.claseXYZ.toLowerCase()}">${m.claseXYZ}</span></td>
+      <td class="num">${fmtNum(m.stockFisico, 0)}</td>
+      <td>${riesgoChip(m.riesgo)}</td>
+    </tr>`
+    )
+    .join('');
+
+  if (rows.length > MAX_FILAS) {
+    tbody.innerHTML += `<tr><td colspan="9" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — filtra por celda o categoría para ver un grupo más chico.</td></tr>`;
+  }
 }
 
 // ---------------- TENDENCIA POR PRODUCTO ----------------
