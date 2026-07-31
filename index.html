@@ -1,128 +1,527 @@
 <!DOCTYPE html>
 <html lang="es">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Supply AI — TASA</title>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Abastecimiento L001 · Matarani</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#0a0e17; --panel:#111826; --panel-2:#0e141f;
-    --line:#1e293b; --line-soft:#172032;
-    --cyan:#22d3ee; --cyan-deep:#0e7490;
-    --violet:#818cf8; --amber:#f59e0b;
-    --text:#e2e8f0; --muted:#8496ad; --dim:#5b6b81;
-    --head:"Poppins",-apple-system,system-ui,sans-serif;
-    --body:"Inter",-apple-system,system-ui,sans-serif;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.5;
-    background-image:radial-gradient(900px 480px at 12% -10%,rgba(34,211,238,.10),transparent 60%),
-                     radial-gradient(760px 420px at 100% 0%,rgba(129,140,248,.09),transparent 60%);}
-  a{color:inherit;text-decoration:none}
-  .wrap{max-width:1080px;margin:0 auto;padding:38px 20px 70px}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="engine.js" defer></script>
+<script src="file-parser.js" defer></script>
+<script src="storage.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
 
-  /* marca */
-  .brand{display:flex;align-items:center;gap:13px}
-  .mark{width:40px;height:40px;border-radius:11px;background:linear-gradient(145deg,var(--cyan),var(--cyan-deep));
-    display:grid;place-items:center;box-shadow:0 0 26px rgba(34,211,238,.35)}
-  .mark svg{width:22px;height:22px}
-  .brand .n{font-family:var(--head);font-weight:700;font-size:21px;letter-spacing:-.01em}
-  .brand .n span{color:var(--cyan)}
-  .brand .s{font-size:11.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.2em;margin-top:1px}
-
-  .hero{margin:42px 0 8px;max-width:660px}
-  .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.24em;color:var(--cyan);font-weight:600}
-  .hero h1{font-family:var(--head);font-weight:600;font-size:36px;line-height:1.15;margin:12px 0 12px;letter-spacing:-.02em}
-  .hero p{color:var(--muted);margin:0;font-size:15.5px}
-
-  /* módulos */
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:34px}
-  .mod{position:relative;background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);
-    border-radius:14px;padding:22px 22px 20px;display:flex;flex-direction:column;gap:14px;min-height:238px;
-    transition:border-color .18s,transform .18s,box-shadow .18s;overflow:hidden}
-  .mod:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--accent);opacity:.75}
-  .mod:after{content:"";position:absolute;width:190px;height:190px;right:-70px;top:-70px;border-radius:50%;
-    background:var(--accent);opacity:.09;filter:blur(8px)}
-  .mod:hover,.mod:focus-visible{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 16px 40px rgba(0,0,0,.45);outline:none}
-  .ico{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;background:rgba(255,255,255,.045);
-    border:1px solid var(--line);color:var(--accent);position:relative;z-index:1}
-  .ico svg{width:22px;height:22px}
-  .mod h2{font-family:var(--head);font-weight:600;font-size:20px;margin:0;letter-spacing:-.01em;position:relative;z-index:1}
-  .mod p{margin:0;color:var(--muted);font-size:13.5px;position:relative;z-index:1}
-  .tags{display:flex;gap:7px;flex-wrap:wrap;position:relative;z-index:1}
-  .tag{font-size:10.5px;text-transform:uppercase;letter-spacing:.11em;color:var(--dim);
-    border:1px solid var(--line);border-radius:999px;padding:3px 9px}
-  .go{margin-top:auto;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--accent);
-    position:relative;z-index:1}
-  .go .arrow{transition:transform .18s}
-  .mod:hover .go .arrow{transform:translateX(4px)}
-
-  .mod-plan{--accent:var(--cyan)}
-  .mod-abas{--accent:var(--violet)}
-
-  /* pie */
-  .strip{margin-top:30px;display:flex;gap:26px;flex-wrap:wrap;padding-top:18px;border-top:1px solid var(--line-soft);
-    font-size:12.5px;color:var(--dim)}
-  .strip b{color:var(--muted);font-weight:600}
-  footer{margin-top:26px;font-size:12px;color:var(--dim)}
-  @media (max-width:720px){ .grid{grid-template-columns:1fr} .hero h1{font-size:28px} }
-</style>
-
-<div class="wrap">
-  <div class="brand">
-    <div class="mark" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#04121a" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 17l5-6 4 3 5-7 4 4"/><circle cx="8" cy="11" r="1.4" fill="#04121a"/>
-      </svg>
-    </div>
-    <div>
-      <div class="n">Supply<span>AI</span></div>
-      <div class="s">Almacén Matarani · TASA</div>
-    </div>
+<div id="loading-overlay" style="display:none">
+  <div class="loader-content">
+    <div class="pulse-dot"></div>
+    <p id="loading-msg">Calando datos…</p>
   </div>
-
-  <div class="hero">
-    <div class="kicker">Plataforma interna</div>
-    <h1>Decisiones de almacén con datos, no con intuición.</h1>
-    <p>Dos módulos operativos sobre la misma base: uno organiza a la gente, el otro organiza el material. Elige por dónde empezar.</p>
-  </div>
-
-  <div class="grid">
-    <a class="mod mod-plan" href="rol-de-turnos.html">
-      <div class="ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
-          <rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 3v3M16 3v3"/>
-          <path d="M8 14h3M13.5 14h2.5M8 17.5h5"/>
-        </svg>
-      </div>
-      <h2>Planificación Operativa</h2>
-      <p>Rol de turnos del personal: dos grupos de 12 horas de lunes a sábado y el relevo dominical de 18 horas. Rotación automática semana a semana.</p>
-      <div class="tags"><span class="tag">Turnos</span><span class="tag">Personal</span><span class="tag">Relevo 18 h</span></div>
-      <div class="go">Abrir módulo <span class="arrow">→</span></div>
-    </a>
-
-    <a class="mod mod-abas" href="abastecimiento.html">
-      <div class="ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 20V11m5 9V5m5 15v-6m5 6V8"/><path d="M2.5 20h19"/>
-        </svg>
-      </div>
-      <h2>Abastecimiento</h2>
-      <p>Motor de reposición sobre datos de SAP: stock de seguridad, punto de reorden y EOQ con estacionalidad, prioridades de compra e inmovilizados.</p>
-      <div class="tags"><span class="tag">SS · ROP · EOQ</span><span class="tag">Estacionalidad</span><span class="tag">Inmovilizados</span></div>
-      <div class="go">Abrir módulo <span class="arrow">→</span></div>
-    </a>
-  </div>
-
-  <div class="strip">
-    <span><b>Turno 1</b> 07:30 – 19:30</span>
-    <span><b>Turno 2</b> 19:30 – 07:30</span>
-    <span><b>Domingo</b> dos bloques de 18 h</span>
-    <span><b>Cobertura</b> 168 h por semana</span>
-  </div>
-
-  <footer>Uso interno · Almacén Matarani. Los datos se guardan en el navegador de cada usuario.</footer>
 </div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark">L001</span>
+      <div>
+        <h1>ABASTECIMIENTO <span class="accent">MATARANI</span></h1>
+        <p class="brand-sub">Estacional · SS · ROP · EOQ · Inmovilizados</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== PANTALLA DE CARGA ===================== -->
+<div id="pantalla-carga">
+  <div class="carga-inner">
+    <h2>Suelta tus 3 archivos de SAP</h2>
+    <p class="carga-sub">MRP, DATA (movimientos históricos) y MB52 (stock actual). Los detecto automáticamente, no importa el orden ni el nombre exacto del archivo.</p>
+
+    <div id="dropzone" class="dropzone">
+      <input type="file" id="file-input" multiple accept=".xlsx,.xls" hidden />
+      <div class="dropzone-icon">⇩</div>
+      <p class="dropzone-texto"><strong>Arrastra aquí</strong> tus archivos .xlsx, o haz clic para elegirlos</p>
+    </div>
+
+    <div class="chips-archivos">
+      <div class="chip-archivo" id="chip-MRP">
+        <div class="chip-texto">
+          <span class="chip-nombre">MRP</span>
+          <span class="chip-status">Esperando archivo…</span>
+        </div>
+        <button type="button" class="btn-reemplazar" data-tipo="MRP">Reemplazar</button>
+        <input type="file" class="input-individual" data-tipo="MRP" accept=".xlsx,.xls" hidden />
+      </div>
+      <div class="chip-archivo" id="chip-DATA">
+        <div class="chip-texto">
+          <span class="chip-nombre">DATA (movimientos)</span>
+          <span class="chip-status">Esperando archivo…</span>
+        </div>
+        <button type="button" class="btn-reemplazar" data-tipo="DATA">Reemplazar</button>
+        <input type="file" class="input-individual" data-tipo="DATA" accept=".xlsx,.xls" hidden />
+      </div>
+      <div class="chip-archivo" id="chip-MB52">
+        <div class="chip-texto">
+          <span class="chip-nombre">MB52 (stock)</span>
+          <span class="chip-status">Esperando archivo…</span>
+        </div>
+        <button type="button" class="btn-reemplazar" data-tipo="MB52">Reemplazar</button>
+        <input type="file" class="input-individual" data-tipo="MB52" accept=".xlsx,.xls" hidden />
+      </div>
+    </div>
+
+    <button type="button" id="btn-continuar" class="btn-continuar" disabled>Continuar con estos archivos</button>
+
+    <p id="aviso-archivos" class="aviso-archivos" style="display:none"></p>
+
+    <p class="carga-nota">
+      Todo se procesa en tu navegador — ningún archivo se sube a ningún servidor. Los archivos que sueltes
+      quedan guardados en este navegador para la próxima vez que abras la página; usa "Reemplazar" en
+      cualquiera de los tres si quieres cargar una versión nueva.
+    </p>
+    <button type="button" id="btn-borrar-cache" class="btn-texto">Borrar todos los datos guardados en este navegador</button>
+  </div>
+</div>
+
+<!-- ===================== DASHBOARD ===================== -->
+<div id="dashboard" style="display:none">
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="resumen">Resumen</button>
+    <button class="tab-btn" data-tab="planificados">Materiales Planificados</button>
+    <button class="tab-btn" data-tab="estacionalidad">Estacionalidad</button>
+    <button class="tab-btn" data-tab="materiales">Materiales</button>
+    <button class="tab-btn" data-tab="abcxyz">ABC-XYZ</button>
+    <button class="tab-btn" data-tab="traslados">Traslados</button>
+    <button class="tab-btn" data-tab="tendencia">Tendencia por Producto</button>
+    <button class="tab-btn" data-tab="inmovilizados">Inmovilizados</button>
+    <button class="tab-btn" data-tab="parametros">Parámetros</button>
+    <div class="tabs-acciones">
+      <button id="btn-exportar" class="btn-secundario">Exportar Excel</button>
+      <button id="btn-nuevos-archivos" class="btn-secundario">Cargar mis archivos</button>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- ===================== RESUMEN ===================== -->
+    <section id="tab-resumen" class="tab-panel active">
+      <p class="linea-temporada">Temporada vigente este mes: <span class="chip" id="temporada-actual">—</span></p>
+
+      <div class="resumen-top">
+        <div class="gauge-card">
+          <div class="gauge-wrap">
+            <div class="gauge" id="gauge-salud" style="--pct:0">
+              <div class="gauge-inner">
+                <span class="gauge-valor" id="gauge-valor">—</span>
+                <span class="gauge-label">Salud de abastecimiento</span>
+              </div>
+            </div>
+          </div>
+          <p class="gauge-nota">% de materiales en VERDE (stock por encima del punto de reorden)</p>
+        </div>
+
+        <div class="kpi-grid kpi-grid-resumen">
+          <div class="kpi-card">
+            <span class="kpi-label">Materiales analizados</span>
+            <span class="kpi-value" id="kpi-total">—</span>
+          </div>
+          <div class="kpi-card kpi-rojo">
+            <span class="kpi-label">Riesgo de quiebre</span>
+            <span class="kpi-value" id="kpi-rojo">—</span>
+          </div>
+          <div class="kpi-card kpi-amarillo">
+            <span class="kpi-label">A vigilar</span>
+            <span class="kpi-value" id="kpi-amarillo">—</span>
+          </div>
+          <div class="kpi-card kpi-verde">
+            <span class="kpi-label">OK</span>
+            <span class="kpi-value" id="kpi-verde">—</span>
+          </div>
+        </div>
+      </div>
+      <p class="confianza-linea">Confianza del dato histórico: <span id="kpi-confianza">—</span></p>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Top 25 prioritarios</h2>
+          <p class="panel-sub">Riesgo real de quiebre + historial de consumo confiable (Alta/Media), usando la demanda de la temporada objetivo de cada material según su lead time.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th><th>Descripción</th><th>Clasificación</th><th>Temp. Objetivo</th>
+                <th class="num">Stock Real</th><th class="num">ROP Calculado</th><th>Confianza</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-prioritarios-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== MATERIALES PLANIFICADOS ===================== -->
+    <section id="tab-planificados" class="tab-panel">
+      <div class="kpi-row-tag">
+        <div class="tag-label">KPIs<br />Generales</div>
+        <div class="kpi-grid-inline">
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-plan-total">—</span>
+            <span class="kpi-label">Materiales Planificados</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-plan-reclasificados">—</span>
+            <span class="kpi-label">Reclasificados desde Uso Inmediato</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-plan-stock">—</span>
+            <span class="kpi-label">% con Stock Disponible</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-plan-estrategicos">—</span>
+            <span class="kpi-label">% Estratégicos</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-row-tag">
+        <div class="tag-label tag-amarilla">Sin<br />Tratamiento</div>
+        <div class="kpi-grid-inline">
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-sintrat-total">—</span>
+            <span class="kpi-label">Materiales sin SS/ROP definido en SAP</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-sintrat-altabaja">—</span>
+            <span class="kpi-label">De ellos, Alta o Baja Rotación</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value kpi-value-alerta" id="kpi-sintrat-pct">—</span>
+            <span class="kpi-label">% de planificados sin tratamiento</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Qué queda fuera de la planificación, y por qué</h2>
+          <p class="panel-sub">Inactivo y Producción no entran a este cálculo. Uso Inmediato se revisa material por material contra su histórico real.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Motivo</th><th class="num">Materiales</th></tr></thead>
+            <tbody id="tabla-exclusiones-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Reclasificación de materiales "Uso Inmediato"</h2>
+          <p class="panel-sub">Materiales que SAP marcó como Uso Inmediato (compra solo por reserva), pero que su histórico de movimientos muestra un patrón de consumo regular — se reclasificaron y ya llevan SS/ROP calculado.</p>
+        </div>
+        <div class="table-wrap tall">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th><th>Descripción</th><th>Nueva Clasificación</th>
+                <th class="num">Meses con consumo</th><th class="num">Stock Real</th><th>Riesgo</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-reclasificados-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== ESTACIONALIDAD ===================== -->
+    <section id="tab-estacionalidad" class="tab-panel">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Índice de estacionalidad — derivado de tus datos</h2>
+          <p class="panel-sub">Consumo promedio de cada mes-calendario (a través de todos los años en tus archivos) vs. el promedio general. Rango analizado: <span id="rango-fechas">—</span></p>
+        </div>
+        <div id="grafico-estacional" class="grafico-estacional"></div>
+        <p class="leyenda-estacional">
+          <span class="leyenda-item"><span class="dot dot-roja"></span> Alta</span>
+          <span class="leyenda-item"><span class="dot dot-amarilla"></span> Media</span>
+          <span class="leyenda-item"><span class="dot dot-verde"></span> Baja</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ===================== MATERIALES ===================== -->
+    <section id="tab-materiales" class="tab-panel">
+      <div class="filtros">
+        <input type="text" id="buscar-material" placeholder="Buscar por código o descripción…" />
+        <select id="filtro-riesgo">
+          <option value="TODOS">Todos los riesgos</option>
+          <option value="ROJO">Riesgo de quiebre</option>
+          <option value="AMARILLO">Vigilar</option>
+          <option value="VERDE">OK</option>
+        </select>
+        <select id="filtro-confianza">
+          <option value="TODAS">Toda confianza</option>
+          <option value="Alta">Alta</option>
+          <option value="Media">Media</option>
+          <option value="Baja">Baja</option>
+          <option value="Sin datos">Sin datos</option>
+        </select>
+        <select id="filtro-tratamiento">
+          <option value="TODOS">Planificados y excluidos</option>
+          <option value="PLANIFICADOS">Solo planificados</option>
+          <option value="EXCLUIDOS">Solo excluidos</option>
+        </select>
+        <span class="conteo" id="conteo-materiales"></span>
+      </div>
+      <div class="panel">
+        <div class="table-wrap tall">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th><th>Descripción</th><th>Clasif. SAP</th><th>Clasif. Final</th><th>Temp.</th>
+                <th class="num">LT (días)</th><th class="num">Stock Real</th>
+                <th class="num">SS SAP</th><th class="num">SS Calc.</th>
+                <th class="num">ROP SAP</th><th class="num">ROP Calc.</th>
+                <th>Confianza</th><th>Últ. Movimiento</th><th class="num">Costo Unit.</th><th class="num">EOQ</th><th>Riesgo</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-materiales-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== ABC-XYZ ===================== -->
+    <section id="tab-abcxyz" class="tab-panel">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Análisis ABC-XYZ</h2>
+          <p class="panel-sub">
+            <strong>ABC</strong> clasifica por valor de consumo anual (costo unitario × demanda anual): A = el 80% del valor, B = el siguiente 15%, C = el resto.
+            El Pareto se calcula <strong>por separado dentro de cada categoría</strong> (Combustibles / Insumos / Otros), para que un material de muy alto valor
+            como el diesel no arrastre a todo lo demás a C.
+            <strong>XYZ</strong> clasifica por variabilidad de la demanda diaria a lo largo de todo el período: X = predecible, Y = variable, Z = errática, N/D = muy pocos datos.
+            Haz clic en una celda para filtrar la tabla; clic de nuevo para quitar el filtro.
+          </p>
+        </div>
+        <div class="filtros" style="padding: 0 20px 16px;">
+          <label style="display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:var(--text-muted);">
+            Categoría
+            <select id="filtro-categoria-abcxyz">
+              <option value="TODAS">Todas las categorías</option>
+              <option value="Combustibles">Combustibles</option>
+              <option value="Insumos">Insumos</option>
+              <option value="Otros">Otros (repuestos, EPP, ferretería, etc.)</option>
+            </select>
+          </label>
+        </div>
+        <div id="grid-abcxyz" class="abcxyz-grid"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Materiales <span id="conteo-abcxyz" class="conteo-inline"></span></h2>
+          <p class="panel-sub">Ordenados por valor de consumo anual (mayor a menor).</p>
+        </div>
+        <div class="table-wrap tall">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th><th>Descripción</th><th>Grupo de artículo</th><th>Categoría</th>
+                <th class="num">Valor Consumo Anual</th><th>ABC</th><th>XYZ</th>
+                <th class="num">Stock Real</th><th>Riesgo</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-abcxyz-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== TRASLADOS ===================== -->
+    <section id="tab-traslados" class="tab-panel">
+      <div class="kpi-row-tag">
+        <div class="tag-label">Monitor de<br />Traslados</div>
+        <div class="kpi-grid-inline">
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-trasl-necesidad">—</span>
+            <span class="kpi-label">Materiales con necesidad (stock &lt; ROP)</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-trasl-candidatos">—</span>
+            <span class="kpi-label">Candidatos a traslado (hay stock en otro almacén)</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-trasl-pct">—</span>
+            <span class="kpi-label">% de la necesidad cubrible por traslado</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-trasl-unidades">—</span>
+            <span class="kpi-label">Unidades disponibles en otros almacenes</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Monitor de stock disponible para traslado <span id="conteo-traslados" class="conteo-inline"></span></h2>
+          <p class="panel-sub">
+            Cruza tu necesidad en L001 (ROP calculado − stock real) contra el stock libre que ya existe en
+            los otros almacenes de tu MB52 (L002, L003, L004, L005, L008, L010, PI01, PI04, PI05, Q001, SINI,
+            C001, TK02, CL01, CH01). Si hay stock en otro lado, capaz no haga falta comprar — se puede trasladar.
+          </p>
+        </div>
+        <div class="table-wrap tall">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th><th>Descripción</th>
+                <th class="num">Necesidad L001</th><th class="num">Stock L001</th>
+                <th class="num">Stock Otros Almacenes</th><th>Detalle por almacén</th><th>Riesgo</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-traslados-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== TENDENCIA POR PRODUCTO ===================== -->
+    <section id="tab-tendencia" class="tab-panel">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Tendencia de consumo por producto</h2>
+          <p class="panel-sub">Elige un material para ver su historial de consumo real mes a mes.</p>
+        </div>
+        <div class="buscador-tendencia">
+          <input type="text" id="buscar-tendencia" list="lista-materiales-tendencia" placeholder="Busca por código o descripción…" />
+          <datalist id="lista-materiales-tendencia"></datalist>
+        </div>
+        <div id="tendencia-vacio" class="tendencia-vacio">Selecciona un material para ver su tendencia.</div>
+        <div id="tendencia-contenido" style="display:none">
+          <div class="tendencia-info">
+            <div>
+              <span class="tendencia-material" id="tendencia-material-nombre">—</span>
+              <span class="tendencia-material-clasif" id="tendencia-material-clasif">—</span>
+            </div>
+            <div class="tendencia-stats">
+              <div><span class="stat-label">Total período</span><span class="stat-valor" id="tendencia-total">—</span></div>
+              <div><span class="stat-label">Promedio mensual</span><span class="stat-valor" id="tendencia-promedio">—</span></div>
+              <div><span class="stat-label">Mes pico</span><span class="stat-valor" id="tendencia-pico">—</span></div>
+              <div><span class="stat-label">Mes valle</span><span class="stat-valor" id="tendencia-valle">—</span></div>
+            </div>
+          </div>
+          <div id="tendencia-grafico" class="tendencia-grafico"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== INMOVILIZADOS ===================== -->
+    <section id="tab-inmovilizados" class="tab-panel">
+      <div class="panel umbrales">
+        <label>Umbral moderado (días sin consumo)
+          <input type="number" id="umbral-moderado" value="180" min="30" step="10" />
+        </label>
+        <label>Umbral crítico (días sin consumo)
+          <input type="number" id="umbral-critico" value="365" min="60" step="10" />
+        </label>
+        <label>Antigüedad mínima
+          <select id="filtro-antiguedad-inmov">
+            <option value="0">Todos</option>
+            <option value="180">Más de 6 meses</option>
+            <option value="365">Más de 1 año</option>
+            <option value="730">Más de 2 años</option>
+            <option value="1095">Más de 3 años</option>
+          </select>
+        </label>
+        <label>Valor mínimo
+          <select id="filtro-valor-inmov">
+            <option value="0">Todos</option>
+            <option value="1000">Mayor a S/. 1,000</option>
+            <option value="2000">Mayor a S/. 2,000</option>
+            <option value="5000">Mayor a S/. 5,000</option>
+          </select>
+        </label>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">Materiales inmovilizados</span>
+          <span class="kpi-value" id="kpi-inmov-total">—</span>
+        </div>
+        <div class="kpi-card kpi-rojo">
+          <span class="kpi-label">Crítico</span>
+          <span class="kpi-value" id="kpi-inmov-critico">—</span>
+        </div>
+        <div class="kpi-card kpi-amarillo">
+          <span class="kpi-label">Moderado</span>
+          <span class="kpi-value" id="kpi-inmov-moderado">—</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Valor estimado inmovilizado</span>
+          <span class="kpi-value kpi-value-small" id="kpi-inmov-valor">—</span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Materiales con stock físico y sin consumo real reciente <span id="conteo-inmov" class="conteo-inline"></span></h2>
+          <p class="panel-sub">Costo unitario y fecha de vencimiento ya vienen de MB52 (ponderado por lote / lote más próximo a vencer) — no hace falta cargarlo a mano.</p>
+        </div>
+        <div class="table-wrap tall">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th><th>Descripción</th><th>Clasif.</th>
+                <th class="num">Stock Real</th><th class="num">Días sin mov.</th>
+                <th>Último consumo</th><th>Vencimiento</th><th>Severidad</th><th class="num">Valor</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-inmovilizados-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PARAMETROS ===================== -->
+    <section id="tab-parametros" class="tab-panel">
+      <div class="panel panel-form">
+        <div class="panel-header">
+          <h2>Parámetros del modelo</h2>
+          <p class="panel-sub">Se guardan en este navegador. Al guardar, se vuelve a calcular todo automáticamente.</p>
+        </div>
+        <form id="form-parametros">
+          <label>Nivel de servicio — Z
+            <input type="number" id="input-z" step="0.001" />
+            <span class="hint">1.645 ≈ 95% · 1.881 ≈ 97% · 2.05 ≈ 98%</span>
+          </label>
+          <label>Costo de ordenar S (S/. por orden)
+            <input type="number" id="input-s" step="1" />
+          </label>
+          <label>Costo de mantener H (% anual)
+            <input type="number" id="input-h" step="0.5" />
+          </label>
+          <label>Umbral Temporada Alta (índice ≥)
+            <input type="number" id="input-umbral-alta" step="0.05" />
+          </label>
+          <label>Umbral Temporada Baja (índice &lt;)
+            <input type="number" id="input-umbral-baja" step="0.05" />
+          </label>
+          <button type="submit">Guardar y recalcular</button>
+          <span class="guardado-msg" id="guardado-msg">Guardado ✓</span>
+        </form>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  Almacén L001 (Matarani) · Todo el cálculo corre en tu navegador, ningún dato sale de tu equipo
+</footer>
+
+</body>
 </html>
