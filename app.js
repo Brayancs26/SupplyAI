@@ -14,6 +14,7 @@ const state = {
   statsPorTemporada: null,
   mb52Map: null,
   calculados: [],
+  planificados: [],
   params: { Z: 1.645, S: 50, H: 0.2, diasAnio: 365 },
   umbralAlta: 1.3,
   umbralBaja: 0.5,
@@ -23,6 +24,7 @@ const state = {
   filtroABC: 'TODAS',
   filtroXYZ: 'TODAS',
   filtroCategoria: 'TODAS',
+  filtroTratamiento: 'TODOS',
 };
 
 const fmtNum = (n, dec = 1) =>
@@ -208,17 +210,25 @@ function calcularTodo() {
       state.statsPorTemporada = SupplyEngine.calcularStatsPorTemporada(state.consumoReal, state.mesATemporada, diasTemp);
       state.mb52Map = SupplyEngine.agregarMB52(mb52Rows, ALMACEN);
 
+      const movClasificacionMap = SupplyEngine.calcularClasificacionMovimiento(state.consumoReal, state.fechaMin, state.fechaMax);
+
       state.calculados = SupplyEngine.calcularMateriales(
         mrpRows,
         state.statsPorTemporada,
         state.mesATemporada,
         state.mb52Map,
         state.params,
-        hoyISO()
+        hoyISO(),
+        movClasificacionMap
       );
 
-      const statsGenerales = SupplyEngine.calcularStatsGenerales(state.consumoReal, diasTemp.Alta + diasTemp.Media + diasTemp.Baja);
-      state.calculados = SupplyEngine.calcularABCXYZ(state.calculados, statsGenerales);
+      state.planificados = state.calculados.filter((m) => m.incluidoEnPlanificacion);
+
+      const statsMensuales = SupplyEngine.calcularStatsMensualesGenerales(state.consumoReal, state.fechaMin, state.fechaMax);
+      state.planificados = SupplyEngine.calcularABCXYZ(state.planificados, statsMensuales);
+
+      const stockTodosAlmacenes = SupplyEngine.agregarStockPorAlmacenTodos(mb52Rows);
+      state.planificados = SupplyEngine.enriquecerConTraslados(state.planificados, stockTodosAlmacenes, ALMACEN);
 
       mostrarDashboard();
       renderTodo();
@@ -243,11 +253,13 @@ function mostrarDashboard() {
 
 function renderTodo() {
   renderResumen();
+  renderMaterialesPlanificados();
   renderEstacionalidad();
   renderParametros();
   renderTablaMateriales();
   renderInmovilizados();
   renderABCXYZ();
+  renderTraslados();
   poblarListaTendencia();
 }
 
@@ -265,14 +277,14 @@ function bindTabs() {
 
 // ---------------- RESUMEN ----------------
 function renderResumen() {
-  const total = state.calculados.length;
-  const rojo = state.calculados.filter((m) => m.riesgo === 'ROJO').length;
-  const amarillo = state.calculados.filter((m) => m.riesgo === 'AMARILLO').length;
-  const verde = state.calculados.filter((m) => m.riesgo === 'VERDE').length;
-  const alta = state.calculados.filter((m) => m.confianza === 'Alta').length;
-  const media = state.calculados.filter((m) => m.confianza === 'Media').length;
-  const baja = state.calculados.filter((m) => m.confianza === 'Baja').length;
-  const sinDatos = state.calculados.filter((m) => m.confianza === 'Sin datos').length;
+  const total = state.planificados.length;
+  const rojo = state.planificados.filter((m) => m.riesgo === 'ROJO').length;
+  const amarillo = state.planificados.filter((m) => m.riesgo === 'AMARILLO').length;
+  const verde = state.planificados.filter((m) => m.riesgo === 'VERDE').length;
+  const alta = state.planificados.filter((m) => m.confianza === 'Alta').length;
+  const media = state.planificados.filter((m) => m.confianza === 'Media').length;
+  const baja = state.planificados.filter((m) => m.confianza === 'Baja').length;
+  const sinDatos = state.planificados.filter((m) => m.confianza === 'Sin datos').length;
 
   document.getElementById('kpi-total').textContent = total;
   document.getElementById('kpi-rojo').textContent = rojo;
@@ -291,7 +303,7 @@ function renderResumen() {
   document.getElementById('temporada-actual').textContent = tempHoy;
   document.getElementById('temporada-actual').className = 'chip chip-' + (tempHoy === 'Alta' ? 'roja' : tempHoy === 'Media' ? 'amarilla' : 'verde');
 
-  const prioritarios = state.calculados
+  const prioritarios = state.planificados
     .filter((m) => m.riesgo === 'ROJO' && (m.confianza === 'Alta' || m.confianza === 'Media'))
     .sort((a, b) => (b.ropCalculado - b.stockFisico) - (a.ropCalculado - a.stockFisico))
     .slice(0, 25);
@@ -366,9 +378,15 @@ function bindFormularios() {
     state.filtroConfianza = e.target.value;
     renderTablaMateriales();
   });
+  document.getElementById('filtro-tratamiento').addEventListener('change', (e) => {
+    state.filtroTratamiento = e.target.value;
+    renderTablaMateriales();
+  });
 
   document.getElementById('umbral-moderado').addEventListener('change', renderInmovilizados);
   document.getElementById('umbral-critico').addEventListener('change', renderInmovilizados);
+  document.getElementById('filtro-antiguedad-inmov').addEventListener('change', renderInmovilizados);
+  document.getElementById('filtro-valor-inmov').addEventListener('change', renderInmovilizados);
 
   document.getElementById('btn-nuevos-archivos').addEventListener('click', () => {
     document.getElementById('dashboard').style.display = 'none';
@@ -397,9 +415,9 @@ function flashGuardado() {
 
 // ---------------- TABLA MATERIALES ----------------
 function riesgoChip(r) {
-  const map = { ROJO: 'roja', AMARILLO: 'amarilla', VERDE: 'verde' };
-  const label = { ROJO: 'Riesgo de quiebre', AMARILLO: 'Vigilar', VERDE: 'OK' };
-  return `<span class="chip chip-${map[r]}">${label[r]}</span>`;
+  const map = { ROJO: 'roja', AMARILLO: 'amarilla', VERDE: 'verde', 'N/A': 'nd' };
+  const label = { ROJO: 'Riesgo de quiebre', AMARILLO: 'Vigilar', VERDE: 'OK', 'N/A': 'No planificado' };
+  return `<span class="chip chip-${map[r] || 'nd'}">${label[r] || r}</span>`;
 }
 function confianzaChip(c) {
   const map = { Alta: 'alta', Media: 'media', Baja: 'baja', 'Sin datos': 'sindatos' };
@@ -417,6 +435,8 @@ function renderTablaMateriales() {
   }
   if (state.filtroRiesgo !== 'TODOS') rows = rows.filter((m) => m.riesgo === state.filtroRiesgo);
   if (state.filtroConfianza !== 'TODAS') rows = rows.filter((m) => m.confianza === state.filtroConfianza);
+  if (state.filtroTratamiento === 'PLANIFICADOS') rows = rows.filter((m) => m.incluidoEnPlanificacion);
+  if (state.filtroTratamiento === 'EXCLUIDOS') rows = rows.filter((m) => !m.incluidoEnPlanificacion);
 
   document.getElementById('conteo-materiales').textContent = `${rows.length} de ${state.calculados.length} materiales`;
 
@@ -429,6 +449,7 @@ function renderTablaMateriales() {
       <td>${m.material}</td>
       <td class="desc">${m.descripcion || ''}</td>
       <td>${m.clasificacion}</td>
+      <td>${m.clasificacionFinal}${m.reclasificadoDesdeUIN ? ' <span class="chip chip-reclasificado">reclasificado</span>' : ''}</td>
       <td>${m.temporadaObjetivo}</td>
       <td class="num">${fmtNum(m.leadTime, 0)}</td>
       <td class="num">${fmtNum(m.stockFisico, 0)}</td>
@@ -446,7 +467,7 @@ function renderTablaMateriales() {
     .join('');
 
   if (rows.length > MAX_FILAS) {
-    tbody.innerHTML += `<tr><td colspan="15" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — afina el filtro para ver más.</td></tr>`;
+    tbody.innerHTML += `<tr><td colspan="16" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — afina el filtro para ver más.</td></tr>`;
   }
 }
 
@@ -454,10 +475,16 @@ function renderTablaMateriales() {
 function renderInmovilizados() {
   const umbralMod = Number(document.getElementById('umbral-moderado').value || 180);
   const umbralCrit = Number(document.getElementById('umbral-critico').value || 365);
+  const antiguedadMin = Number(document.getElementById('filtro-antiguedad-inmov').value || 0);
+  const valorMin = Number(document.getElementById('filtro-valor-inmov').value || 0);
   const totalDiasObs = SupplyEngine.diasPorTemporada
     ? Object.values(SupplyEngine.diasPorTemporada(state.fechaMin, state.fechaMax, state.mesATemporada)).reduce((a, b) => a + b, 0)
     : 0;
-  const inmov = SupplyEngine.calcularInmovilizados(state.calculados, umbralMod, umbralCrit, totalDiasObs);
+  let inmov = SupplyEngine.calcularInmovilizados(state.calculados, umbralMod, umbralCrit, totalDiasObs);
+
+  const totalSinFiltrar = inmov.length;
+  if (antiguedadMin > 0) inmov = inmov.filter((m) => m.diasSinMovimientoEfectivo >= antiguedadMin);
+  if (valorMin > 0) inmov = inmov.filter((m) => (m.valorInmovilizado || 0) >= valorMin);
 
   const criticos = inmov.filter((m) => m.severidadInmovilizado === 'Crítico');
   const moderados = inmov.filter((m) => m.severidadInmovilizado === 'Moderado');
@@ -468,6 +495,7 @@ function renderInmovilizados() {
   document.getElementById('kpi-inmov-critico').textContent = criticos.length;
   document.getElementById('kpi-inmov-moderado').textContent = moderados.length;
   document.getElementById('kpi-inmov-valor').textContent = fmtSoles(valorTotal) + ` (${conValor} con costo)`;
+  document.getElementById('conteo-inmov').textContent = `${inmov.length} de ${totalSinFiltrar}`;
 
   const tbody = document.getElementById('tabla-inmovilizados-body');
   tbody.innerHTML = inmov
@@ -479,6 +507,7 @@ function renderInmovilizados() {
       <td class="num">${fmtNum(m.stockFisico, 0)}</td>
       <td class="num">${m.diasSinMovimientoEfectivo}</td>
       <td>${m.ultimaFechaConsumo || '<span class="muted">sin consumo en el período</span>'}</td>
+      <td>${m.fechaVencimiento || '<span class="muted">sin vencimiento</span>'}</td>
       <td><span class="chip chip-${m.severidadInmovilizado === 'Crítico' ? 'roja' : 'amarilla'}">${m.severidadInmovilizado}</span></td>
       <td class="num">${m.valorInmovilizado !== null ? fmtSoles(m.valorInmovilizado) : '<span class="muted">—</span>'}</td>
     </tr>`
@@ -504,8 +533,8 @@ function renderABCXYZ() {
   const colsXYZ = ['X', 'Y', 'Z', 'N/D'];
 
   const base = state.filtroCategoria === 'TODAS'
-    ? state.calculados
-    : state.calculados.filter((m) => m.categoria === state.filtroCategoria);
+    ? state.planificados
+    : state.planificados.filter((m) => m.categoria === state.filtroCategoria);
 
   const conteos = {};
   filasABC.forEach((a) => colsXYZ.forEach((x) => (conteos[a + x] = 0)));
@@ -576,6 +605,92 @@ function renderABCXYZ() {
   if (rows.length > MAX_FILAS) {
     tbody.innerHTML += `<tr><td colspan="9" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — filtra por celda o categoría para ver un grupo más chico.</td></tr>`;
   }
+}
+
+// ---------------- TRASLADOS ----------------
+function renderTraslados() {
+  const conNecesidad = state.planificados.filter((m) => m.necesidad > 0);
+  const candidatos = conNecesidad.filter((m) => m.stockOtrosAlmacenes > 0);
+  const pctCubierto = conNecesidad.length > 0 ? Math.round((candidatos.length / conNecesidad.length) * 100) : 0;
+  const unidadesDisponibles = candidatos.reduce((acc, m) => acc + Math.min(m.necesidad, m.stockOtrosAlmacenes), 0);
+
+  document.getElementById('kpi-trasl-necesidad').textContent = conNecesidad.length;
+  document.getElementById('kpi-trasl-candidatos').textContent = candidatos.length;
+  document.getElementById('kpi-trasl-pct').textContent = `${pctCubierto}%`;
+  document.getElementById('kpi-trasl-unidades').textContent = fmtNum(unidadesDisponibles, 0);
+
+  const ordenado = [...candidatos].sort((a, b) => b.necesidad - a.necesidad);
+  const tbody = document.getElementById('tabla-traslados-body');
+  const MAX_FILAS = 300;
+  tbody.innerHTML = ordenado
+    .slice(0, MAX_FILAS)
+    .map((m) => {
+      const detalle = m.detalleOtrosAlmacenes
+        .map((d) => `${d.almacen}: ${fmtNum(d.stock, 0)}`)
+        .join(' · ');
+      return `<tr>
+      <td>${m.material}</td>
+      <td class="desc">${m.descripcion || ''}</td>
+      <td class="num">${fmtNum(m.necesidad, 1)}</td>
+      <td class="num">${fmtNum(m.stockFisico, 0)}</td>
+      <td class="num">${fmtNum(m.stockOtrosAlmacenes, 0)}</td>
+      <td class="desc">${detalle}</td>
+      <td>${riesgoChip(m.riesgo)}</td>
+    </tr>`;
+    })
+    .join('');
+
+  document.getElementById('conteo-traslados').textContent = `${ordenado.length} materiales`;
+
+  if (ordenado.length > MAX_FILAS) {
+    tbody.innerHTML += `<tr><td colspan="7" class="muted centrado">… mostrando los primeros ${MAX_FILAS}.</td></tr>`;
+  }
+}
+
+// ---------------- MATERIALES PLANIFICADOS ----------------
+function renderMaterialesPlanificados() {
+  const planificados = state.planificados;
+  const total = planificados.length;
+  const reclasificados = planificados.filter((m) => m.reclasificadoDesdeUIN);
+  const conStock = planificados.filter((m) => m.stockFisico > 0).length;
+  const estrategicos = planificados.filter((m) => m.clasificacionFinal === 'Estratégico').length;
+
+  document.getElementById('kpi-plan-total').textContent = total;
+  document.getElementById('kpi-plan-reclasificados').textContent = reclasificados.length;
+  document.getElementById('kpi-plan-stock').textContent = total > 0 ? `${Math.round((conStock / total) * 100)}%` : '0%';
+  document.getElementById('kpi-plan-estrategicos').textContent = total > 0 ? `${Math.round((estrategicos / total) * 100)}%` : '0%';
+
+  const sinTratamiento = planificados.filter((m) => m.ssActual === 0 && m.ropActual === 0);
+  const sinTratAltaBaja = sinTratamiento.filter((m) => m.clasificacionFinal === 'Alta Rotación' || m.clasificacionFinal === 'Baja Rotación');
+  document.getElementById('kpi-sintrat-total').textContent = sinTratamiento.length;
+  document.getElementById('kpi-sintrat-altabaja').textContent = sinTratAltaBaja.length;
+  document.getElementById('kpi-sintrat-pct').textContent = total > 0 ? `${Math.round((sinTratamiento.length / total) * 100)}%` : '0%';
+
+  const excluidos = state.calculados.filter((m) => !m.incluidoEnPlanificacion);
+  const porMotivo = {};
+  excluidos.forEach((m) => {
+    porMotivo[m.clasificacionFinal] = (porMotivo[m.clasificacionFinal] || 0) + 1;
+  });
+  const tbodyExcl = document.getElementById('tabla-exclusiones-body');
+  tbodyExcl.innerHTML = Object.entries(porMotivo)
+    .sort((a, b) => b[1] - a[1])
+    .map(([motivo, n]) => `<tr><td>${motivo}</td><td class="num">${n}</td></tr>`)
+    .join('') || '<tr><td colspan="2" class="muted centrado">Ningún material quedó excluido.</td></tr>';
+
+  const tbodyReclas = document.getElementById('tabla-reclasificados-body');
+  tbodyReclas.innerHTML = reclasificados
+    .sort((a, b) => b.diasConConsumo - a.diasConConsumo)
+    .map(
+      (m) => `<tr>
+      <td>${m.material}</td>
+      <td class="desc">${m.descripcion || ''}</td>
+      <td><span class="chip ${m.clasificacionFinal === 'Alta Rotación' ? 'chip-verde' : 'chip-amarilla'}">${m.clasificacionFinal}</span></td>
+      <td class="num">${m.motivoExclusion ? (m.motivoExclusion.match(/(\d+) de (\d+)/) || [])[0] || '' : ''}</td>
+      <td class="num">${fmtNum(m.stockFisico, 0)}</td>
+      <td>${riesgoChip(m.riesgo)}</td>
+    </tr>`
+    )
+    .join('') || '<tr><td colspan="6" class="muted centrado">No hubo materiales Uso Inmediato con consumo suficiente para reclasificar.</td></tr>';
 }
 
 // ---------------- TENDENCIA POR PRODUCTO ----------------
