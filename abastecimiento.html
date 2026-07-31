@@ -91,9 +91,11 @@
 
   <nav class="tabs">
     <button class="tab-btn active" data-tab="resumen">Resumen</button>
+    <button class="tab-btn" data-tab="planificados">Materiales Planificados</button>
     <button class="tab-btn" data-tab="estacionalidad">Estacionalidad</button>
     <button class="tab-btn" data-tab="materiales">Materiales</button>
     <button class="tab-btn" data-tab="abcxyz">ABC-XYZ</button>
+    <button class="tab-btn" data-tab="traslados">Traslados</button>
     <button class="tab-btn" data-tab="tendencia">Tendencia por Producto</button>
     <button class="tab-btn" data-tab="inmovilizados">Inmovilizados</button>
     <button class="tab-btn" data-tab="parametros">Parámetros</button>
@@ -162,6 +164,80 @@
       </div>
     </section>
 
+    <!-- ===================== MATERIALES PLANIFICADOS ===================== -->
+    <section id="tab-planificados" class="tab-panel">
+      <div class="kpi-row-tag">
+        <div class="tag-label">KPIs<br />Generales</div>
+        <div class="kpi-grid-inline">
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-plan-total">—</span>
+            <span class="kpi-label">Materiales Planificados</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-plan-reclasificados">—</span>
+            <span class="kpi-label">Reclasificados desde Uso Inmediato</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-plan-stock">—</span>
+            <span class="kpi-label">% con Stock Disponible</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-plan-estrategicos">—</span>
+            <span class="kpi-label">% Estratégicos</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-row-tag">
+        <div class="tag-label tag-amarilla">Sin<br />Tratamiento</div>
+        <div class="kpi-grid-inline">
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-sintrat-total">—</span>
+            <span class="kpi-label">Materiales sin SS/ROP definido en SAP</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-sintrat-altabaja">—</span>
+            <span class="kpi-label">De ellos, Alta o Baja Rotación</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value kpi-value-alerta" id="kpi-sintrat-pct">—</span>
+            <span class="kpi-label">% de planificados sin tratamiento</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Qué queda fuera de la planificación, y por qué</h2>
+          <p class="panel-sub">Inactivo y Producción no entran a este cálculo. Uso Inmediato se revisa material por material contra su histórico real.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Motivo</th><th class="num">Materiales</th></tr></thead>
+            <tbody id="tabla-exclusiones-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Reclasificación de materiales "Uso Inmediato"</h2>
+          <p class="panel-sub">Materiales que SAP marcó como Uso Inmediato (compra solo por reserva), pero que su histórico de movimientos muestra un patrón de consumo regular — se reclasificaron y ya llevan SS/ROP calculado.</p>
+        </div>
+        <div class="table-wrap tall">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th><th>Descripción</th><th>Nueva Clasificación</th>
+                <th class="num">Meses con consumo</th><th class="num">Stock Real</th><th>Riesgo</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-reclasificados-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <!-- ===================== ESTACIONALIDAD ===================== -->
     <section id="tab-estacionalidad" class="tab-panel">
       <div class="panel">
@@ -195,6 +271,11 @@
           <option value="Baja">Baja</option>
           <option value="Sin datos">Sin datos</option>
         </select>
+        <select id="filtro-tratamiento">
+          <option value="TODOS">Planificados y excluidos</option>
+          <option value="PLANIFICADOS">Solo planificados</option>
+          <option value="EXCLUIDOS">Solo excluidos</option>
+        </select>
         <span class="conteo" id="conteo-materiales"></span>
       </div>
       <div class="panel">
@@ -202,7 +283,7 @@
           <table>
             <thead>
               <tr>
-                <th>Material</th><th>Descripción</th><th>Clasif.</th><th>Temp.</th>
+                <th>Material</th><th>Descripción</th><th>Clasif. SAP</th><th>Clasif. Final</th><th>Temp.</th>
                 <th class="num">LT (días)</th><th class="num">Stock Real</th>
                 <th class="num">SS SAP</th><th class="num">SS Calc.</th>
                 <th class="num">ROP SAP</th><th class="num">ROP Calc.</th>
@@ -262,6 +343,54 @@
       </div>
     </section>
 
+    <!-- ===================== TRASLADOS ===================== -->
+    <section id="tab-traslados" class="tab-panel">
+      <div class="kpi-row-tag">
+        <div class="tag-label">Monitor de<br />Traslados</div>
+        <div class="kpi-grid-inline">
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-trasl-necesidad">—</span>
+            <span class="kpi-label">Materiales con necesidad (stock &lt; ROP)</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-trasl-candidatos">—</span>
+            <span class="kpi-label">Candidatos a traslado (hay stock en otro almacén)</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-trasl-pct">—</span>
+            <span class="kpi-label">% de la necesidad cubrible por traslado</span>
+          </div>
+          <div class="kpi-inline-card">
+            <span class="kpi-value" id="kpi-trasl-unidades">—</span>
+            <span class="kpi-label">Unidades disponibles en otros almacenes</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Monitor de stock disponible para traslado <span id="conteo-traslados" class="conteo-inline"></span></h2>
+          <p class="panel-sub">
+            Cruza tu necesidad en L001 (ROP calculado − stock real) contra el stock libre que ya existe en
+            los otros almacenes de tu MB52 (L002, L003, L004, L005, L008, L010, PI01, PI04, PI05, Q001, SINI,
+            C001, TK02, CL01, CH01). Si hay stock en otro lado, capaz no haga falta comprar — se puede trasladar.
+          </p>
+        </div>
+        <div class="table-wrap tall">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th><th>Descripción</th>
+                <th class="num">Necesidad L001</th><th class="num">Stock L001</th>
+                <th class="num">Stock Otros Almacenes</th><th>Detalle por almacén</th><th>Riesgo</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-traslados-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <!-- ===================== TENDENCIA POR PRODUCTO ===================== -->
     <section id="tab-tendencia" class="tab-panel">
       <div class="panel">
@@ -301,6 +430,23 @@
         <label>Umbral crítico (días sin consumo)
           <input type="number" id="umbral-critico" value="365" min="60" step="10" />
         </label>
+        <label>Antigüedad mínima
+          <select id="filtro-antiguedad-inmov">
+            <option value="0">Todos</option>
+            <option value="180">Más de 6 meses</option>
+            <option value="365">Más de 1 año</option>
+            <option value="730">Más de 2 años</option>
+            <option value="1095">Más de 3 años</option>
+          </select>
+        </label>
+        <label>Valor mínimo
+          <select id="filtro-valor-inmov">
+            <option value="0">Todos</option>
+            <option value="1000">Mayor a S/. 1,000</option>
+            <option value="2000">Mayor a S/. 2,000</option>
+            <option value="5000">Mayor a S/. 5,000</option>
+          </select>
+        </label>
       </div>
       <div class="kpi-grid">
         <div class="kpi-card">
@@ -322,8 +468,8 @@
       </div>
       <div class="panel">
         <div class="panel-header">
-          <h2>Materiales con stock físico y sin consumo real reciente</h2>
-          <p class="panel-sub">Costo unitario ya viene de MB52 (ponderado por lote) — no hace falta cargarlo a mano.</p>
+          <h2>Materiales con stock físico y sin consumo real reciente <span id="conteo-inmov" class="conteo-inline"></span></h2>
+          <p class="panel-sub">Costo unitario y fecha de vencimiento ya vienen de MB52 (ponderado por lote / lote más próximo a vencer) — no hace falta cargarlo a mano.</p>
         </div>
         <div class="table-wrap tall">
           <table>
@@ -331,7 +477,7 @@
               <tr>
                 <th>Material</th><th>Descripción</th><th>Clasif.</th>
                 <th class="num">Stock Real</th><th class="num">Días sin mov.</th>
-                <th>Último consumo</th><th>Severidad</th><th class="num">Valor</th>
+                <th>Último consumo</th><th>Vencimiento</th><th>Severidad</th><th class="num">Valor</th>
               </tr>
             </thead>
             <tbody id="tabla-inmovilizados-body"></tbody>
