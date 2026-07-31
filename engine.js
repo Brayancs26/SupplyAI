@@ -177,41 +177,57 @@ function temporadaObjetivo(leadTimeDias, hoyISO, mesATemporada) {
 }
 
 /**
- * Agrega MB52 (multi-lote) por material: stock físico total y costo unitario
- * ponderado (valor total / stock total), filtrando al almacén indicado.
+ * Agrega MB52 (multi-lote) por material: stock físico total, costo unitario
+ * ponderado (valor total / stock total), y la fecha de vencimiento más
+ * próxima entre sus lotes (columna "Cad./FPC"), filtrando al almacén indicado.
  */
 function agregarMB52(mb52Rows, almacen) {
-  const acc = new Map(); // material -> {stock, valor}
+  const acc = new Map(); // material -> {stock, valor, fechasVenc: []}
   for (const row of mb52Rows) {
     if (String(row['Almacén']).trim() !== almacen) continue;
     const material = String(row['Material']).trim();
     const stock = Number(row['Libre utilización']) || 0;
     const valor = Number(row['Valor libre util.']) || 0;
-    if (!acc.has(material)) acc.set(material, { stock: 0, valor: 0 });
+    if (!acc.has(material)) acc.set(material, { stock: 0, valor: 0, fechasVenc: [] });
     const a = acc.get(material);
     a.stock += stock;
     a.valor += valor;
+    const fv = row['Cad./FPC'];
+    if (fv) {
+      const iso = toISODate(fv instanceof Date ? fv : new Date(fv));
+      if (iso) a.fechasVenc.push(iso);
+    }
   }
   const resultado = new Map();
-  for (const [material, { stock, valor }] of acc.entries()) {
+  for (const [material, { stock, valor, fechasVenc }] of acc.entries()) {
+    fechasVenc.sort();
     resultado.set(material, {
       stockFisico: stock,
       costoUnitario: stock > 0 ? valor / stock : null,
+      fechaVencimiento: fechasVenc.length > 0 ? fechasVenc[0] : null,
     });
   }
   return resultado;
 }
 
 /**
- * Calcula SS, ROP, EOQ y riesgo para todos los materiales del MRP.
+ * Calcula SS, ROP, EOQ y riesgo para todos los materiales del MRP —
+ * aplicando primero la política de tratamiento por clasificación:
+ * Inactivo y Producción quedan fuera del cálculo, Estratégico siempre entra,
+ * y Uso Inmediato se reclasifica según su histórico real de movimientos
+ * (ver determinarTratamiento / calcularClasificacionMovimiento).
  */
-function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, params, hoyISO) {
+function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, params, hoyISO, movClasificacionMap) {
   const { Z, S, H, diasAnio } = params;
 
   return mrpRows.map((m) => {
     const material = String(m['Material']).trim();
     const lt = Number(m['Plazo entrega prev.']) || 0;
     const tempObjetivo = temporadaObjetivo(lt, hoyISO, mesATemporada);
+
+    const clasificacionSAP = m['Den.Clasificación'] || 'Sin Clasificar';
+    const movInfo = movClasificacionMap ? movClasificacionMap.get(material) : null;
+    const tratamiento = determinarTratamiento(clasificacionSAP, movInfo);
 
     const stat = statsPorTemporada.get(material);
     const bucket = stat ? stat[tempObjetivo] : null;
@@ -223,20 +239,25 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
     const media = bucket ? bucket.demandaDiariaPromedio : 0;
     const desvest = bucket ? bucket.demandaDiariaDesvest : 0;
 
-    const ssCalculado = conf === 'Sin datos' ? ssActual : Z * desvest * Math.sqrt(lt);
-    const ropCalculado = media * lt + ssCalculado;
-
-    const mb52 = mb52Map.get(material) || { stockFisico: 0, costoUnitario: null };
+    const mb52 = mb52Map.get(material) || { stockFisico: 0, costoUnitario: null, fechaVencimiento: null };
     const demandaAnual = media * diasAnio;
-    const eoq =
-      mb52.costoUnitario && mb52.costoUnitario > 0 && H > 0
-        ? Math.sqrt((2 * demandaAnual * S) / (H * mb52.costoUnitario))
-        : null;
 
-    let riesgo;
-    if (mb52.stockFisico < ropCalculado) riesgo = 'ROJO';
-    else if (mb52.stockFisico < ropCalculado * 1.2) riesgo = 'AMARILLO';
-    else riesgo = 'VERDE';
+    let ssCalculado = null;
+    let ropCalculado = null;
+    let eoq = null;
+    let riesgo = 'N/A';
+
+    if (tratamiento.incluido) {
+      ssCalculado = conf === 'Sin datos' ? ssActual : Z * desvest * Math.sqrt(lt);
+      ropCalculado = media * lt + ssCalculado;
+      eoq =
+        mb52.costoUnitario && mb52.costoUnitario > 0 && H > 0
+          ? Math.sqrt((2 * demandaAnual * S) / (H * mb52.costoUnitario))
+          : null;
+      if (mb52.stockFisico < ropCalculado) riesgo = 'ROJO';
+      else if (mb52.stockFisico < ropCalculado * 1.2) riesgo = 'AMARILLO';
+      else riesgo = 'VERDE';
+    }
 
     const ultimaFechaConsumo = stat ? stat.ultimaFechaConsumo : null;
     const diasSinMovimiento = ultimaFechaConsumo ? diffDiasISO(ultimaFechaConsumo, hoyISO) : null;
@@ -244,7 +265,11 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
     return {
       material,
       descripcion: m['Texto breve de material'],
-      clasificacion: m['Den.Clasificación'] || 'Sin Clasificar',
+      clasificacion: clasificacionSAP,
+      clasificacionFinal: tratamiento.clasificacionFinal,
+      incluidoEnPlanificacion: tratamiento.incluido,
+      reclasificadoDesdeUIN: tratamiento.reclasificado,
+      motivoExclusion: tratamiento.motivo,
       unidadNegocio: m['Unidad de Negocio'] || 'Sin Asignar',
       unidadMedida: m['Unidad medida base'],
       grupoArticulo: m['Grupo de artículos'],
@@ -252,6 +277,7 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
       leadTime: lt,
       temporadaObjetivo: tempObjetivo,
       stockFisico: mb52.stockFisico,
+      fechaVencimiento: mb52.fechaVencimiento,
       costoUnitario: mb52.costoUnitario,
       ssActual,
       ropActual,
@@ -261,8 +287,8 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
       demandaDiariaDesvest: desvest,
       ssCalculado,
       ropCalculado,
-      difSS: ssCalculado - ssActual,
-      difROP: ropCalculado - ropActual,
+      difSS: ssCalculado !== null ? ssCalculado - ssActual : null,
+      difROP: ropCalculado !== null ? ropCalculado - ropActual : null,
       demandaAnual,
       eoq,
       riesgo,
@@ -306,33 +332,40 @@ function serieMensualPorMaterial(consumoReal, material) {
 }
 
 /**
- * Estadísticas de demanda diaria GENERALES (sin segmentar por temporada) —
- * se usan para el coeficiente de variación del análisis XYZ, que mide
- * variabilidad de la demanda a través de todo el período, no de una sola
- * temporada.
+ * Estadísticas de demanda MENSUAL por material (no diaria) — la variabilidad
+ * diaria de repuestos/insumos industriales es intrínsecamente enorme (la
+ * mayoría de los días hay cero consumo), así que un CV diario clasifica
+ * prácticamente todo como "errático" sin distinguir nada útil. La demanda
+ * mensual agregada es la base estándar para análisis XYZ en este tipo de
+ * inventario intermitente.
  */
-function calcularStatsGenerales(consumoReal, totalDias) {
-  const porDia = new Map();
+function calcularStatsMensualesGenerales(consumoReal, fechaMinISO, fechaMaxISO) {
+  const min = new Date(fechaMinISO + 'T00:00:00');
+  const max = new Date(fechaMaxISO + 'T00:00:00');
+  const mesesTotales = (max.getFullYear() - min.getFullYear()) * 12 + (max.getMonth() - min.getMonth()) + 1;
+
+  const porMaterialMes = new Map();
   for (const r of consumoReal) {
-    if (!porDia.has(r.material)) porDia.set(r.material, new Map());
-    const m = porDia.get(r.material);
-    m.set(r.fechaISO, (m.get(r.fechaISO) || 0) + r.demanda);
+    const mesKey = r.fechaISO.slice(0, 7);
+    if (!porMaterialMes.has(r.material)) porMaterialMes.set(r.material, new Map());
+    const m = porMaterialMes.get(r.material);
+    m.set(mesKey, (m.get(mesKey) || 0) + r.demanda);
   }
 
   const resultado = new Map();
-  for (const [material, mapaFechas] of porDia.entries()) {
+  for (const [material, mapaMeses] of porMaterialMes.entries()) {
     let suma = 0;
     let sumaSq = 0;
-    let diasConConsumo = 0;
-    for (const demanda of mapaFechas.values()) {
-      suma += demanda;
-      sumaSq += demanda * demanda;
-      if (demanda > 0) diasConConsumo += 1;
+    let mesesConConsumo = 0;
+    for (const v of mapaMeses.values()) {
+      suma += v;
+      sumaSq += v * v;
+      if (v > 0) mesesConConsumo += 1;
     }
-    const media = suma / totalDias;
-    let varianza = (sumaSq - totalDias * media * media) / Math.max(totalDias - 1, 1);
+    const media = suma / mesesTotales;
+    let varianza = (sumaSq - mesesTotales * media * media) / Math.max(mesesTotales - 1, 1);
     if (varianza < 0 || !isFinite(varianza)) varianza = 0;
-    resultado.set(material, { media, desvest: Math.sqrt(varianza), diasConConsumo });
+    resultado.set(material, { media, desvest: Math.sqrt(varianza), mesesConConsumo, mesesTotales });
   }
   return resultado;
 }
@@ -351,8 +384,8 @@ function categorizarMaterial(denomGrupoArticulo) {
 
 /**
  * Clasificación ABC (por valor de consumo anual: costo unitario × demanda
- * anual estimada) y XYZ (por coeficiente de variación de la demanda diaria,
- * medido sobre todo el período — no por temporada).
+ * anual estimada) y XYZ (por coeficiente de variación de la demanda
+ * MENSUAL, medido sobre todo el período).
  *
  * El ABC corre el Pareto POR SEPARADO dentro de cada categoría (Combustibles /
  * Insumos / Otros), para que un material de muy alto valor (ej. diesel) no
@@ -362,10 +395,15 @@ function categorizarMaterial(denomGrupoArticulo) {
  * CATEGORÍA, B = siguiente 15% (hasta 95%), C = el resto (incluye
  * materiales sin costo unitario conocido).
  *
- * XYZ: X = CV ≤ 0.5 (demanda predecible), Y = 0.5–1.0 (variable),
- * Z = CV > 1.0 (errática). N/D = menos de 5 días con consumo registrado.
+ * XYZ: en vez de umbrales fijos de manual (X≤0.5, Y≤1.0, Z>1.0 — pensados
+ * para demanda tipo retail), se usan TERCILES calculados sobre la propia
+ * distribución de CV mensual de tus materiales: el tercio con menor CV es
+ * X (lo más predecible QUE TIENES), el tercio del medio es Y, el tercio
+ * con mayor CV es Z. Así la clasificación siempre distingue algo útil, sin
+ * importar qué tan intermitente sea tu demanda en términos absolutos.
+ * N/D = menos de 3 meses con consumo registrado.
  */
-function calcularABCXYZ(calculados, statsGenerales) {
+function calcularABCXYZ(calculados, statsMensuales) {
   const conCategoria = calculados.map((m) => ({
     ...m,
     categoria: categorizarMaterial(m.denomGrupoArticulo),
@@ -398,14 +436,29 @@ function calcularABCXYZ(calculados, statsGenerales) {
     }
   });
 
+  const cvPorMaterial = new Map();
+  for (const [material, s] of statsMensuales.entries()) {
+    if (s.mesesConConsumo < 3 || s.media <= 0) continue;
+    cvPorMaterial.set(material, s.desvest / s.media);
+  }
+
+  const cvsOrdenados = [...cvPorMaterial.values()].sort((a, b) => a - b);
+  const percentil = (p) => {
+    if (cvsOrdenados.length === 0) return null;
+    const idx = Math.min(cvsOrdenados.length - 1, Math.floor(p * cvsOrdenados.length));
+    return cvsOrdenados[idx];
+  };
+  const corteX = percentil(1 / 3);
+  const corteY = percentil(2 / 3);
+
   const claseXYZ = new Map();
-  for (const [material, s] of statsGenerales.entries()) {
-    if (s.diasConConsumo < 5 || s.media <= 0) {
-      claseXYZ.set(material, 'N/D');
+  for (const m of conCategoria) {
+    const cv = cvPorMaterial.get(m.material);
+    if (cv === undefined || corteX === null) {
+      claseXYZ.set(m.material, 'N/D');
       continue;
     }
-    const cv = s.desvest / s.media;
-    claseXYZ.set(material, cv <= 0.5 ? 'X' : cv <= 1.0 ? 'Y' : 'Z');
+    claseXYZ.set(m.material, cv <= corteX ? 'X' : cv <= corteY ? 'Y' : 'Z');
   }
 
   return conCategoria.map((m) => ({
@@ -413,7 +466,110 @@ function calcularABCXYZ(calculados, statsGenerales) {
     valorConsumoAnual: valorPorMaterial.get(m.material) || 0,
     claseABC: claseABC.get(m.material) || 'C',
     claseXYZ: claseXYZ.get(m.material) || 'N/D',
+    cvMensual: cvPorMaterial.get(m.material) ?? null,
   }));
+}
+
+/**
+ * Agrega el stock libre de MB52 por material Y por almacén (sin filtrar a
+ * uno solo) — permite ver cuánto stock hay del mismo material en otros
+ * almacenes distintos al principal (L001), para el monitor de traslados.
+ */
+function agregarStockPorAlmacenTodos(mb52Rows) {
+  const mapa = new Map(); // material -> Map(almacen -> stock)
+  for (const row of mb52Rows) {
+    const material = String(row['Material']).trim();
+    const almacen = String(row['Almacén'] || '').trim();
+    if (!almacen) continue;
+    const stock = Number(row['Libre utilización']) || 0;
+    if (!mapa.has(material)) mapa.set(material, new Map());
+    const m = mapa.get(material);
+    m.set(almacen, (m.get(almacen) || 0) + stock);
+  }
+  return mapa;
+}
+
+/**
+ * Calcula, para cada material, su "necesidad" en el almacén principal
+ * (ROP calculado − stock real, nunca negativo) y cuánto de esa necesidad
+ * podría cubrirse con stock libre que ya existe en OTROS almacenes —
+ * candidato a traslado interno en vez de compra nueva.
+ */
+function enriquecerConTraslados(calculados, stockPorAlmacenTodos, almacenPrincipal) {
+  return calculados.map((m) => {
+    const necesidad = m.ropCalculado !== null ? Math.max(0, m.ropCalculado - m.stockFisico) : 0;
+    const porAlmacen = stockPorAlmacenTodos.get(m.material);
+    const detalleOtrosAlmacenes = [];
+    let stockOtrosAlmacenes = 0;
+    if (porAlmacen) {
+      for (const [almacen, stock] of porAlmacen.entries()) {
+        if (almacen === almacenPrincipal || stock <= 0) continue;
+        detalleOtrosAlmacenes.push({ almacen, stock });
+        stockOtrosAlmacenes += stock;
+      }
+      detalleOtrosAlmacenes.sort((a, b) => b.stock - a.stock);
+    }
+    return { ...m, necesidad, stockOtrosAlmacenes, detalleOtrosAlmacenes };
+  });
+}
+
+/**
+ * Clasificación de rotación basada en la frecuencia real de consumo
+ * (no en el histórico completo agregado, sino en CUÁNTOS MESES DISTINTOS
+ * tuvo consumo dentro del período observado):
+ *   - Alta Rotación: consumió en ≥80% de los meses del período (consume casi todos los meses)
+ *   - Baja Rotación: consumió en algunos meses, pero menos del 80%
+ *   - Sin Movimiento: cero consumo en todo el período
+ */
+function calcularClasificacionMovimiento(consumoReal, fechaMinISO, fechaMaxISO) {
+  const min = new Date(fechaMinISO + 'T00:00:00');
+  const max = new Date(fechaMaxISO + 'T00:00:00');
+  const mesesTotales = (max.getFullYear() - min.getFullYear()) * 12 + (max.getMonth() - min.getMonth()) + 1;
+
+  const mesesPorMaterial = new Map();
+  for (const r of consumoReal) {
+    if (r.demanda <= 0) continue;
+    if (!mesesPorMaterial.has(r.material)) mesesPorMaterial.set(r.material, new Set());
+    mesesPorMaterial.get(r.material).add(r.fechaISO.slice(0, 7));
+  }
+
+  const resultado = new Map();
+  for (const [material, meses] of mesesPorMaterial.entries()) {
+    const n = meses.size;
+    const pctMeses = n / mesesTotales;
+    const clasificacionMovimiento = pctMeses >= 0.8 ? 'Alta Rotación' : 'Baja Rotación';
+    resultado.set(material, { mesesConConsumo: n, mesesTotales, pctMeses, clasificacionMovimiento });
+  }
+  return resultado; // los materiales sin ninguna fila aquí = Sin Movimiento (se resuelve al consultar el mapa)
+}
+
+/**
+ * Decide qué tratamiento recibe cada material según su clasificación SAP,
+ * usando el histórico de movimientos para los casos que lo requieren
+ * (Uso Inmediato). Devuelve si el material entra o no al cálculo de
+ * SS/ROP/EOQ, con qué clasificación "final", y el motivo si queda fuera.
+ */
+function determinarTratamiento(clasificacionSAP, movInfo) {
+  const sap = (clasificacionSAP || '').trim();
+
+  if (sap === 'Inactivo') {
+    return { clasificacionFinal: 'Inactivo', incluido: false, reclasificado: false, motivo: 'Inactivo — código sin uso, no requiere gestión de stock' };
+  }
+  if (sap === 'Produción' || sap === 'Producción') {
+    return { clasificacionFinal: 'Producción', incluido: false, reclasificado: false, motivo: 'Uso en producción — requiere un módulo de planificación aparte, no se incluye aquí' };
+  }
+  if (sap === 'Estratégico') {
+    return { clasificacionFinal: 'Estratégico', incluido: true, reclasificado: false, motivo: null };
+  }
+  if (sap === 'Uso Inmediato') {
+    const clase = movInfo ? movInfo.clasificacionMovimiento : 'Sin Movimiento';
+    if (clase === 'Alta Rotación' || clase === 'Baja Rotación') {
+      return { clasificacionFinal: clase, incluido: true, reclasificado: true, motivo: `Reclasificado desde Uso Inmediato — el histórico muestra consumo en ${movInfo.mesesConConsumo} de ${movInfo.mesesTotales} meses` };
+    }
+    return { clasificacionFinal: 'Uso Inmediato (confirmado)', incluido: false, reclasificado: false, motivo: 'Sin consumo regular en el período — se confirma compra solo por reserva, no requiere stock' };
+  }
+  // Alta Rotación / Baja Rotación ya etiquetados por SAP, o sin clasificar -> tratamiento normal
+  return { clasificacionFinal: sap || 'Sin Clasificar', incluido: true, reclasificado: false, motivo: null };
 }
 
 const SupplyEngine = {
@@ -430,9 +586,13 @@ const SupplyEngine = {
   calcularMateriales,
   calcularInmovilizados,
   serieMensualPorMaterial,
-  calcularStatsGenerales,
+  calcularStatsMensualesGenerales,
   calcularABCXYZ,
   categorizarMaterial,
+  agregarStockPorAlmacenTodos,
+  enriquecerConTraslados,
+  calcularClasificacionMovimiento,
+  determinarTratamiento,
   confianza,
 };
 
