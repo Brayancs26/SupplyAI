@@ -228,11 +228,10 @@ function calcularTodo() {
       const mrpRows = state.archivos.MRP.filas;
       const mb52Rows = state.archivos.MB52.filas;
 
-      const materialesInsumos = SupplyEngine.materialesPorCategoria(mrpRows, 'Insumos');
-      const materialesCombustible = SupplyEngine.materialesPorCategoria(mrpRows, 'Combustibles');
+      const materialesConConsumoPI01 = SupplyEngine.materialesConConsumoEnAlmacen(dataRows, ALMACEN_PLANTA);
+      const materialesCombustible = SupplyEngine.materialesPorCategoria(mrpRows, 'Combustibles', materialesConConsumoPI01);
 
       state.consumoReal = SupplyEngine.filtrarConsumoReal(dataRows, ALMACEN, {
-        materialesConAlmacenExtra: materialesInsumos,
         almacenExtra: ALMACEN_PLANTA,
         materialesCombustible,
       });
@@ -255,21 +254,21 @@ function calcularTodo() {
         state.mb52Map,
         state.params,
         hoyISO(),
-        movClasificacionMap
+        movClasificacionMap,
+        materialesConConsumoPI01
+      );
+
+      const stockTodosAlmacenes = SupplyEngine.agregarStockPorAlmacenTodos(mb52Rows);
+      const transitoMap = SupplyEngine.extraerTransitoPorMaterial(mb52Rows);
+      state.calculados = SupplyEngine.enriquecerConCobertura(
+        state.calculados, stockTodosAlmacenes, transitoMap, ALMACEN, ALMACEN_PLANTA, state.coberturaIdealDias
       );
 
       state.planificados = state.calculados.filter((m) => m.incluidoEnPlanificacion);
 
       const statsMensuales = SupplyEngine.calcularStatsMensualesGenerales(state.consumoReal, state.fechaMin, state.fechaMax);
       state.planificados = SupplyEngine.calcularABCXYZ(state.planificados, statsMensuales);
-
-      const stockTodosAlmacenes = SupplyEngine.agregarStockPorAlmacenTodos(mb52Rows);
       state.planificados = SupplyEngine.enriquecerConTraslados(state.planificados, stockTodosAlmacenes, ALMACEN);
-
-      const transitoMap = SupplyEngine.extraerTransitoPorMaterial(mb52Rows);
-      state.planificados = SupplyEngine.enriquecerConCobertura(
-        state.planificados, stockTodosAlmacenes, transitoMap, ALMACEN, ALMACEN_PLANTA, state.coberturaIdealDias
-      );
 
       mostrarDashboard();
       renderTodo();
@@ -675,7 +674,7 @@ function renderCobertura() {
   state.coberturaIdealDias = coberturaIdeal;
   state.filtroCategoriaCobertura = document.getElementById('filtro-categoria-cobertura').value;
 
-  let base = state.planificados;
+  let base = state.calculados;
   if (state.filtroCategoriaCobertura !== 'TODAS') {
     base = base.filter((m) => m.categoria === state.filtroCategoriaCobertura);
   }
@@ -714,12 +713,13 @@ function renderCobertura() {
       <td class="num">${fmtNum(m.transito, 0)}</td>
       <td class="num">${fmtNum(m.planta, 0)}</td>
       <td>${m.stSAP ?? '<span class="muted">—</span>'}</td>
+      <td>${m.incluidoEnPlanificacion ? '<span class="chip chip-verde">Planificado</span>' : `<span class="chip chip-amarilla">${m.clasificacionFinal}</span>`}</td>
     </tr>`;
     })
     .join('');
 
   if (filas.length > MAX_FILAS) {
-    tbody.innerHTML += `<tr><td colspan="13" class="muted centrado">… mostrando los primeros ${MAX_FILAS}.</td></tr>`;
+    tbody.innerHTML += `<tr><td colspan="14" class="muted centrado">… mostrando los primeros ${MAX_FILAS}.</td></tr>`;
   }
 }
 
