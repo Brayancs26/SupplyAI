@@ -3,6 +3,7 @@
 // ============================================================
 
 const ALMACEN = 'L001';
+const ALMACEN_PLANTA = 'PI01';
 
 const state = {
   archivos: { MRP: null, DATA: null, MB52: null },
@@ -25,6 +26,9 @@ const state = {
   filtroXYZ: 'TODAS',
   filtroCategoria: 'TODAS',
   filtroTratamiento: 'TODOS',
+  marcados: {},
+  coberturaIdealDias: 12,
+  filtroCategoriaCobertura: 'Insumos',
 };
 
 const fmtNum = (n, dec = 1) =>
@@ -78,6 +82,31 @@ function guardarParametros() {
     'parametros_abastecimiento_v2',
     JSON.stringify({ params: state.params, umbralAlta: state.umbralAlta, umbralBaja: state.umbralBaja })
   );
+}
+
+// ---------------- LISTA DE PEDIDO (marcados) ----------------
+function cargarMarcados() {
+  const raw = localStorage.getItem('pedido_marcados_v1');
+  state.marcados = raw ? JSON.parse(raw) : {};
+}
+function guardarMarcados() {
+  localStorage.setItem('pedido_marcados_v1', JSON.stringify(state.marcados));
+}
+function marcarMaterial(material, marcado) {
+  if (marcado) {
+    if (!(material in state.marcados)) {
+      const m = state.calculados.find((x) => x.material === material);
+      const sugerida = m && m.ropCalculado !== null ? Math.max(0, Math.round(m.ropCalculado - m.stockFisico)) : 0;
+      state.marcados[material] = sugerida;
+    }
+  } else {
+    delete state.marcados[material];
+  }
+  guardarMarcados();
+}
+function actualizarCantidadPedido(material, cantidad) {
+  state.marcados[material] = Math.max(0, Number(cantidad) || 0);
+  guardarMarcados();
 }
 
 // ---------------- DRAG & DROP ----------------
@@ -199,7 +228,14 @@ function calcularTodo() {
       const mrpRows = state.archivos.MRP.filas;
       const mb52Rows = state.archivos.MB52.filas;
 
-      state.consumoReal = SupplyEngine.filtrarConsumoReal(dataRows, ALMACEN);
+      const materialesInsumos = SupplyEngine.materialesPorCategoria(mrpRows, 'Insumos');
+      const materialesCombustible = SupplyEngine.materialesPorCategoria(mrpRows, 'Combustibles');
+
+      state.consumoReal = SupplyEngine.filtrarConsumoReal(dataRows, ALMACEN, {
+        materialesConAlmacenExtra: materialesInsumos,
+        almacenExtra: ALMACEN_PLANTA,
+        materialesCombustible,
+      });
       const fechas = state.consumoReal.map((r) => r.fechaISO).sort();
       state.fechaMin = fechas[0];
       state.fechaMax = fechas[fechas.length - 1];
@@ -230,6 +266,11 @@ function calcularTodo() {
       const stockTodosAlmacenes = SupplyEngine.agregarStockPorAlmacenTodos(mb52Rows);
       state.planificados = SupplyEngine.enriquecerConTraslados(state.planificados, stockTodosAlmacenes, ALMACEN);
 
+      const transitoMap = SupplyEngine.extraerTransitoPorMaterial(mb52Rows);
+      state.planificados = SupplyEngine.enriquecerConCobertura(
+        state.planificados, stockTodosAlmacenes, transitoMap, ALMACEN, ALMACEN_PLANTA, state.coberturaIdealDias
+      );
+
       mostrarDashboard();
       renderTodo();
     } catch (err) {
@@ -259,7 +300,8 @@ function renderTodo() {
   renderTablaMateriales();
   renderInmovilizados();
   renderABCXYZ();
-  renderTraslados();
+  renderCobertura();
+  renderListaPedido();
   poblarListaTendencia();
 }
 
@@ -394,6 +436,7 @@ function bindFormularios() {
   });
 
   document.getElementById('btn-exportar').addEventListener('click', exportarExcel);
+  document.getElementById('btn-exportar-pedido').addEventListener('click', exportarListaPedido);
 
   document.getElementById('buscar-tendencia').addEventListener('change', (e) => {
     mostrarTendenciaMaterial(e.target.value);
@@ -405,6 +448,9 @@ function bindFormularios() {
     state.filtroXYZ = 'TODAS';
     renderABCXYZ();
   });
+
+  document.getElementById('filtro-categoria-cobertura').addEventListener('change', renderCobertura);
+  document.getElementById('input-cobertura-ideal').addEventListener('change', renderCobertura);
 }
 
 function flashGuardado() {
@@ -446,6 +492,8 @@ function renderTablaMateriales() {
     .slice(0, MAX_FILAS)
     .map(
       (m) => `<tr>
+      <td class="centrado"><input type="checkbox" class="chk-marcar" data-material="${m.material}" ${m.material in state.marcados ? 'checked' : ''} /></td>
+      <td class="num"><input type="number" min="0" step="1" class="input-cantidad-pedido" data-material="${m.material}" value="${m.material in state.marcados ? state.marcados[m.material] : ''}" placeholder="—" /></td>
       <td>${m.material}</td>
       <td class="desc">${m.descripcion || ''}</td>
       <td>${m.clasificacion}</td>
@@ -467,8 +515,22 @@ function renderTablaMateriales() {
     .join('');
 
   if (rows.length > MAX_FILAS) {
-    tbody.innerHTML += `<tr><td colspan="16" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — afina el filtro para ver más.</td></tr>`;
+    tbody.innerHTML += `<tr><td colspan="18" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — afina el filtro para ver más.</td></tr>`;
   }
+
+  tbody.querySelectorAll('.chk-marcar').forEach((chk) => {
+    chk.addEventListener('change', (e) => {
+      marcarMaterial(e.target.dataset.material, e.target.checked);
+      renderTablaMateriales();
+      renderListaPedido();
+    });
+  });
+  tbody.querySelectorAll('.input-cantidad-pedido').forEach((inp) => {
+    inp.addEventListener('change', (e) => {
+      actualizarCantidadPedido(e.target.dataset.material, e.target.value);
+      renderListaPedido();
+    });
+  });
 }
 
 // ---------------- INMOVILIZADOS ----------------
@@ -607,44 +669,141 @@ function renderABCXYZ() {
   }
 }
 
-// ---------------- TRASLADOS ----------------
-function renderTraslados() {
-  const conNecesidad = state.planificados.filter((m) => m.necesidad > 0);
-  const candidatos = conNecesidad.filter((m) => m.stockOtrosAlmacenes > 0);
-  const pctCubierto = conNecesidad.length > 0 ? Math.round((candidatos.length / conNecesidad.length) * 100) : 0;
-  const unidadesDisponibles = candidatos.reduce((acc, m) => acc + Math.min(m.necesidad, m.stockOtrosAlmacenes), 0);
+// ---------------- COBERTURA (Insumos y Materia Prima) ----------------
+function renderCobertura() {
+  const coberturaIdeal = Number(document.getElementById('input-cobertura-ideal').value) || 12;
+  state.coberturaIdealDias = coberturaIdeal;
+  state.filtroCategoriaCobertura = document.getElementById('filtro-categoria-cobertura').value;
 
-  document.getElementById('kpi-trasl-necesidad').textContent = conNecesidad.length;
-  document.getElementById('kpi-trasl-candidatos').textContent = candidatos.length;
-  document.getElementById('kpi-trasl-pct').textContent = `${pctCubierto}%`;
-  document.getElementById('kpi-trasl-unidades').textContent = fmtNum(unidadesDisponibles, 0);
+  let base = state.planificados;
+  if (state.filtroCategoriaCobertura !== 'TODAS') {
+    base = base.filter((m) => m.categoria === state.filtroCategoriaCobertura);
+  }
 
-  const ordenado = [...candidatos].sort((a, b) => b.necesidad - a.necesidad);
-  const tbody = document.getElementById('tabla-traslados-body');
+  const filas = base.map((m) => {
+    const stockIdealVivo = m.demandaDiariaPromedio * coberturaIdeal;
+    const coberturaDiasVivo = m.demandaDiariaPromedio > 0 ? m.stockDisponibleTotal / m.demandaDiariaPromedio : null;
+    const solicitarVivo = Math.max(0, stockIdealVivo - m.stockDisponibleTotal);
+    return { ...m, stockIdealVivo, coberturaDiasVivo, solicitarVivo };
+  });
+
+  filas.sort((a, b) => (a.coberturaDiasVivo ?? Infinity) - (b.coberturaDiasVivo ?? Infinity));
+
+  const bajoCobertura = filas.filter((m) => m.coberturaDiasVivo !== null && m.coberturaDiasVivo < coberturaIdeal);
+  document.getElementById('kpi-cob-total').textContent = filas.length;
+  document.getElementById('kpi-cob-bajo').textContent = bajoCobertura.length;
+  document.getElementById('kpi-cob-solicitar').textContent = fmtNum(filas.reduce((acc, m) => acc + m.solicitarVivo, 0), 0);
+
+  const tbody = document.getElementById('tabla-cobertura-body');
   const MAX_FILAS = 300;
-  tbody.innerHTML = ordenado
+  tbody.innerHTML = filas
     .slice(0, MAX_FILAS)
     .map((m) => {
-      const detalle = m.detalleOtrosAlmacenes
-        .map((d) => `${d.almacen}: ${fmtNum(d.stock, 0)}`)
-        .join(' · ');
+      const claseColor = m.coberturaDiasVivo === null ? 'nd' : m.coberturaDiasVivo < coberturaIdeal ? 'roja' : 'verde';
       return `<tr>
+      <td>${m.grupoArticulo || ''}</td>
       <td>${m.material}</td>
       <td class="desc">${m.descripcion || ''}</td>
-      <td class="num">${fmtNum(m.necesidad, 1)}</td>
+      <td class="num">${fmtNum(m.demandaDiariaPromedio, 2)}</td>
+      <td class="num">${fmtNum(m.demandaDiariaDesvest, 2)}</td>
+      <td class="num">${coberturaIdeal}</td>
+      <td class="num">${fmtNum(m.stockIdealVivo, 0)}</td>
       <td class="num">${fmtNum(m.stockFisico, 0)}</td>
-      <td class="num">${fmtNum(m.stockOtrosAlmacenes, 0)}</td>
-      <td class="desc">${detalle}</td>
-      <td>${riesgoChip(m.riesgo)}</td>
+      <td class="num"><span class="dot-cobertura dot-${claseColor}"></span>${m.coberturaDiasVivo === null ? '—' : fmtNum(m.coberturaDiasVivo, 0)}</td>
+      <td class="num">${fmtNum(m.solicitarVivo, 0)}</td>
+      <td class="num">${fmtNum(m.transito, 0)}</td>
+      <td class="num">${fmtNum(m.planta, 0)}</td>
+      <td>${m.stSAP ?? '<span class="muted">—</span>'}</td>
     </tr>`;
     })
     .join('');
 
-  document.getElementById('conteo-traslados').textContent = `${ordenado.length} materiales`;
-
-  if (ordenado.length > MAX_FILAS) {
-    tbody.innerHTML += `<tr><td colspan="7" class="muted centrado">… mostrando los primeros ${MAX_FILAS}.</td></tr>`;
+  if (filas.length > MAX_FILAS) {
+    tbody.innerHTML += `<tr><td colspan="13" class="muted centrado">… mostrando los primeros ${MAX_FILAS}.</td></tr>`;
   }
+}
+
+// ---------------- LISTA DE PEDIDO ----------------
+function renderListaPedido() {
+  const materialesMarcados = Object.keys(state.marcados);
+  const items = materialesMarcados
+    .map((material) => state.calculados.find((m) => m.material === material))
+    .filter(Boolean);
+
+  const total = items.length;
+  const cantidadTotal = items.reduce((acc, m) => acc + (state.marcados[m.material] || 0), 0);
+  const valorTotal = items.reduce((acc, m) => acc + (state.marcados[m.material] || 0) * (m.costoUnitario || 0), 0);
+  const enRiesgo = items.filter((m) => m.riesgo === 'ROJO').length;
+
+  document.getElementById('kpi-pedido-total').textContent = total;
+  document.getElementById('kpi-pedido-cantidad').textContent = fmtNum(cantidadTotal, 0);
+  document.getElementById('kpi-pedido-valor').textContent = fmtSoles(valorTotal);
+  document.getElementById('kpi-pedido-rojo').textContent = enRiesgo;
+  document.getElementById('conteo-pedido').textContent = `${total} materiales`;
+
+  const tbody = document.getElementById('tabla-pedido-body');
+  if (items.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="muted centrado">Todavía no marcaste ningún material — hazlo desde la pestaña Materiales, casilla "Pedir".</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = items
+    .sort((a, b) => (b.riesgo === 'ROJO' ? 1 : 0) - (a.riesgo === 'ROJO' ? 1 : 0))
+    .map((m) => {
+      const cantidad = state.marcados[m.material] || 0;
+      const valor = cantidad * (m.costoUnitario || 0);
+      return `<tr>
+      <td>${m.material}</td>
+      <td class="desc">${m.descripcion || ''}</td>
+      <td class="num">${fmtNum(m.stockFisico, 0)}</td>
+      <td class="num">${fmtNum(m.ropCalculado, 1)}</td>
+      <td class="num"><input type="number" min="0" step="1" class="input-cantidad-pedido" data-material="${m.material}" value="${cantidad}" /></td>
+      <td class="num">${m.costoUnitario ? fmtSoles(m.costoUnitario) : '<span class="muted">—</span>'}</td>
+      <td class="num">${m.costoUnitario ? fmtSoles(valor) : '<span class="muted">—</span>'}</td>
+      <td>${riesgoChip(m.riesgo)}</td>
+      <td><button type="button" class="btn-quitar-pedido" data-material="${m.material}">Quitar</button></td>
+    </tr>`;
+    })
+    .join('');
+
+  tbody.querySelectorAll('.input-cantidad-pedido').forEach((inp) => {
+    inp.addEventListener('change', (e) => {
+      actualizarCantidadPedido(e.target.dataset.material, e.target.value);
+      renderListaPedido();
+    });
+  });
+  tbody.querySelectorAll('.btn-quitar-pedido').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const material = e.target.dataset.material;
+      delete state.marcados[material];
+      guardarMarcados();
+      renderListaPedido();
+      renderTablaMateriales();
+    });
+  });
+}
+
+function exportarListaPedido() {
+  const items = Object.keys(state.marcados)
+    .map((material) => state.calculados.find((m) => m.material === material))
+    .filter(Boolean);
+  if (items.length === 0) {
+    alert('No hay materiales marcados para exportar.');
+    return;
+  }
+  const headers = ['Material', 'Descripción', 'Stock Real', 'ROP Calculado', 'Cantidad a Pedir', 'Costo Unitario', 'Valor Estimado', 'Riesgo'];
+  const rows = items.map((m) => {
+    const cantidad = state.marcados[m.material] || 0;
+    return [
+      m.material, m.descripcion, m.stockFisico, m.ropCalculado, cantidad,
+      m.costoUnitario, cantidad * (m.costoUnitario || 0), m.riesgo,
+    ];
+  });
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Lista de Pedido');
+  const fecha = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `Lista_Pedido_L001_${fecha}.xlsx`);
 }
 
 // ---------------- MATERIALES PLANIFICADOS ----------------
@@ -808,6 +967,7 @@ function exportarExcel() {
 // ---------------- INIT ----------------
 document.addEventListener('DOMContentLoaded', async () => {
   cargarParametrosGuardados();
+  cargarMarcados();
   bindDropzone();
   bindTabs();
   bindFormularios();
