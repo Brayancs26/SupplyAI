@@ -25,23 +25,82 @@ function diffDiasISO(isoA, isoB) {
  * stock), quedándose solo con el almacén indicado y los códigos relevantes.
  * Devuelve filas planas {material, fechaISO, demanda}.
  */
-function filtrarConsumoReal(dataRows, almacen) {
+const CODIGOS_CONSUMO_COMBUSTIBLE_EXTRA = new Set([301, 302]); // despacho a embarcaciones
+
+/**
+ * Filtra los movimientos crudos de DATA a "consumo real":
+ * - Siempre incluye el almacén principal (L001) con los códigos base.
+ * - Para materiales de la categoría Insumos, TAMBIÉN incluye el almacén
+ *   extra (PI01, "Planta") — así su consumo no se queda corto.
+ * - Para materiales de la categoría Combustibles, TAMBIÉN cuenta el código
+ *   301 ("Trasladar ce.a ce") como consumo real, porque en TASA ese código
+ *   se usa para el despacho de combustible a las embarcaciones — es demanda
+ *   real, no un traslado interno. Para el resto de materiales, 301 sigue
+ *   excluido (ahí sí es un traslado normal entre almacenes).
+ */
+function filtrarConsumoReal(dataRows, almacenPrincipal, opciones = {}) {
+  const materialesConAlmacenExtra = opciones.materialesConAlmacenExtra || new Set();
+  const almacenExtra = opciones.almacenExtra || 'PI01';
+  const materialesCombustible = opciones.materialesCombustible || new Set();
+
   const out = [];
   for (const row of dataRows) {
-    if (String(row['Almacén']).trim() !== almacen) continue;
+    const almacenRow = String(row['Almacén']).trim();
+    const material = String(row['Material']).trim();
+
+    const enPrincipal = almacenRow === almacenPrincipal;
+    const enExtra = almacenRow === almacenExtra && materialesConAlmacenExtra.has(material);
+    if (!enPrincipal && !enExtra) continue;
+
     const clase = Number(row['Clase de movimiento']);
-    if (!CODIGOS_CONSUMO.has(clase)) continue;
+    const esConsumoBase = CODIGOS_CONSUMO.has(clase);
+    const esDespachoCombustible = materialesCombustible.has(material) && CODIGOS_CONSUMO_COMBUSTIBLE_EXTRA.has(clase);
+    if (!esConsumoBase && !esDespachoCombustible) continue;
+
     const fecha = row['Fe.contabilización'];
     const fechaISO = fecha instanceof Date ? toISODate(fecha) : toISODate(new Date(fecha));
     if (!fechaISO) continue;
     const cantidad = Number(row['Ctd.en UM entrada']) || 0;
     out.push({
-      material: String(row['Material']).trim(),
+      material,
       fechaISO,
       demanda: -cantidad,
+      almacenOrigen: almacenRow,
     });
   }
   return out;
+}
+
+/**
+ * Devuelve el set de códigos de material del MRP que caen en una categoría
+ * dada (Combustibles / Insumos / Otros), usando categorizarMaterial.
+ * Se define más abajo, junto a categorizarMaterial — ver esa función para
+ * el detalle de qué grupos de SAP caen en cada categoría.
+ */
+function materialesPorCategoria(mrpRows, categoriaObjetivo) {
+  const set = new Set();
+  for (const m of mrpRows) {
+    const material = String(m['Material']).trim();
+    if (categorizarMaterial(m['Denom.gr-artículos']) === categoriaObjetivo) set.add(material);
+  }
+  return set;
+}
+
+/**
+ * Suma la columna "Trans./Trasl." (stock en tránsito) de MB52 por material.
+ * No se filtra por almacén porque en la práctica esa columna no siempre
+ * viene asociada a un almacén específico en el reporte.
+ */
+function extraerTransitoPorMaterial(mb52Rows) {
+  const mapa = new Map();
+  for (const row of mb52Rows) {
+    const material = row['Material'] ? String(row['Material']).trim() : null;
+    if (!material) continue;
+    const transito = Number(row['Trans./Trasl.']) || 0;
+    if (transito === 0) continue;
+    mapa.set(material, (mapa.get(material) || 0) + transito);
+  }
+  return mapa;
 }
 
 /**
@@ -294,6 +353,7 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
       riesgo,
       ultimaFechaConsumo,
       diasSinMovimiento,
+      stSAP: m['ST'] ?? null,
     };
   });
 }
@@ -514,6 +574,27 @@ function enriquecerConTraslados(calculados, stockPorAlmacenTodos, almacenPrincip
 }
 
 /**
+ * Agrega las columnas del "monitor de cobertura" al estilo del Excel de
+ * Brayan: stock en Planta (PI01), stock en tránsito (MB52), stock ideal
+ * (consumo promedio × cobertura ideal en días) y cobertura real en días
+ * con el stock disponible total (Real + Planta + Tránsito).
+ */
+function enriquecerConCobertura(calculados, stockPorAlmacenTodos, transitoMap, almacenPrincipal, almacenPlanta, coberturaIdealDias) {
+  return calculados.map((m) => {
+    const porAlmacen = stockPorAlmacenTodos.get(m.material);
+    const planta = porAlmacen && porAlmacen.has(almacenPlanta) ? porAlmacen.get(almacenPlanta) : 0;
+    const transito = transitoMap.get(m.material) || 0;
+
+    const stockIdeal = m.demandaDiariaPromedio * coberturaIdealDias;
+    const stockDisponibleTotal = m.stockFisico + planta + transito;
+    const coberturaDias = m.demandaDiariaPromedio > 0 ? stockDisponibleTotal / m.demandaDiariaPromedio : null;
+    const solicitarCobertura = Math.max(0, stockIdeal - stockDisponibleTotal);
+
+    return { ...m, planta, transito, stockIdeal, stockDisponibleTotal, coberturaDias, solicitarCobertura };
+  });
+}
+
+/**
  * Clasificación de rotación basada en la frecuencia real de consumo
  * (no en el histórico completo agregado, sino en CUÁNTOS MESES DISTINTOS
  * tuvo consumo dentro del período observado):
@@ -591,6 +672,9 @@ const SupplyEngine = {
   categorizarMaterial,
   agregarStockPorAlmacenTodos,
   enriquecerConTraslados,
+  enriquecerConCobertura,
+  materialesPorCategoria,
+  extraerTransitoPorMaterial,
   calcularClasificacionMovimiento,
   determinarTratamiento,
   confianza,
