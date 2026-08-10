@@ -39,7 +39,6 @@ const CODIGOS_CONSUMO_COMBUSTIBLE_EXTRA = new Set([301, 302]); // despacho a emb
  *   excluido (ahí sí es un traslado normal entre almacenes).
  */
 function filtrarConsumoReal(dataRows, almacenPrincipal, opciones = {}) {
-  const materialesConAlmacenExtra = opciones.materialesConAlmacenExtra || new Set();
   const almacenExtra = opciones.almacenExtra || 'PI01';
   const materialesCombustible = opciones.materialesCombustible || new Set();
 
@@ -48,9 +47,10 @@ function filtrarConsumoReal(dataRows, almacenPrincipal, opciones = {}) {
     const almacenRow = String(row['Almacén']).trim();
     const material = String(row['Material']).trim();
 
-    const enPrincipal = almacenRow === almacenPrincipal;
-    const enExtra = almacenRow === almacenExtra && materialesConAlmacenExtra.has(material);
-    if (!enPrincipal && !enExtra) continue;
+    // L001 y PI01 SIEMPRE cuentan, para cualquier categoría — PI01 es donde
+    // se registra el consumo operativo real de muchos materiales (no solo
+    // insumos: por ejemplo el petróleo industrial consume casi todo ahí).
+    if (almacenRow !== almacenPrincipal && almacenRow !== almacenExtra) continue;
 
     const clase = Number(row['Clase de movimiento']);
     const esConsumoBase = CODIGOS_CONSUMO.has(clase);
@@ -77,11 +77,11 @@ function filtrarConsumoReal(dataRows, almacenPrincipal, opciones = {}) {
  * Se define más abajo, junto a categorizarMaterial — ver esa función para
  * el detalle de qué grupos de SAP caen en cada categoría.
  */
-function materialesPorCategoria(mrpRows, categoriaObjetivo) {
+function materialesPorCategoria(mrpRows, categoriaObjetivo, materialesConConsumoPI01) {
   const set = new Set();
   for (const m of mrpRows) {
     const material = String(m['Material']).trim();
-    if (categorizarMaterial(m['Denom.gr-artículos']) === categoriaObjetivo) set.add(material);
+    if (categorizarMaterial(material, m['Denom.gr-artículos'], materialesConConsumoPI01) === categoriaObjetivo) set.add(material);
   }
   return set;
 }
@@ -276,7 +276,7 @@ function agregarMB52(mb52Rows, almacen) {
  * y Uso Inmediato se reclasifica según su histórico real de movimientos
  * (ver determinarTratamiento / calcularClasificacionMovimiento).
  */
-function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, params, hoyISO, movClasificacionMap) {
+function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, params, hoyISO, movClasificacionMap, materialesConConsumoPI01) {
   const { Z, S, H, diasAnio } = params;
 
   return mrpRows.map((m) => {
@@ -333,6 +333,7 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
       unidadMedida: m['Unidad medida base'],
       grupoArticulo: m['Grupo de artículos'],
       denomGrupoArticulo: m['Denom.gr-artículos'] || '',
+      categoria: categorizarMaterial(material, m['Denom.gr-artículos'], materialesConConsumoPI01),
       leadTime: lt,
       temporadaObjetivo: tempObjetivo,
       stockFisico: mb52.stockFisico,
@@ -431,15 +432,39 @@ function calcularStatsMensualesGenerales(consumoReal, fechaMinISO, fechaMaxISO) 
 }
 
 /**
- * Categoriza un material en Combustibles / Insumos / Otros a partir de su
- * "Denom.gr-artículos" (grupo de artículos de SAP) — así el diesel/petróleo
- * no distorsiona el ranking de valor de los repuestos e insumos de almacén.
+ * Categoriza un material en Combustibles / Insumos / Otros:
+ * - Combustibles: por el grupo de SAP (PETROLEO/GAS/DIESEL/COMBUST) — es
+ *   una categoría física clara, no depende de dónde se consuma.
+ * - Insumos: cualquier material (que no sea combustible) que SÍ tiene
+ *   consumo real registrado en PI01 (almacén de Planta). PI01 es donde se
+ *   registra el consumo operativo real de insumos/materia prima — usar el
+ *   texto del grupo SAP no sirve porque etiquetas como "QUIMICOS Y
+ *   REACTIVOS" mezclan reactivos de laboratorio con insumos reales.
+ * - Otros: todo lo demás (repuestos, EPP, ferretería, etc.), que en la
+ *   práctica se consume casi todo en L001.
  */
-function categorizarMaterial(denomGrupoArticulo) {
+function categorizarMaterial(material, denomGrupoArticulo, materialesConConsumoPI01) {
   const d = (denomGrupoArticulo || '').toUpperCase();
   if (/PETROLEO|COMBUST|DIESEL|GAS/.test(d)) return 'Combustibles';
-  if (/INSUMO|QUIMIC|REACTIVO/.test(d)) return 'Insumos';
+  if (materialesConConsumoPI01 && materialesConConsumoPI01.has(material)) return 'Insumos';
   return 'Otros';
+}
+
+/**
+ * Devuelve el set de materiales que tienen al menos un movimiento de
+ * "consumo real" (códigos base, sin contar el extra de combustibles)
+ * registrado en el almacén indicado — se usa para detectar qué materiales
+ * son Insumos reales (consumo en PI01).
+ */
+function materialesConConsumoEnAlmacen(dataRows, almacen) {
+  const set = new Set();
+  for (const row of dataRows) {
+    if (String(row['Almacén']).trim() !== almacen) continue;
+    const clase = Number(row['Clase de movimiento']);
+    if (!CODIGOS_CONSUMO.has(clase)) continue;
+    set.add(String(row['Material']).trim());
+  }
+  return set;
 }
 
 /**
@@ -464,10 +489,7 @@ function categorizarMaterial(denomGrupoArticulo) {
  * N/D = menos de 3 meses con consumo registrado.
  */
 function calcularABCXYZ(calculados, statsMensuales) {
-  const conCategoria = calculados.map((m) => ({
-    ...m,
-    categoria: categorizarMaterial(m.denomGrupoArticulo),
-  }));
+  const conCategoria = calculados; // 'categoria' ya viene calculado desde calcularMateriales
 
   const valorPorMaterial = new Map();
   conCategoria.forEach((m) => {
@@ -670,6 +692,7 @@ const SupplyEngine = {
   calcularStatsMensualesGenerales,
   calcularABCXYZ,
   categorizarMaterial,
+  materialesConConsumoEnAlmacen,
   agregarStockPorAlmacenTodos,
   enriquecerConTraslados,
   enriquecerConCobertura,
