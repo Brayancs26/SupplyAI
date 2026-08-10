@@ -95,7 +95,8 @@
     <button class="tab-btn" data-tab="estacionalidad">Estacionalidad</button>
     <button class="tab-btn" data-tab="materiales">Materiales</button>
     <button class="tab-btn" data-tab="abcxyz">ABC-XYZ</button>
-    <button class="tab-btn" data-tab="traslados">Traslados</button>
+    <button class="tab-btn" data-tab="cobertura">Cobertura</button>
+    <button class="tab-btn" data-tab="traslados">Lista de Pedido</button>
     <button class="tab-btn" data-tab="tendencia">Tendencia por Producto</button>
     <button class="tab-btn" data-tab="inmovilizados">Inmovilizados</button>
     <button class="tab-btn" data-tab="parametros">Parámetros</button>
@@ -283,6 +284,7 @@
           <table>
             <thead>
               <tr>
+                <th>Pedir</th><th class="num">Cantidad</th>
                 <th>Material</th><th>Descripción</th><th>Clasif. SAP</th><th>Clasif. Final</th><th>Temp.</th>
                 <th class="num">LT (días)</th><th class="num">Stock Real</th>
                 <th class="num">SS SAP</th><th class="num">SS Calc.</th>
@@ -344,36 +346,95 @@
     </section>
 
     <!-- ===================== TRASLADOS ===================== -->
+    <!-- ===================== COBERTURA ===================== -->
+    <section id="tab-cobertura" class="tab-panel">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Cobertura de Insumos y Materia Prima</h2>
+          <p class="panel-sub">
+            Consumo promedio de Insumos ya incluye lo consumido en L001 <strong>y en PI01 (Planta)</strong>.
+            "Stock Ideal" = consumo promedio diario × cobertura ideal. "Cobertura" = (Stock Real + Planta +
+            Tránsito) ÷ consumo promedio diario — si sale por debajo de la cobertura ideal, aparece en rojo.
+            <em>Nota: "Capacidad Instalada" y "Forecast Accuracy" del Excel original no están acá — necesitarían
+            datos de producción y de forecast histórico que no vienen en tus 3 archivos.</em>
+          </p>
+        </div>
+        <div class="filtros" style="padding: 0 20px 16px;">
+          <label style="display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:var(--text-muted);">
+            Categoría
+            <select id="filtro-categoria-cobertura">
+              <option value="Insumos" selected>Insumos</option>
+              <option value="Combustibles">Combustibles</option>
+              <option value="Otros">Otros</option>
+              <option value="TODAS">Todas</option>
+            </select>
+          </label>
+          <label style="display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:var(--text-muted);">
+            Cobertura ideal (días)
+            <input type="number" id="input-cobertura-ideal" value="12" min="1" step="1" style="width:90px;" />
+          </label>
+        </div>
+        <div class="kpi-grid" style="padding: 0 20px 16px;">
+          <div class="kpi-card">
+            <span class="kpi-label">Materiales en esta vista</span>
+            <span class="kpi-value" id="kpi-cob-total">—</span>
+          </div>
+          <div class="kpi-card kpi-rojo">
+            <span class="kpi-label">Por debajo de la cobertura ideal</span>
+            <span class="kpi-value" id="kpi-cob-bajo">—</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Unidades a solicitar (total)</span>
+            <span class="kpi-value kpi-value-small" id="kpi-cob-solicitar">—</span>
+          </div>
+        </div>
+        <div class="table-wrap tall">
+          <table>
+            <thead>
+              <tr>
+                <th>Tipo</th><th>Código</th><th>Descripción</th>
+                <th class="num">Consumo Prom.</th><th class="num">Desv. Consumo</th>
+                <th class="num">Cobertura Ideal</th><th class="num">Stock Ideal</th>
+                <th class="num">Stock Real</th><th class="num">Cobertura</th>
+                <th class="num">Solicitar</th><th class="num">Tránsito</th><th class="num">Planta</th><th>ST</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-cobertura-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== TRASLADOS/LISTA DE PEDIDO ===================== -->
     <section id="tab-traslados" class="tab-panel">
       <div class="kpi-row-tag">
-        <div class="tag-label">Monitor de<br />Traslados</div>
+        <div class="tag-label">Lista de<br />Pedido</div>
         <div class="kpi-grid-inline">
           <div class="kpi-inline-card">
-            <span class="kpi-value" id="kpi-trasl-necesidad">—</span>
-            <span class="kpi-label">Materiales con necesidad (stock &lt; ROP)</span>
+            <span class="kpi-value" id="kpi-pedido-total">—</span>
+            <span class="kpi-label">Materiales marcados para pedir</span>
           </div>
           <div class="kpi-inline-card">
-            <span class="kpi-value" id="kpi-trasl-candidatos">—</span>
-            <span class="kpi-label">Candidatos a traslado (hay stock en otro almacén)</span>
+            <span class="kpi-value" id="kpi-pedido-cantidad">—</span>
+            <span class="kpi-label">Unidades totales a pedir</span>
           </div>
           <div class="kpi-inline-card">
-            <span class="kpi-value" id="kpi-trasl-pct">—</span>
-            <span class="kpi-label">% de la necesidad cubrible por traslado</span>
+            <span class="kpi-value" id="kpi-pedido-valor">—</span>
+            <span class="kpi-label">Valor estimado del pedido</span>
           </div>
           <div class="kpi-inline-card">
-            <span class="kpi-value" id="kpi-trasl-unidades">—</span>
-            <span class="kpi-label">Unidades disponibles en otros almacenes</span>
+            <span class="kpi-value" id="kpi-pedido-rojo">—</span>
+            <span class="kpi-label">De ellos, en riesgo de quiebre</span>
           </div>
         </div>
       </div>
 
       <div class="panel">
         <div class="panel-header">
-          <h2>Monitor de stock disponible para traslado <span id="conteo-traslados" class="conteo-inline"></span></h2>
+          <h2>Materiales marcados para aprovisionar <span id="conteo-pedido" class="conteo-inline"></span></h2>
           <p class="panel-sub">
-            Cruza tu necesidad en L001 (ROP calculado − stock real) contra el stock libre que ya existe en
-            los otros almacenes de tu MB52 (L002, L003, L004, L005, L008, L010, PI01, PI04, PI05, Q001, SINI,
-            C001, TK02, CL01, CH01). Si hay stock en otro lado, capaz no haga falta comprar — se puede trasladar.
+            Marca la casilla "Pedir" en la pestaña Materiales para agregar un material aquí — se guarda en
+            este navegador. Ajusta la cantidad directamente en cualquiera de las dos pestañas.
           </p>
         </div>
         <div class="table-wrap tall">
@@ -381,12 +442,16 @@
             <thead>
               <tr>
                 <th>Material</th><th>Descripción</th>
-                <th class="num">Necesidad L001</th><th class="num">Stock L001</th>
-                <th class="num">Stock Otros Almacenes</th><th>Detalle por almacén</th><th>Riesgo</th>
+                <th class="num">Stock Real</th><th class="num">ROP Calculado</th>
+                <th class="num">Cantidad a Pedir</th><th class="num">Costo Unit.</th>
+                <th class="num">Valor Estimado</th><th>Riesgo</th><th></th>
               </tr>
             </thead>
-            <tbody id="tabla-traslados-body"></tbody>
+            <tbody id="tabla-pedido-body"></tbody>
           </table>
+        </div>
+        <div class="acciones-publicar" style="padding: 0 20px 20px;">
+          <button type="button" id="btn-exportar-pedido" class="btn-secundario">Exportar Lista de Pedido</button>
         </div>
       </div>
     </section>
