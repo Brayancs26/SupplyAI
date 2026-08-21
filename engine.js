@@ -66,6 +66,7 @@ function filtrarConsumoReal(dataRows, almacenPrincipal, opciones = {}) {
       fechaISO,
       demanda: -cantidad,
       almacenOrigen: almacenRow,
+      claseMovimiento: clase,
     });
   }
   return out;
@@ -407,16 +408,48 @@ function calcularInmovilizados(calculados, umbralModerado, umbralCritico, totalD
  * ordenado cronológicamente, solo con los meses donde hubo al menos un
  * movimiento (no rellena huecos con cero, a diferencia del cálculo de SS).
  */
+const ETIQUETAS_MOVIMIENTO = {
+  201: 'Consumo centro de costo', 202: 'Anulación consumo centro de costo',
+  261: 'Consumo orden de mantenimiento', 262: 'Anulación consumo orden',
+  281: 'Consumo proyecto', 282: 'Anulación consumo proyecto',
+  601: 'Salida por entrega', 602: 'Anulación salida entrega',
+  301: 'Despacho a embarcación (combustible)', 302: 'Anulación despacho combustible',
+};
+
+/**
+ * Serie mensual de consumo real para UN material específico, con el
+ * detalle de movimientos que componen cada punto (fechas, cantidades y
+ * clase de movimiento SAP) — para el tooltip interactivo del gráfico.
+ */
 function serieMensualPorMaterial(consumoReal, material) {
-  const mapa = new Map();
+  const mapa = new Map(); // mes -> { total, movimientos: [{fechaISO, demanda, claseMovimiento}] }
   for (const r of consumoReal) {
     if (r.material !== material) continue;
     const clave = r.fechaISO.slice(0, 7);
-    mapa.set(clave, (mapa.get(clave) || 0) + r.demanda);
+    if (!mapa.has(clave)) mapa.set(clave, { total: 0, movimientos: [] });
+    const entry = mapa.get(clave);
+    entry.total += r.demanda;
+    entry.movimientos.push({ fechaISO: r.fechaISO, demanda: r.demanda, claseMovimiento: r.claseMovimiento });
   }
   return Array.from(mapa.entries())
     .sort((a, b) => (a[0] < b[0] ? -1 : 1))
-    .map(([mes, total]) => ({ mes, total }));
+    .map(([mes, e]) => {
+      const porClase = new Map();
+      e.movimientos.forEach((mv) => {
+        porClase.set(mv.claseMovimiento, (porClase.get(mv.claseMovimiento) || 0) + mv.demanda);
+      });
+      const detalle = [...porClase.entries()]
+        .map(([clase, total]) => ({ clase, etiqueta: ETIQUETAS_MOVIMIENTO[clase] || `Movimiento ${clase}`, total }))
+        .sort((a, b) => Math.abs(b.total) - Math.abs(a.total));
+      const ultimoMovimiento = [...e.movimientos].sort((a, b) => (a.fechaISO < b.fechaISO ? 1 : -1))[0];
+      return {
+        mes,
+        total: e.total,
+        numMovimientos: e.movimientos.length,
+        detalle,
+        ultimaFechaDelMes: ultimoMovimiento ? ultimoMovimiento.fechaISO : null,
+      };
+    });
 }
 
 /**
