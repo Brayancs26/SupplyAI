@@ -449,6 +449,25 @@ td.desc { white-space: normal; max-width: 260px; }
 .detalle-tendencia-stats strong { color: var(--cyan); }
 .detalle-grafico { background: var(--bg); border-radius: 10px; padding: 10px; }
 
+/* ---------- Tooltip del gráfico de tendencia ---------- */
+.punto-hover { fill: #22d3ee; cursor: pointer; transition: r 0.12s; }
+.punto-hover:hover { r: 7; fill: #7fe6f7; }
+.tooltip-tendencia {
+  position: fixed; z-index: 300; pointer-events: none;
+  background: var(--panel-2); border: 1px solid var(--cyan); border-radius: 10px;
+  padding: 10px 14px; font-family: var(--font-ui); font-size: 12px; color: var(--text);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); min-width: 180px;
+}
+.tooltip-mes { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; color: #fff; margin-bottom: 2px; }
+.tooltip-cantidad { color: var(--cyan); font-weight: 600; margin-bottom: 3px; }
+.tooltip-meta { color: var(--text-muted); font-size: 11px; }
+.tooltip-separador { height: 1px; background: var(--border); margin: 8px 0 6px; }
+.tooltip-detalle-fila { display: flex; justify-content: space-between; gap: 14px; font-size: 11px; color: var(--text-muted); padding: 1px 0; }
+.tooltip-detalle-fila span:last-child { color: var(--text); font-variant-numeric: tabular-nums; }
+
+/* ---------- Separador entre subsecciones combinadas ---------- */
+.separador-subseccion { margin: 30px 0 16px; padding-top: 6px; border-top: 1px solid var(--border); }
+
 footer {
   text-align: center; color: var(--text-muted); font-size: 11.5px; padding: 20px 24px;
   border-top: 1px solid var(--border);
