@@ -276,12 +276,14 @@ function agregarMB52(mb52Rows, almacen) {
  * y Uso Inmediato se reclasifica según su histórico real de movimientos
  * (ver determinarTratamiento / calcularClasificacionMovimiento).
  */
-function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, params, hoyISO, movClasificacionMap, materialesConConsumoPI01) {
+function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, params, hoyISO, movClasificacionMap, materialesConConsumoPI01, simParams) {
   const { Z, S, H, diasAnio } = params;
+  const leadTimeMult = simParams && simParams.leadTimeMult ? simParams.leadTimeMult : 1;
+  const demandMult = simParams && simParams.demandMult ? simParams.demandMult : 1;
 
   return mrpRows.map((m) => {
     const material = String(m['Material']).trim();
-    const lt = Number(m['Plazo entrega prev.']) || 0;
+    const lt = (Number(m['Plazo entrega prev.']) || 0) * leadTimeMult;
     const tempObjetivo = temporadaObjetivo(lt, hoyISO, mesATemporada);
 
     const clasificacionSAP = m['Den.Clasificación'] || 'Sin Clasificar';
@@ -295,8 +297,11 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
 
     const diasConConsumo = bucket ? bucket.diasConConsumo : 0;
     const conf = confianza(diasConConsumo);
-    const media = bucket ? bucket.demandaDiariaPromedio : 0;
-    const desvest = bucket ? bucket.demandaDiariaDesvest : 0;
+    // El multiplicador de demanda escala la media directo, y la desviación
+    // con la raíz cuadrada (mismo criterio que un pico de demanda conserva
+    // la FORMA de la distribución, no la infla linealmente).
+    const media = (bucket ? bucket.demandaDiariaPromedio : 0) * demandMult;
+    const desvest = (bucket ? bucket.demandaDiariaDesvest : 0) * Math.sqrt(demandMult);
 
     const mb52 = mb52Map.get(material) || { stockFisico: 0, costoUnitario: null, fechaVencimiento: null };
     const demandaAnual = media * diasAnio;
@@ -675,6 +680,35 @@ function determinarTratamiento(clasificacionSAP, movInfo) {
   return { clasificacionFinal: sap || 'Sin Clasificar', incluido: true, reclasificado: false, motivo: null };
 }
 
+/**
+ * Resumen comparativo para el Simulador de Escenarios: presupuesto de
+ * compras requerido, materiales en riesgo de quiebre, capital en exceso
+ * de stock (más del doble del ROP) y cobertura promedio en días.
+ */
+function calcularResumenSimulacion(planificados) {
+  const conRiesgo = planificados.filter((m) => m.riesgo === 'ROJO' || m.riesgo === 'AMARILLO');
+  const presupuestoCompras = conRiesgo.reduce((acc, m) => {
+    const necesidad = m.ropCalculado !== null ? Math.max(0, m.ropCalculado - m.stockFisico) : 0;
+    return acc + necesidad * (m.costoUnitario || 0);
+  }, 0);
+
+  const materialesEnRiesgo = planificados.filter((m) => m.riesgo === 'ROJO').length;
+
+  const sobrestock = planificados.filter((m) => m.ropCalculado !== null && m.ropCalculado > 0 && m.stockFisico > m.ropCalculado * 2);
+  const capitalSobrestock = sobrestock.reduce((acc, m) => {
+    const exceso = m.stockFisico - m.ropCalculado * 2;
+    return acc + exceso * (m.costoUnitario || 0);
+  }, 0);
+
+  const conCobertura = planificados.filter((m) => m.demandaDiariaPromedio > 0);
+  const coberturaPromedio =
+    conCobertura.length > 0
+      ? conCobertura.reduce((acc, m) => acc + m.stockFisico / m.demandaDiariaPromedio, 0) / conCobertura.length
+      : 0;
+
+  return { presupuestoCompras, materialesEnRiesgo, capitalSobrestock, coberturaPromedio };
+}
+
 const SupplyEngine = {
   NOMBRES_MES,
   CODIGOS_CONSUMO,
@@ -700,6 +734,7 @@ const SupplyEngine = {
   extraerTransitoPorMaterial,
   calcularClasificacionMovimiento,
   determinarTratamiento,
+  calcularResumenSimulacion,
   confianza,
 };
 
