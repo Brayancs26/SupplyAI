@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -96,6 +97,7 @@
     <button class="tab-btn" data-tab="materiales">Materiales</button>
     <button class="tab-btn" data-tab="abcxyz">ABC-XYZ</button>
     <button class="tab-btn" data-tab="cobertura">Cobertura</button>
+    <button class="tab-btn" data-tab="simulacion">Simulación</button>
     <button class="tab-btn" data-tab="traslados">Lista de Pedido</button>
     <button class="tab-btn" data-tab="tendencia">Tendencia por Producto</button>
     <button class="tab-btn" data-tab="inmovilizados">Inmovilizados</button>
@@ -345,7 +347,6 @@
       </div>
     </section>
 
-    <!-- ===================== TRASLADOS ===================== -->
     <!-- ===================== COBERTURA ===================== -->
     <section id="tab-cobertura" class="tab-panel">
       <div class="panel">
@@ -403,6 +404,95 @@
             <tbody id="tabla-cobertura-body"></tbody>
           </table>
         </div>
+      </div>
+    </section>
+
+    <!-- ===================== SIMULACIÓN ===================== -->
+    <section id="tab-simulacion" class="tab-panel">
+      <div class="panel">
+        <div class="panel-header sim-header">
+          <div>
+            <h2>Simulador de Escenarios "Qué pasaría si…"</h2>
+            <p class="panel-sub">Evalúa el impacto de retrasos de proveedor, picos de demanda o cambios de nivel de servicio — todo se recalcula en vivo, sin tocar tus datos reales.</p>
+          </div>
+          <button type="button" id="btn-reset-simulacion" class="btn-secundario">Restablecer</button>
+        </div>
+      </div>
+
+      <div class="sim-controles-grid">
+        <div class="panel sim-control-card">
+          <div class="sim-control-header">
+            <span>Tiempo de Entrega (Lead Time)</span>
+            <span class="sim-control-valor" id="sim-leadtime-valor">Normal (1.0x)</span>
+          </div>
+          <input type="range" id="sim-leadtime-slider" min="0.5" max="2.0" step="0.1" value="1.0" />
+          <div class="sim-control-extremos"><span>-50% (Express)</span><span>+100% (Crisis logística)</span></div>
+          <p class="sim-control-nota">Simula retrasos portuarios, huelgas o escasez de proveedores.</p>
+        </div>
+
+        <div class="panel sim-control-card">
+          <div class="sim-control-header">
+            <span>Nivel de Servicio Deseado</span>
+            <span class="sim-control-valor" id="sim-nivel-servicio-valor">95%</span>
+          </div>
+          <div class="sim-botones-nivel">
+            <button type="button" class="btn-nivel-servicio" data-z="1.282">90%</button>
+            <button type="button" class="btn-nivel-servicio activo" data-z="1.645">95%</button>
+            <button type="button" class="btn-nivel-servicio" data-z="2.05">98%</button>
+            <button type="button" class="btn-nivel-servicio" data-z="2.33">99%</button>
+          </div>
+          <p class="sim-control-nota">Un nivel de servicio más alto sube el Stock de Seguridad de forma no lineal.</p>
+        </div>
+
+        <div class="panel sim-control-card">
+          <div class="sim-control-header">
+            <span>Fluctuación de Demanda</span>
+            <span class="sim-control-valor" id="sim-demanda-valor">Normal (1.0x)</span>
+          </div>
+          <input type="range" id="sim-demanda-slider" min="0.5" max="1.8" step="0.1" value="1.0" />
+          <div class="sim-control-extremos"><span>-50% (Baja)</span><span>+80% (Pico / Temporada)</span></div>
+          <p class="sim-control-nota">Simula temporada alta, campañas o caídas de consumo.</p>
+        </div>
+      </div>
+
+      <div class="sim-resultados-grid">
+        <div class="panel sim-resultado-card">
+          <span class="sim-resultado-label">Presupuesto de Compras Requerido</span>
+          <div class="sim-resultado-linea">
+            <span class="sim-resultado-valor" id="sim-presupuesto-valor">—</span>
+            <span class="sim-diff" id="sim-presupuesto-diff"></span>
+          </div>
+          <span class="sim-resultado-base" id="sim-presupuesto-base"></span>
+        </div>
+        <div class="panel sim-resultado-card">
+          <span class="sim-resultado-label">Materiales en Riesgo de Quiebre</span>
+          <div class="sim-resultado-linea">
+            <span class="sim-resultado-valor sim-resultado-rojo" id="sim-riesgo-valor">—</span>
+            <span class="sim-diff" id="sim-riesgo-diff"></span>
+          </div>
+          <span class="sim-resultado-base" id="sim-riesgo-base"></span>
+        </div>
+        <div class="panel sim-resultado-card">
+          <span class="sim-resultado-label">Capital en Exceso de Stock</span>
+          <div class="sim-resultado-linea">
+            <span class="sim-resultado-valor sim-resultado-purpura" id="sim-sobrestock-valor">—</span>
+            <span class="sim-diff" id="sim-sobrestock-diff"></span>
+          </div>
+          <span class="sim-resultado-base" id="sim-sobrestock-base"></span>
+        </div>
+        <div class="panel sim-resultado-card">
+          <span class="sim-resultado-label">Cobertura Promedio</span>
+          <div class="sim-resultado-linea">
+            <span class="sim-resultado-valor" id="sim-cobertura-valor">—</span>
+            <span class="sim-diff" id="sim-cobertura-diff"></span>
+          </div>
+          <span class="sim-resultado-base" id="sim-cobertura-base"></span>
+        </div>
+      </div>
+
+      <div class="panel sim-notas-panel">
+        <h2>Conclusión Operativa</h2>
+        <div id="sim-notas"></div>
       </div>
     </section>
 
