@@ -124,7 +124,7 @@
               </div>
             </div>
           </div>
-          <p class="gauge-nota">% de materiales en VERDE (stock por encima del punto de reorden)</p>
+          <p class="gauge-nota">% de materiales en estado Óptimo (dentro del rango saludable de stock)</p>
         </div>
 
         <div class="kpi-grid kpi-grid-resumen">
@@ -136,13 +136,17 @@
             <span class="kpi-label">Riesgo de quiebre</span>
             <span class="kpi-value" id="kpi-rojo">—</span>
           </div>
-          <div class="kpi-card kpi-amarillo">
-            <span class="kpi-label">A vigilar</span>
-            <span class="kpi-value" id="kpi-amarillo">—</span>
-          </div>
           <div class="kpi-card kpi-verde">
-            <span class="kpi-label">OK</span>
+            <span class="kpi-label">Óptimo</span>
             <span class="kpi-value" id="kpi-verde">—</span>
+          </div>
+          <div class="kpi-card kpi-purpura">
+            <span class="kpi-label">Sobrestock</span>
+            <span class="kpi-value" id="kpi-sobrestock">—</span>
+          </div>
+          <div class="kpi-card kpi-amarillo">
+            <span class="kpi-label">Sin movimiento</span>
+            <span class="kpi-value" id="kpi-amarillo">—</span>
           </div>
         </div>
       </div>
@@ -678,6 +682,35 @@
 <footer>
   Almacén L001 (Matarani) · Todo el cálculo corre en tu navegador, ningún dato sale de tu equipo
 </footer>
+
+<!-- ===================== FICHA DE DETALLE DE MATERIAL ===================== -->
+<div id="overlay-detalle" class="overlay-detalle">
+  <div class="modal-detalle">
+    <button type="button" id="btn-cerrar-detalle" class="btn-cerrar-detalle">✕</button>
+    <div class="detalle-header">
+      <div>
+        <span class="detalle-codigo" id="detalle-codigo">—</span>
+        <p class="detalle-descripcion" id="detalle-descripcion"></p>
+        <div class="detalle-chips">
+          <span class="chip chip-abc" id="detalle-clasificacion"></span>
+          <span class="chip chip-cat-insumos" id="detalle-categoria"></span>
+          <span class="detalle-temporada" id="detalle-temporada"></span>
+        </div>
+      </div>
+      <div id="detalle-estado-chip"></div>
+    </div>
+
+    <p class="detalle-diagnostico" id="detalle-diagnostico"></p>
+
+    <div class="detalle-metricas-grid" id="detalle-metricas"></div>
+
+    <div class="detalle-tendencia-header">
+      <h3>Tendencia de consumo mensual</h3>
+      <div class="detalle-tendencia-stats" id="detalle-tendencia-stats"></div>
+    </div>
+    <div id="detalle-grafico" class="detalle-grafico"></div>
+  </div>
+</div>
 
 </body>
 </html>
