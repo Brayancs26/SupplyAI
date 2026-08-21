@@ -1078,6 +1078,12 @@ function mostrarTendenciaMaterial(valorInput) {
   document.getElementById('tendencia-grafico').innerHTML = construirGraficoLinea(serie);
 }
 
+function formatMesLegible(mesISO) {
+  const NOMBRES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const [anio, mes] = mesISO.split('-');
+  return `${NOMBRES[Number(mes) - 1]} ${anio}`;
+}
+
 function construirGraficoLinea(serie) {
   const W = 1000;
   const H = 260;
@@ -1096,7 +1102,12 @@ function construirGraficoLinea(serie) {
   const area = `${PAD_L},${H - PAD_B} ${linea} ${puntos[puntos.length - 1].x.toFixed(1)},${H - PAD_B}`;
 
   const circulos = puntos
-    .map((p) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#22d3ee" />`)
+    .map((p) => {
+      const detalleAttr = encodeURIComponent(JSON.stringify(p.detalle || []));
+      return `<circle class="punto-hover" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4"
+        data-mes="${p.mes}" data-total="${p.total}" data-nummov="${p.numMovimientos || 0}"
+        data-ultimafecha="${p.ultimaFechaDelMes || ''}" data-detalle="${detalleAttr}" />`;
+    })
     .join('');
 
   const etiquetasX = puntos
@@ -1109,7 +1120,7 @@ function construirGraficoLinea(serie) {
     return `<line x1="${PAD_L}" y1="${y.toFixed(1)}" x2="${W - 20}" y2="${y.toFixed(1)}" stroke="#232d40" stroke-width="1" />`;
   }).join('');
 
-  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible;">
     <defs>
       <linearGradient id="gradTendencia" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.35" />
@@ -1122,6 +1133,52 @@ function construirGraficoLinea(serie) {
     ${circulos}
     ${etiquetasX}
   </svg>`;
+}
+
+function bindTooltipTendencia() {
+  const tooltip = document.getElementById('tooltip-tendencia');
+
+  document.addEventListener('mousemove', (e) => {
+    const punto = e.target.closest('.punto-hover');
+    if (!punto) return;
+    tooltip.style.left = e.clientX + 16 + 'px';
+    tooltip.style.top = e.clientY + 12 + 'px';
+  });
+
+  document.addEventListener('mouseover', (e) => {
+    const punto = e.target.closest('.punto-hover');
+    if (!punto) return;
+
+    const mes = punto.dataset.mes;
+    const total = Number(punto.dataset.total);
+    const numMov = punto.dataset.nummov;
+    const ultimaFecha = punto.dataset.ultimafecha;
+    let detalle = [];
+    try {
+      detalle = JSON.parse(decodeURIComponent(punto.dataset.detalle));
+    } catch (err) {
+      detalle = [];
+    }
+
+    const detalleHTML = detalle
+      .map((d) => `<div class="tooltip-detalle-fila"><span>${d.etiqueta}</span><span>${fmtNum(d.total, 1)}</span></div>`)
+      .join('');
+
+    tooltip.innerHTML = `
+      <div class="tooltip-mes">${formatMesLegible(mes)}</div>
+      <div class="tooltip-cantidad">${fmtNum(total, 1)} unidades</div>
+      <div class="tooltip-meta">${numMov} movimiento${numMov == 1 ? '' : 's'} · último: ${ultimaFecha || '—'}</div>
+      ${detalleHTML ? `<div class="tooltip-separador"></div>${detalleHTML}` : ''}
+    `;
+    tooltip.style.display = 'block';
+  });
+
+  document.addEventListener('mouseout', (e) => {
+    const punto = e.target.closest('.punto-hover');
+    if (!punto) return;
+    if (e.relatedTarget && e.relatedTarget.closest('.punto-hover')) return;
+    tooltip.style.display = 'none';
+  });
 }
 
 // ---------------- EXPORTAR ----------------
@@ -1151,5 +1208,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindTabs();
   bindFormularios();
   bindEventosDelegados();
+  bindTooltipTendencia();
   await cargarCacheAlIniciar();
 });
