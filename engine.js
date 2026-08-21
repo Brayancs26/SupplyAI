@@ -310,6 +310,8 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
     let ropCalculado = null;
     let eoq = null;
     let riesgo = 'N/A';
+    let maxStock = null;
+    let estadoSalud = 'N/A';
 
     if (tratamiento.incluido) {
       ssCalculado = conf === 'Sin datos' ? ssActual : Z * desvest * Math.sqrt(lt);
@@ -318,8 +320,26 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
         mb52.costoUnitario && mb52.costoUnitario > 0 && H > 0
           ? Math.sqrt((2 * demandaAnual * S) / (H * mb52.costoUnitario))
           : null;
-      if (mb52.stockFisico < ropCalculado) riesgo = 'ROJO';
-      else if (mb52.stockFisico < ropCalculado * 1.2) riesgo = 'AMARILLO';
+      maxStock = eoq !== null ? Math.max(ropCalculado + eoq, ropCalculado * 1.5) : ropCalculado * 1.5;
+
+      const coberturaDiasLocal = media > 0 ? mb52.stockFisico / media : mb52.stockFisico > 0 ? 999 : 0;
+
+      // Estado de salud en 5 niveles (más específico que el semáforo simple):
+      if (conf === 'Sin datos' && mb52.stockFisico > 0) {
+        estadoSalud = 'DEAD_STOCK'; // stock físico pero sin ningún consumo real registrado
+      } else if (mb52.stockFisico <= 0 || (coberturaDiasLocal < Math.max(3, lt * 0.35) && mb52.stockFisico < ssCalculado)) {
+        estadoSalud = 'STOCKOUT_CRITICAL';
+      } else if (mb52.stockFisico <= ropCalculado) {
+        estadoSalud = 'REORDER_URGENT';
+      } else if (mb52.stockFisico > maxStock) {
+        estadoSalud = 'OVERSTOCK';
+      } else {
+        estadoSalud = 'OPTIMAL';
+      }
+
+      // 'riesgo' se conserva por compatibilidad con las vistas que agrupan en 3 niveles.
+      if (estadoSalud === 'STOCKOUT_CRITICAL' || estadoSalud === 'REORDER_URGENT') riesgo = 'ROJO';
+      else if (estadoSalud === 'OVERSTOCK' || estadoSalud === 'DEAD_STOCK') riesgo = 'AMARILLO';
       else riesgo = 'VERDE';
     }
 
@@ -356,7 +376,9 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
       difROP: ropCalculado !== null ? ropCalculado - ropActual : null,
       demandaAnual,
       eoq,
+      maxStock,
       riesgo,
+      estadoSalud,
       ultimaFechaConsumo,
       diasSinMovimiento,
       stSAP: m['ST'] ?? null,
@@ -709,6 +731,30 @@ function calcularResumenSimulacion(planificados) {
   return { presupuestoCompras, materialesEnRiesgo, capitalSobrestock, coberturaPromedio };
 }
 
+/**
+ * Explica en una frase por qué un material quedó en su estado de salud —
+ * se usa en la ficha de detalle por material.
+ */
+function generarDiagnostico(m) {
+  if (!m.incluidoEnPlanificacion) {
+    return m.motivoExclusion || 'Este material no está incluido en la planificación de SS/ROP.';
+  }
+  switch (m.estadoSalud) {
+    case 'STOCKOUT_CRITICAL':
+      return `Stock real (${Math.round(m.stockFisico)}) está en cero o por debajo del Stock de Seguridad (${Math.round(m.ssCalculado)}) con muy pocos días de cobertura — riesgo inmediato de quiebre.`;
+    case 'REORDER_URGENT':
+      return `Stock real (${Math.round(m.stockFisico)}) ya cruzó el Punto de Pedido (${Math.round(m.ropCalculado)}) — corresponde generar el pedido ahora.`;
+    case 'OVERSTOCK':
+      return `Stock real (${Math.round(m.stockFisico)}) supera el máximo recomendado (${Math.round(m.maxStock)}) — hay capital de más inmovilizado en este material.`;
+    case 'DEAD_STOCK':
+      return `Tiene stock físico (${Math.round(m.stockFisico)}) pero no registra ningún consumo real en el período analizado — revisar si sigue vigente.`;
+    case 'OPTIMAL':
+      return `Stock real (${Math.round(m.stockFisico)}) está dentro del rango saludable, entre el Punto de Pedido (${Math.round(m.ropCalculado)}) y el máximo recomendado (${Math.round(m.maxStock)}).`;
+    default:
+      return 'Sin información suficiente para diagnosticar.';
+  }
+}
+
 const SupplyEngine = {
   NOMBRES_MES,
   CODIGOS_CONSUMO,
@@ -735,6 +781,7 @@ const SupplyEngine = {
   calcularClasificacionMovimiento,
   determinarTratamiento,
   calcularResumenSimulacion,
+  generarDiagnostico,
   confianza,
 };
 
