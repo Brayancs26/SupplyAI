@@ -29,6 +29,10 @@ const state = {
   marcados: {},
   coberturaIdealDias: 12,
   filtroCategoriaCobertura: 'Insumos',
+  movClasificacionMap: null,
+  materialesConConsumoPI01: null,
+  mrpRowsCache: null,
+  sim: { leadTimeMult: 1.0, demandMult: 1.0, serviceLevelZ: 1.645 },
 };
 
 const fmtNum = (n, dec = 1) =>
@@ -246,6 +250,9 @@ function calcularTodo() {
       state.mb52Map = SupplyEngine.agregarMB52(mb52Rows, ALMACEN);
 
       const movClasificacionMap = SupplyEngine.calcularClasificacionMovimiento(state.consumoReal, state.fechaMin, state.fechaMax);
+      state.movClasificacionMap = movClasificacionMap;
+      state.materialesConConsumoPI01 = materialesConConsumoPI01;
+      state.mrpRowsCache = mrpRows;
 
       state.calculados = SupplyEngine.calcularMateriales(
         mrpRows,
@@ -301,6 +308,7 @@ function renderTodo() {
   renderABCXYZ();
   renderCobertura();
   renderListaPedido();
+  renderSimulacion();
   poblarListaTendencia();
 }
 
@@ -450,6 +458,31 @@ function bindFormularios() {
 
   document.getElementById('filtro-categoria-cobertura').addEventListener('change', renderCobertura);
   document.getElementById('input-cobertura-ideal').addEventListener('change', renderCobertura);
+
+  document.getElementById('sim-leadtime-slider').addEventListener('input', (e) => {
+    state.sim.leadTimeMult = Number(e.target.value);
+    renderSimulacion();
+  });
+  document.getElementById('sim-demanda-slider').addEventListener('input', (e) => {
+    state.sim.demandMult = Number(e.target.value);
+    renderSimulacion();
+  });
+  document.querySelectorAll('.btn-nivel-servicio').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.sim.serviceLevelZ = Number(btn.dataset.z);
+      document.querySelectorAll('.btn-nivel-servicio').forEach((b) => b.classList.remove('activo'));
+      btn.classList.add('activo');
+      renderSimulacion();
+    });
+  });
+  document.getElementById('btn-reset-simulacion').addEventListener('click', () => {
+    state.sim = { leadTimeMult: 1.0, demandMult: 1.0, serviceLevelZ: 1.645 };
+    document.getElementById('sim-leadtime-slider').value = 1.0;
+    document.getElementById('sim-demanda-slider').value = 1.0;
+    document.querySelectorAll('.btn-nivel-servicio').forEach((b) => b.classList.remove('activo'));
+    document.querySelector('.btn-nivel-servicio[data-z="1.645"]').classList.add('activo');
+    renderSimulacion();
+  });
 }
 
 function flashGuardado() {
@@ -721,6 +754,80 @@ function renderCobertura() {
   if (filas.length > MAX_FILAS) {
     tbody.innerHTML += `<tr><td colspan="14" class="muted centrado">… mostrando los primeros ${MAX_FILAS}.</td></tr>`;
   }
+}
+
+// ---------------- SIMULADOR DE ESCENARIOS ----------------
+function ejecutarSimulacion() {
+  const paramsSim = { ...state.params, Z: state.sim.serviceLevelZ };
+  let simulados = SupplyEngine.calcularMateriales(
+    state.mrpRowsCache,
+    state.statsPorTemporada,
+    state.mesATemporada,
+    state.mb52Map,
+    paramsSim,
+    hoyISO(),
+    state.movClasificacionMap,
+    state.materialesConConsumoPI01,
+    { leadTimeMult: state.sim.leadTimeMult, demandMult: state.sim.demandMult }
+  );
+  simulados = simulados.filter((m) => m.incluidoEnPlanificacion);
+  return simulados;
+}
+
+function renderSimulacion() {
+  if (!state.mrpRowsCache) return;
+
+  document.getElementById('sim-leadtime-valor').textContent =
+    state.sim.leadTimeMult === 1 ? 'Normal (1.0x)' : (state.sim.leadTimeMult > 1 ? '+' : '') + Math.round((state.sim.leadTimeMult - 1) * 100) + '%';
+  document.getElementById('sim-demanda-valor').textContent =
+    state.sim.demandMult === 1 ? 'Normal (1.0x)' : (state.sim.demandMult > 1 ? '+' : '') + Math.round((state.sim.demandMult - 1) * 100) + '%';
+  document.getElementById('sim-nivel-servicio-valor').textContent = `${Math.round((zAporcentaje(state.sim.serviceLevelZ)) * 100)}%`;
+
+  const base = SupplyEngine.calcularResumenSimulacion(state.planificados);
+  const sim = SupplyEngine.calcularResumenSimulacion(ejecutarSimulacion());
+
+  pintarComparativo('sim-presupuesto', base.presupuestoCompras, sim.presupuestoCompras, fmtSoles, false);
+  pintarComparativo('sim-riesgo', base.materialesEnRiesgo, sim.materialesEnRiesgo, (n) => fmtNum(n, 0), false);
+  pintarComparativo('sim-sobrestock', base.capitalSobrestock, sim.capitalSobrestock, fmtSoles, false);
+  pintarComparativo('sim-cobertura', base.coberturaPromedio, sim.coberturaPromedio, (n) => fmtNum(n, 0) + ' días', true);
+
+  const notas = document.getElementById('sim-notas');
+  const notasHTML = [];
+  if (state.sim.leadTimeMult > 1.2) {
+    notasHTML.push(`<p class="sim-nota sim-nota-roja">⚠️ Un retraso de proveedor del ${Math.round((state.sim.leadTimeMult - 1) * 100)}% dispara el ROP y deja <strong>${sim.materialesEnRiesgo} materiales en riesgo de quiebre</strong> (hoy: ${base.materialesEnRiesgo}). Conviene adelantar órdenes de compra de los críticos.</p>`);
+  }
+  if (state.sim.serviceLevelZ >= 2.05) {
+    notasHTML.push(`<p class="sim-nota sim-nota-azul">💡 Para sostener ese nivel de servicio, el presupuesto de compras necesario sube a <strong>${fmtSoles(sim.presupuestoCompras)}</strong>. Aplícalo solo a materiales A/Z para no inmovilizar capital de más.</p>`);
+  }
+  if (state.sim.demandMult > 1.2) {
+    notasHTML.push(`<p class="sim-nota sim-nota-amarilla">📈 Un aumento del ${Math.round((state.sim.demandMult - 1) * 100)}% en demanda reduce la cobertura promedio de ${fmtNum(base.coberturaPromedio, 0)} a <strong>${fmtNum(sim.coberturaPromedio, 0)} días</strong>. Revisa tus lotes mínimos de compra.</p>`);
+  }
+  if (notasHTML.length === 0) {
+    notasHTML.push('<p class="sim-nota">Mueve los controles arriba para ver en vivo cómo cambiaría tu necesidad de compra, tu riesgo de quiebre y tu capital en sobre-stock según distintos escenarios.</p>');
+  }
+  notas.innerHTML = notasHTML.join('');
+}
+
+function pintarComparativo(prefijo, valorBase, valorSim, formateador, invertirColor) {
+  document.getElementById(`${prefijo}-valor`).textContent = formateador(valorSim);
+  document.getElementById(`${prefijo}-base`).textContent = `Base actual: ${formateador(valorBase)}`;
+  const diff = valorSim - valorBase;
+  const el = document.getElementById(`${prefijo}-diff`);
+  if (Math.abs(diff) < 0.005) {
+    el.textContent = '';
+    return;
+  }
+  const empeora = invertirColor ? diff < 0 : diff > 0;
+  el.className = 'sim-diff ' + (empeora ? 'sim-diff-mal' : 'sim-diff-bien');
+  el.textContent = (diff > 0 ? '+' : '') + formateador(diff);
+}
+
+function zAporcentaje(z) {
+  if (z >= 2.33) return 0.99;
+  if (z >= 2.05) return 0.98;
+  if (z >= 1.645) return 0.95;
+  if (z >= 1.282) return 0.9;
+  return 0.85;
 }
 
 // ---------------- LISTA DE PEDIDO ----------------
