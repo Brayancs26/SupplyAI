@@ -327,9 +327,12 @@ function bindTabs() {
 // ---------------- RESUMEN ----------------
 function renderResumen() {
   const total = state.planificados.length;
-  const rojo = state.planificados.filter((m) => m.riesgo === 'ROJO').length;
-  const amarillo = state.planificados.filter((m) => m.riesgo === 'AMARILLO').length;
-  const verde = state.planificados.filter((m) => m.riesgo === 'VERDE').length;
+  const critico = state.planificados.filter((m) => m.estadoSalud === 'STOCKOUT_CRITICAL').length;
+  const urgente = state.planificados.filter((m) => m.estadoSalud === 'REORDER_URGENT').length;
+  const rojo = critico + urgente;
+  const optimo = state.planificados.filter((m) => m.estadoSalud === 'OPTIMAL').length;
+  const sobrestock = state.planificados.filter((m) => m.estadoSalud === 'OVERSTOCK').length;
+  const sinMovimiento = state.planificados.filter((m) => m.estadoSalud === 'DEAD_STOCK').length;
   const alta = state.planificados.filter((m) => m.confianza === 'Alta').length;
   const media = state.planificados.filter((m) => m.confianza === 'Media').length;
   const baja = state.planificados.filter((m) => m.confianza === 'Baja').length;
@@ -337,11 +340,12 @@ function renderResumen() {
 
   document.getElementById('kpi-total').textContent = total;
   document.getElementById('kpi-rojo').textContent = rojo;
-  document.getElementById('kpi-amarillo').textContent = amarillo;
-  document.getElementById('kpi-verde').textContent = verde;
+  document.getElementById('kpi-verde').textContent = optimo;
+  document.getElementById('kpi-sobrestock').textContent = sobrestock;
+  document.getElementById('kpi-amarillo').textContent = sinMovimiento;
   document.getElementById('kpi-confianza').textContent = `${alta} alta · ${media} media · ${baja} baja · ${sinDatos} sin datos`;
 
-  const pctSalud = total > 0 ? Math.round((verde / total) * 100) : 0;
+  const pctSalud = total > 0 ? Math.round((optimo / total) * 100) : 0;
   const gauge = document.getElementById('gauge-salud');
   const color = pctSalud >= 80 ? '#22c55e' : pctSalud >= 60 ? '#f5a623' : '#ef4444';
   gauge.style.setProperty('--pct', pctSalud);
@@ -361,7 +365,7 @@ function renderResumen() {
   tbody.innerHTML = prioritarios
     .map(
       (m) => `<tr>
-      <td>${m.material}</td>
+      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
       <td class="desc">${m.descripcion || ''}</td>
       <td>${m.clasificacion}</td>
       <td>${m.temporadaObjetivo}</td>
@@ -497,6 +501,19 @@ function riesgoChip(r) {
   const label = { ROJO: 'Riesgo de quiebre', AMARILLO: 'Vigilar', VERDE: 'OK', 'N/A': 'No planificado' };
   return `<span class="chip chip-${map[r] || 'nd'}">${label[r] || r}</span>`;
 }
+
+const ESTADO_SALUD_INFO = {
+  STOCKOUT_CRITICAL: { label: 'Quiebre Crítico', clase: 'salud-critico' },
+  REORDER_URGENT: { label: 'Reordenar Urgente', clase: 'salud-urgente' },
+  OPTIMAL: { label: 'Óptimo', clase: 'salud-optimo' },
+  OVERSTOCK: { label: 'Sobrestock', clase: 'salud-sobrestock' },
+  DEAD_STOCK: { label: 'Sin Movimiento', clase: 'salud-muerto' },
+  'N/A': { label: 'No planificado', clase: 'salud-nd' },
+};
+function estadoSaludChip(estado) {
+  const info = ESTADO_SALUD_INFO[estado] || ESTADO_SALUD_INFO['N/A'];
+  return `<span class="chip ${info.clase}">${info.label}</span>`;
+}
 function confianzaChip(c) {
   const map = { Alta: 'alta', Media: 'media', Baja: 'baja', 'Sin datos': 'sindatos' };
   return `<span class="chip chip-${map[c]}">${c}</span>`;
@@ -526,7 +543,7 @@ function renderTablaMateriales() {
       (m) => `<tr>
       <td class="centrado"><input type="checkbox" class="chk-marcar" data-material="${m.material}" ${m.material in state.marcados ? 'checked' : ''} /></td>
       <td class="num"><input type="number" min="0" step="1" class="input-cantidad-pedido" data-material="${m.material}" value="${m.material in state.marcados ? state.marcados[m.material] : ''}" placeholder="—" /></td>
-      <td>${m.material}</td>
+      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
       <td class="desc">${m.descripcion || ''}</td>
       <td>${m.clasificacion}</td>
       <td>${m.clasificacionFinal}${m.reclasificadoDesdeUIN ? ' <span class="chip chip-reclasificado">reclasificado</span>' : ''}</td>
@@ -541,7 +558,7 @@ function renderTablaMateriales() {
       <td>${m.ultimaFechaConsumo || '<span class="muted">sin consumo</span>'}</td>
       <td class="num">${m.costoUnitario ? fmtSoles(m.costoUnitario) : '<span class="muted">—</span>'}</td>
       <td class="num">${m.eoq !== null ? fmtNum(m.eoq, 0) : '<span class="muted">—</span>'}</td>
-      <td>${riesgoChip(m.riesgo)}</td>
+      <td>${estadoSaludChip(m.estadoSalud)}</td>
     </tr>`
     )
     .join('');
@@ -549,20 +566,6 @@ function renderTablaMateriales() {
   if (rows.length > MAX_FILAS) {
     tbody.innerHTML += `<tr><td colspan="18" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — afina el filtro para ver más.</td></tr>`;
   }
-
-  tbody.querySelectorAll('.chk-marcar').forEach((chk) => {
-    chk.addEventListener('change', (e) => {
-      marcarMaterial(e.target.dataset.material, e.target.checked);
-      renderTablaMateriales();
-      renderListaPedido();
-    });
-  });
-  tbody.querySelectorAll('.input-cantidad-pedido').forEach((inp) => {
-    inp.addEventListener('change', (e) => {
-      actualizarCantidadPedido(e.target.dataset.material, e.target.value);
-      renderListaPedido();
-    });
-  });
 }
 
 // ---------------- INMOVILIZADOS ----------------
@@ -595,7 +598,7 @@ function renderInmovilizados() {
   tbody.innerHTML = inmov
     .map(
       (m) => `<tr>
-      <td>${m.material}</td>
+      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
       <td class="desc">${m.descripcion || ''}</td>
       <td>${m.clasificacion}</td>
       <td class="num">${fmtNum(m.stockFisico, 0)}</td>
@@ -683,7 +686,7 @@ function renderABCXYZ() {
     .slice(0, MAX_FILAS)
     .map(
       (m) => `<tr>
-      <td>${m.material}</td>
+      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
       <td class="desc">${m.descripcion || ''}</td>
       <td>${m.denomGrupoArticulo || ''}</td>
       <td><span class="chip chip-cat-${m.categoria.toLowerCase()}">${m.categoria}</span></td>
@@ -691,7 +694,7 @@ function renderABCXYZ() {
       <td><span class="chip chip-abc">${m.claseABC}</span></td>
       <td><span class="chip chip-xyz-${m.claseXYZ === 'N/D' ? 'nd' : m.claseXYZ.toLowerCase()}">${m.claseXYZ}</span></td>
       <td class="num">${fmtNum(m.stockFisico, 0)}</td>
-      <td>${riesgoChip(m.riesgo)}</td>
+      <td>${estadoSaludChip(m.estadoSalud)}</td>
     </tr>`
     )
     .join('');
@@ -734,7 +737,7 @@ function renderCobertura() {
       const claseColor = m.coberturaDiasVivo === null ? 'nd' : m.coberturaDiasVivo < coberturaIdeal ? 'roja' : 'verde';
       return `<tr>
       <td>${m.grupoArticulo || ''}</td>
-      <td>${m.material}</td>
+      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
       <td class="desc">${m.descripcion || ''}</td>
       <td class="num">${fmtNum(m.demandaDiariaPromedio, 2)}</td>
       <td class="num">${fmtNum(m.demandaDiariaDesvest, 2)}</td>
@@ -860,25 +863,19 @@ function renderListaPedido() {
       const cantidad = state.marcados[m.material] || 0;
       const valor = cantidad * (m.costoUnitario || 0);
       return `<tr>
-      <td>${m.material}</td>
+      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
       <td class="desc">${m.descripcion || ''}</td>
       <td class="num">${fmtNum(m.stockFisico, 0)}</td>
       <td class="num">${fmtNum(m.ropCalculado, 1)}</td>
       <td class="num"><input type="number" min="0" step="1" class="input-cantidad-pedido" data-material="${m.material}" value="${cantidad}" /></td>
       <td class="num">${m.costoUnitario ? fmtSoles(m.costoUnitario) : '<span class="muted">—</span>'}</td>
       <td class="num">${m.costoUnitario ? fmtSoles(valor) : '<span class="muted">—</span>'}</td>
-      <td>${riesgoChip(m.riesgo)}</td>
+      <td>${estadoSaludChip(m.estadoSalud)}</td>
       <td><button type="button" class="btn-quitar-pedido" data-material="${m.material}">Quitar</button></td>
     </tr>`;
     })
     .join('');
 
-  tbody.querySelectorAll('.input-cantidad-pedido').forEach((inp) => {
-    inp.addEventListener('change', (e) => {
-      actualizarCantidadPedido(e.target.dataset.material, e.target.value);
-      renderListaPedido();
-    });
-  });
   tbody.querySelectorAll('.btn-quitar-pedido').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       const material = e.target.dataset.material;
@@ -948,15 +945,90 @@ function renderMaterialesPlanificados() {
     .sort((a, b) => b.diasConConsumo - a.diasConConsumo)
     .map(
       (m) => `<tr>
-      <td>${m.material}</td>
+      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
       <td class="desc">${m.descripcion || ''}</td>
       <td><span class="chip ${m.clasificacionFinal === 'Alta Rotación' ? 'chip-verde' : 'chip-amarilla'}">${m.clasificacionFinal}</span></td>
       <td class="num">${m.motivoExclusion ? (m.motivoExclusion.match(/(\d+) de (\d+)/) || [])[0] || '' : ''}</td>
       <td class="num">${fmtNum(m.stockFisico, 0)}</td>
-      <td>${riesgoChip(m.riesgo)}</td>
+      <td>${estadoSaludChip(m.estadoSalud)}</td>
     </tr>`
     )
     .join('') || '<tr><td colspan="6" class="muted centrado">No hubo materiales Uso Inmediato con consumo suficiente para reclasificar.</td></tr>';
+}
+
+// ---------------- EVENTOS DELEGADOS (evita rebindear en cada render) ----------------
+function bindEventosDelegados() {
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.sku-link');
+    if (btn) abrirDetalleMaterial(btn.dataset.material);
+    if (e.target.closest('#btn-cerrar-detalle') || e.target.id === 'overlay-detalle') cerrarDetalleMaterial();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') cerrarDetalleMaterial();
+  });
+  document.addEventListener('change', (e) => {
+    if (e.target.classList.contains('input-cantidad-pedido')) {
+      actualizarCantidadPedido(e.target.dataset.material, e.target.value);
+      renderListaPedido();
+    }
+    if (e.target.classList.contains('chk-marcar')) {
+      marcarMaterial(e.target.dataset.material, e.target.checked);
+      // Actualiza solo la celda de cantidad de esa fila (no toda la tabla, para no perder el foco)
+      const fila = e.target.closest('tr');
+      const inputCantidad = fila ? fila.querySelector('.input-cantidad-pedido') : null;
+      if (inputCantidad) inputCantidad.value = e.target.dataset.material in state.marcados ? state.marcados[e.target.dataset.material] : '';
+      renderListaPedido();
+    }
+  });
+}
+
+function abrirDetalleMaterial(codigo) {
+  const m = state.calculados.find((x) => x.material === codigo);
+  if (!m) return;
+
+  document.getElementById('detalle-codigo').textContent = m.material;
+  document.getElementById('detalle-descripcion').textContent = m.descripcion || '';
+  document.getElementById('detalle-clasificacion').textContent = m.clasificacionFinal;
+  document.getElementById('detalle-categoria').textContent = m.categoria;
+  document.getElementById('detalle-temporada').textContent = `Temporada objetivo: ${m.temporadaObjetivo}`;
+  document.getElementById('detalle-estado-chip').innerHTML = estadoSaludChip(m.estadoSalud);
+  document.getElementById('detalle-diagnostico').textContent = SupplyEngine.generarDiagnostico(m);
+
+  const metricas = [
+    ['Stock Real', fmtNum(m.stockFisico, 0)],
+    ['SS Actual (SAP)', fmtNum(m.ssActual, 0)],
+    ['SS Calculado', fmtNum(m.ssCalculado, 1)],
+    ['ROP Actual (SAP)', fmtNum(m.ropActual, 0)],
+    ['ROP Calculado', fmtNum(m.ropCalculado, 1)],
+    ['Stock Máximo Recom.', m.maxStock !== null ? fmtNum(m.maxStock, 0) : '—'],
+    ['EOQ', m.eoq !== null ? fmtNum(m.eoq, 0) : '—'],
+    ['Costo Unitario', m.costoUnitario ? fmtSoles(m.costoUnitario) : '—'],
+    ['Lead Time', fmtNum(m.leadTime, 0) + ' días'],
+    ['Confianza del Dato', m.confianza],
+    ['Último Consumo', m.ultimaFechaConsumo || 'sin consumo'],
+    ['Vencimiento', m.fechaVencimiento || 'sin vencimiento'],
+  ];
+  document.getElementById('detalle-metricas').innerHTML = metricas
+    .map(([label, valor]) => `<div class="detalle-metrica"><span class="detalle-metrica-label">${label}</span><span class="detalle-metrica-valor">${valor}</span></div>`)
+    .join('');
+
+  const serie = SupplyEngine.serieMensualPorMaterial(state.consumoReal, codigo);
+  if (serie.length === 0) {
+    document.getElementById('detalle-grafico').innerHTML = '<p class="muted centrado">Sin consumo real registrado en el período.</p>';
+    document.getElementById('detalle-tendencia-stats').innerHTML = '';
+  } else {
+    document.getElementById('detalle-grafico').innerHTML = construirGraficoLinea(serie);
+    const total = serie.reduce((a, p) => a + p.total, 0);
+    const promedio = total / serie.length;
+    document.getElementById('detalle-tendencia-stats').innerHTML =
+      `<span>Total período: <strong>${fmtNum(total, 0)}</strong></span><span>Promedio mensual: <strong>${fmtNum(promedio, 1)}</strong></span>`;
+  }
+
+  document.getElementById('overlay-detalle').style.display = 'flex';
+}
+
+function cerrarDetalleMaterial() {
+  document.getElementById('overlay-detalle').style.display = 'none';
 }
 
 // ---------------- TENDENCIA POR PRODUCTO ----------------
@@ -1078,5 +1150,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindDropzone();
   bindTabs();
   bindFormularios();
+  bindEventosDelegados();
   await cargarCacheAlIniciar();
 });
