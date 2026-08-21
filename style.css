@@ -361,6 +361,43 @@ td.desc { white-space: normal; max-width: 260px; }
 .dot-cobertura.dot-roja { background: var(--red); box-shadow: 0 0 6px rgba(239,68,68,0.5); }
 .dot-cobertura.dot-nd { background: var(--text-muted); }
 
+/* ---------- Simulador de Escenarios ---------- */
+.sim-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 18px; }
+.sim-controles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
+.sim-control-card { padding: 18px 20px; }
+.sim-control-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.sim-control-header span:first-child { font-size: 11.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.sim-control-valor { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; color: var(--cyan); }
+.sim-control-card input[type="range"] { width: 100%; accent-color: var(--cyan); margin: 6px 0; }
+.sim-control-extremos { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); font-family: var(--font-mono, monospace); }
+.sim-control-nota { font-size: 11.5px; color: var(--text-muted); margin: 10px 0 0; line-height: 1.4; }
+.sim-botones-nivel { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 6px 0; }
+.btn-nivel-servicio {
+  background: var(--bg); border: 1px solid var(--border); color: var(--text-muted);
+  padding: 8px 4px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: var(--font-ui);
+}
+.btn-nivel-servicio.activo { background: var(--cyan); border-color: var(--cyan); color: var(--bg); }
+.btn-nivel-servicio:hover:not(.activo) { border-color: var(--cyan); color: var(--cyan); }
+
+.sim-resultados-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+.sim-resultado-card { padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; }
+.sim-resultado-label { font-size: 11.5px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+.sim-resultado-linea { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.sim-resultado-valor { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--text); }
+.sim-resultado-rojo { color: var(--red); }
+.sim-resultado-purpura { color: var(--purple); }
+.sim-diff { font-size: 12px; font-weight: 700; }
+.sim-diff-mal { color: var(--amber); }
+.sim-diff-bien { color: var(--green); }
+.sim-resultado-base { font-size: 11.5px; color: var(--text-muted); }
+
+.sim-notas-panel { padding: 18px 20px; }
+.sim-nota { font-size: 12.5px; line-height: 1.6; padding: 12px 14px; border-radius: 10px; margin: 0 0 10px; background: rgba(139, 150, 171, 0.08); color: var(--text-muted); }
+.sim-nota:last-child { margin-bottom: 0; }
+.sim-nota-roja { background: var(--red-soft); color: #ffb3a3; }
+.sim-nota-azul { background: var(--cyan-soft); color: #a8e8f5; }
+.sim-nota-amarilla { background: var(--amber-soft); color: #ffe4a8; }
+
 footer {
   text-align: center; color: var(--text-muted); font-size: 11.5px; padding: 20px 24px;
   border-top: 1px solid var(--border);
