@@ -170,7 +170,7 @@ main { max-width: 1800px; margin: 0 auto; padding: 26px 28px 60px; }
 .gauge-nota { font-size: 11px; color: var(--text-muted); text-align: center; margin: 12px 0 0; max-width: 200px; }
 
 .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 8px; }
-.kpi-grid-resumen { flex: 1; }
+.kpi-grid-resumen { flex: 1; grid-template-columns: repeat(5, 1fr); }
 .kpi-card {
   background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
   padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;
@@ -184,6 +184,8 @@ main { max-width: 1800px; margin: 0 auto; padding: 26px 28px 60px; }
 .kpi-card.kpi-amarillo .kpi-value { color: var(--amber); }
 .kpi-card.kpi-verde { border-color: rgba(34, 197, 94, 0.35); }
 .kpi-card.kpi-verde .kpi-value { color: var(--green); }
+.kpi-card.kpi-purpura { border-color: rgba(168, 85, 247, 0.35); }
+.kpi-card.kpi-purpura .kpi-value { color: var(--purple); }
 .confianza-linea { color: var(--text-muted); font-size: 13px; margin: 10px 0 24px; }
 
 /* ---------- Panels ---------- */
@@ -220,6 +222,12 @@ td.desc { white-space: normal; max-width: 260px; }
 .chip-media { background: var(--amber-soft); color: var(--amber); }
 .chip-baja { background: rgba(139, 150, 171, 0.14); color: var(--text-muted); }
 .chip-sindatos { background: rgba(139, 150, 171, 0.1); color: var(--text-muted); }
+.salud-critico { background: rgba(239, 68, 68, 0.22); color: #ff6b5e; font-weight: 700; }
+.salud-urgente { background: var(--amber-soft); color: var(--amber); }
+.salud-optimo { background: var(--green-soft); color: var(--green); }
+.salud-sobrestock { background: rgba(168, 85, 247, 0.18); color: var(--purple); }
+.salud-muerto { background: rgba(139, 150, 171, 0.16); color: var(--text-muted); font-style: italic; }
+.salud-nd { background: rgba(139, 150, 171, 0.1); color: var(--text-muted); }
 .chip-nd { background: rgba(139, 150, 171, 0.12); color: var(--text-muted); }
 .chip-reclasificado { background: var(--cyan-soft); color: var(--cyan); font-size: 9.5px; padding: 2px 7px; }
 
@@ -397,6 +405,49 @@ td.desc { white-space: normal; max-width: 260px; }
 .sim-nota-roja { background: var(--red-soft); color: #ffb3a3; }
 .sim-nota-azul { background: var(--cyan-soft); color: #a8e8f5; }
 .sim-nota-amarilla { background: var(--amber-soft); color: #ffe4a8; }
+
+/* ---------- SKU clickeable ---------- */
+.sku-link {
+  background: none; border: none; color: var(--cyan); font-family: var(--font-ui); font-size: inherit;
+  cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 2px;
+}
+.sku-link:hover { color: #fff; }
+
+/* ---------- Ficha de detalle de material (modal) ---------- */
+.overlay-detalle {
+  display: none; position: fixed; inset: 0; z-index: 200; background: rgba(6, 10, 17, 0.72);
+  align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto;
+}
+.modal-detalle {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+  max-width: 760px; width: 100%; padding: 28px 30px 30px; position: relative;
+}
+.btn-cerrar-detalle {
+  position: absolute; top: 18px; right: 18px; background: var(--bg); border: 1px solid var(--border);
+  color: var(--text-muted); width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-size: 14px;
+}
+.btn-cerrar-detalle:hover { color: var(--red); border-color: var(--red); }
+.detalle-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 6px; padding-right: 34px; }
+.detalle-codigo { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: #fff; }
+.detalle-descripcion { font-size: 14px; color: var(--text-muted); margin: 4px 0 10px; }
+.detalle-chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.detalle-temporada { font-size: 11.5px; color: var(--text-muted); }
+.detalle-diagnostico {
+  font-size: 13px; line-height: 1.6; color: var(--text); background: rgba(34, 211, 238, 0.06);
+  border-left: 3px solid var(--cyan); padding: 12px 14px; border-radius: 6px; margin: 16px 0 20px;
+}
+.detalle-metricas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.detalle-metrica {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.detalle-metrica-label { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.02em; }
+.detalle-metrica-valor { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--text); }
+.detalle-tendencia-header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.detalle-tendencia-header h3 { font-family: var(--font-display); font-size: 13.5px; margin: 0; color: var(--text); }
+.detalle-tendencia-stats { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); }
+.detalle-tendencia-stats strong { color: var(--cyan); }
+.detalle-grafico { background: var(--bg); border-radius: 10px; padding: 10px; }
 
 footer {
   text-align: center; color: var(--text-muted); font-size: 11.5px; padding: 20px 24px;
