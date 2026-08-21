@@ -95,13 +95,11 @@
     <button class="tab-btn" data-tab="planificados">Materiales Planificados</button>
     <button class="tab-btn" data-tab="estacionalidad">Estacionalidad</button>
     <button class="tab-btn" data-tab="materiales">Materiales</button>
-    <button class="tab-btn" data-tab="abcxyz">ABC-XYZ</button>
+    <button class="tab-btn" data-tab="abcxyz">Análisis ABC</button>
     <button class="tab-btn" data-tab="cobertura">Cobertura</button>
-    <button class="tab-btn" data-tab="simulacion">Simulación</button>
+    <button class="tab-btn" data-tab="simulacion">Parámetros y Simulación</button>
     <button class="tab-btn" data-tab="traslados">Lista de Pedido</button>
-    <button class="tab-btn" data-tab="tendencia">Tendencia por Producto</button>
     <button class="tab-btn" data-tab="inmovilizados">Inmovilizados</button>
-    <button class="tab-btn" data-tab="parametros">Parámetros</button>
     <div class="tabs-acciones">
       <button id="btn-exportar" class="btn-secundario">Exportar Excel</button>
       <button id="btn-nuevos-archivos" class="btn-secundario">Cargar mis archivos</button>
@@ -349,7 +347,37 @@
           </table>
         </div>
       </div>
-    </section>
+    
+<div class="separador-subseccion"></div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Tendencia de consumo por producto</h2>
+          <p class="panel-sub">Elige un material para ver su historial de consumo real mes a mes.</p>
+        </div>
+        <div class="buscador-tendencia">
+          <input type="text" id="buscar-tendencia" list="lista-materiales-tendencia" placeholder="Busca por código o descripción…" />
+          <datalist id="lista-materiales-tendencia"></datalist>
+        </div>
+        <div id="tendencia-vacio" class="tendencia-vacio">Selecciona un material para ver su tendencia.</div>
+        <div id="tendencia-contenido" style="display:none">
+          <div class="tendencia-info">
+            <div>
+              <span class="tendencia-material" id="tendencia-material-nombre">—</span>
+              <span class="tendencia-material-clasif" id="tendencia-material-clasif">—</span>
+            </div>
+            <div class="tendencia-stats">
+              <div><span class="stat-label">Total período</span><span class="stat-valor" id="tendencia-total">—</span></div>
+              <div><span class="stat-label">Promedio mensual</span><span class="stat-valor" id="tendencia-promedio">—</span></div>
+              <div><span class="stat-label">Mes pico</span><span class="stat-valor" id="tendencia-pico">—</span></div>
+              <div><span class="stat-label">Mes valle</span><span class="stat-valor" id="tendencia-valle">—</span></div>
+            </div>
+          </div>
+          <div id="tendencia-grafico" class="tendencia-grafico"></div>
+        </div>
+      </div>
+    
+</section>
 
     <!-- ===================== COBERTURA ===================== -->
     <section id="tab-cobertura" class="tab-panel">
@@ -413,6 +441,35 @@
 
     <!-- ===================== SIMULACIÓN ===================== -->
     <section id="tab-simulacion" class="tab-panel">
+      <div class="panel panel-form">
+        <div class="panel-header">
+          <h2>Parámetros del modelo</h2>
+          <p class="panel-sub">Se guardan en este navegador. Al guardar, se vuelve a calcular todo automáticamente.</p>
+        </div>
+        <form id="form-parametros">
+          <label>Nivel de servicio — Z
+            <input type="number" id="input-z" step="0.001" />
+            <span class="hint">1.645 ≈ 95% · 1.881 ≈ 97% · 2.05 ≈ 98%</span>
+          </label>
+          <label>Costo de ordenar S (S/. por orden)
+            <input type="number" id="input-s" step="1" />
+          </label>
+          <label>Costo de mantener H (% anual)
+            <input type="number" id="input-h" step="0.5" />
+          </label>
+          <label>Umbral Temporada Alta (índice ≥)
+            <input type="number" id="input-umbral-alta" step="0.05" />
+          </label>
+          <label>Umbral Temporada Baja (índice &lt;)
+            <input type="number" id="input-umbral-baja" step="0.05" />
+          </label>
+          <button type="submit">Guardar y recalcular</button>
+          <span class="guardado-msg" id="guardado-msg">Guardado ✓</span>
+        </form>
+      </div>
+    
+<div class="separador-subseccion"></div>
+
       <div class="panel">
         <div class="panel-header sim-header">
           <div>
@@ -498,7 +555,8 @@
         <h2>Conclusión Operativa</h2>
         <div id="sim-notas"></div>
       </div>
-    </section>
+    
+</section>
 
     <!-- ===================== TRASLADOS/LISTA DE PEDIDO ===================== -->
     <section id="tab-traslados" class="tab-panel">
@@ -552,34 +610,7 @@
     </section>
 
     <!-- ===================== TENDENCIA POR PRODUCTO ===================== -->
-    <section id="tab-tendencia" class="tab-panel">
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Tendencia de consumo por producto</h2>
-          <p class="panel-sub">Elige un material para ver su historial de consumo real mes a mes.</p>
-        </div>
-        <div class="buscador-tendencia">
-          <input type="text" id="buscar-tendencia" list="lista-materiales-tendencia" placeholder="Busca por código o descripción…" />
-          <datalist id="lista-materiales-tendencia"></datalist>
-        </div>
-        <div id="tendencia-vacio" class="tendencia-vacio">Selecciona un material para ver su tendencia.</div>
-        <div id="tendencia-contenido" style="display:none">
-          <div class="tendencia-info">
-            <div>
-              <span class="tendencia-material" id="tendencia-material-nombre">—</span>
-              <span class="tendencia-material-clasif" id="tendencia-material-clasif">—</span>
-            </div>
-            <div class="tendencia-stats">
-              <div><span class="stat-label">Total período</span><span class="stat-valor" id="tendencia-total">—</span></div>
-              <div><span class="stat-label">Promedio mensual</span><span class="stat-valor" id="tendencia-promedio">—</span></div>
-              <div><span class="stat-label">Mes pico</span><span class="stat-valor" id="tendencia-pico">—</span></div>
-              <div><span class="stat-label">Mes valle</span><span class="stat-valor" id="tendencia-valle">—</span></div>
-            </div>
-          </div>
-          <div id="tendencia-grafico" class="tendencia-grafico"></div>
-        </div>
-      </div>
-    </section>
+    
 
     <!-- ===================== INMOVILIZADOS ===================== -->
     <section id="tab-inmovilizados" class="tab-panel">
@@ -647,34 +678,7 @@
     </section>
 
     <!-- ===================== PARAMETROS ===================== -->
-    <section id="tab-parametros" class="tab-panel">
-      <div class="panel panel-form">
-        <div class="panel-header">
-          <h2>Parámetros del modelo</h2>
-          <p class="panel-sub">Se guardan en este navegador. Al guardar, se vuelve a calcular todo automáticamente.</p>
-        </div>
-        <form id="form-parametros">
-          <label>Nivel de servicio — Z
-            <input type="number" id="input-z" step="0.001" />
-            <span class="hint">1.645 ≈ 95% · 1.881 ≈ 97% · 2.05 ≈ 98%</span>
-          </label>
-          <label>Costo de ordenar S (S/. por orden)
-            <input type="number" id="input-s" step="1" />
-          </label>
-          <label>Costo de mantener H (% anual)
-            <input type="number" id="input-h" step="0.5" />
-          </label>
-          <label>Umbral Temporada Alta (índice ≥)
-            <input type="number" id="input-umbral-alta" step="0.05" />
-          </label>
-          <label>Umbral Temporada Baja (índice &lt;)
-            <input type="number" id="input-umbral-baja" step="0.05" />
-          </label>
-          <button type="submit">Guardar y recalcular</button>
-          <span class="guardado-msg" id="guardado-msg">Guardado ✓</span>
-        </form>
-      </div>
-    </section>
+    
 
   </main>
 </div>
@@ -711,6 +715,8 @@
     <div id="detalle-grafico" class="detalle-grafico"></div>
   </div>
 </div>
+
+<div id="tooltip-tendencia" class="tooltip-tendencia" style="display:none"></div>
 
 </body>
 </html>
