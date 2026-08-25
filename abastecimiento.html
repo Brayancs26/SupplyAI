@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -12,6 +11,7 @@
 <script src="engine.js" defer></script>
 <script src="file-parser.js" defer></script>
 <script src="storage.js" defer></script>
+<script src="reportes.js" defer></script>
 <script src="app.js" defer></script>
 </head>
 <body>
@@ -100,6 +100,7 @@
     <button class="tab-btn" data-tab="simulacion">Parámetros y Simulación</button>
     <button class="tab-btn" data-tab="traslados">Lista de Pedido</button>
     <button class="tab-btn" data-tab="inmovilizados">Inmovilizados</button>
+    <button class="tab-btn" data-tab="reportes">Reportes de Inventario</button>
     <div class="tabs-acciones">
       <button id="btn-exportar" class="btn-secundario">Exportar Excel</button>
       <button id="btn-nuevos-archivos" class="btn-secundario">Cargar mis archivos</button>
@@ -677,8 +678,40 @@
       </div>
     </section>
 
-    <!-- ===================== PARAMETROS ===================== -->
-    
+    <!-- ===================== REPORTES DE INVENTARIO ===================== -->
+    <section id="tab-reportes" class="tab-panel">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Reportes formales de inventario</h2>
+          <p class="panel-sub">
+            Genera el "Listado Final y Descargo de Diferencias de Inventario" en el formato oficial (SLO03-F05),
+            con el stock SAP y costo unitario ya llenados desde tu MB52 — solo te queda completar a mano la
+            Cantidad Física del conteo y firmar. El formato, bordes, fórmulas y firmas quedan exactamente
+            iguales a la plantilla original.
+          </p>
+        </div>
+        <div class="reportes-grid">
+          <div class="reporte-card">
+            <h3>Combustibles</h3>
+            <p class="reporte-card-desc">Petróleo Industrial R500 y Diesel — hojas R500 y DIESEL de la plantilla.</p>
+            <button type="button" id="btn-reporte-combustibles" class="btn-continuar">Descargar Reporte de Combustibles</button>
+            <p class="reporte-card-estado" id="estado-reporte-combustibles"></p>
+          </div>
+          <div class="reporte-card">
+            <h3>Balones de Gases</h3>
+            <p class="reporte-card-desc">Propano 45kg, Propano 10kg, GLP 15kg y Oxígeno 10m³ — una fila por lote, igual que tu plantilla.</p>
+            <button type="button" id="btn-reporte-gases" class="btn-continuar">Descargar Reporte de Gases</button>
+            <p class="reporte-card-estado" id="estado-reporte-gases"></p>
+          </div>
+          <div class="reporte-card">
+            <h3>IQBF (Insumos Químicos)</h3>
+            <p class="reporte-card-desc">Hidróxido de Sodio, Ácido Sulfúrico, Hexano y MEK Aditivo — una fila por lote, en L001 / I.Q.B.F.</p>
+            <button type="button" id="btn-reporte-iqbf" class="btn-continuar">Descargar Reporte IQBF</button>
+            <p class="reporte-card-estado" id="estado-reporte-iqbf"></p>
+          </div>
+        </div>
+      </div>
+    </section>
 
   </main>
 </div>
