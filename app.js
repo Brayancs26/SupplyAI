@@ -449,6 +449,16 @@ function bindFormularios() {
   document.getElementById('btn-exportar').addEventListener('click', exportarExcel);
   document.getElementById('btn-exportar-pedido').addEventListener('click', exportarListaPedido);
 
+  bindBotonReporte('btn-reporte-combustibles', 'estado-reporte-combustibles', () =>
+    ReportesInventario.generarReporteCombustibles(state.archivos.MB52.filas)
+  );
+  bindBotonReporte('btn-reporte-gases', 'estado-reporte-gases', () =>
+    ReportesInventario.generarReporteGases(state.archivos.MB52.filas)
+  );
+  bindBotonReporte('btn-reporte-iqbf', 'estado-reporte-iqbf', () =>
+    ReportesInventario.generarReporteIQBF(state.archivos.MB52.filas)
+  );
+
   document.getElementById('buscar-tendencia').addEventListener('change', (e) => {
     mostrarTendenciaMaterial(e.target.value);
   });
@@ -1201,6 +1211,41 @@ function exportarExcel() {
 }
 
 // ---------------- INIT ----------------
+// ---------------- REPORTES DE INVENTARIO ----------------
+function bindBotonReporte(botonId, estadoId, generador) {
+  document.getElementById(botonId).addEventListener('click', async () => {
+    const estado = document.getElementById(estadoId);
+    const boton = document.getElementById(botonId);
+    if (!state.archivos.MB52) {
+      estado.textContent = 'Primero carga tu archivo MB52 (pestaña de carga inicial).';
+      estado.className = 'reporte-card-estado reporte-estado-error';
+      return;
+    }
+    boton.disabled = true;
+    estado.textContent = 'Generando…';
+    estado.className = 'reporte-card-estado';
+    try {
+      const resultado = await generador();
+      if (Array.isArray(resultado)) {
+        const sinStock = resultado.filter((r) => !r.encontrado);
+        estado.textContent = sinStock.length > 0
+          ? `Descargado — sin stock en MB52 para: ${sinStock.map((r) => r.hoja).join(', ')}.`
+          : 'Descargado ✓ — completa la Cantidad Física a mano y firma.';
+        estado.className = 'reporte-card-estado ' + (sinStock.length > 0 ? 'reporte-estado-alerta' : 'reporte-estado-ok');
+      } else {
+        estado.textContent = `Descargado ✓ — ${resultado.totalLotes} lotes encontrados. Completa la Cantidad Física a mano y firma.`;
+        estado.className = 'reporte-card-estado reporte-estado-ok';
+      }
+    } catch (err) {
+      console.error(err);
+      estado.textContent = 'Error: ' + err.message;
+      estado.className = 'reporte-card-estado reporte-estado-error';
+    } finally {
+      boton.disabled = false;
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   cargarParametrosGuardados();
   cargarMarcados();
