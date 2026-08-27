@@ -6,7 +6,7 @@ const ALMACEN = 'L001';
 const ALMACEN_PLANTA = 'PI01';
 
 const state = {
-  archivos: { MRP: null, DATA: null, MB52: null },
+  archivos: { MRP: null, DATA: null, MB52: null, MONITOR: null },
   consumoReal: [],
   fechaMin: null,
   fechaMax: null,
@@ -30,7 +30,6 @@ const state = {
   coberturaIdealDias: 12,
   filtroCategoriaCobertura: 'Insumos',
   tipoCambio: Number(localStorage.getItem('tipo_cambio_v1')) || 3.75,
-  monitorReal: null,
   movClasificacionMap: null,
   materialesConConsumoPI01: null,
   mrpRowsCache: null,
@@ -63,7 +62,7 @@ function formatearFecha(iso) {
 // ---------------- CACHÉ (IndexedDB) ----------------
 async function cargarCacheAlIniciar() {
   const cache = await Storage.obtenerTodos();
-  ['MRP', 'DATA', 'MB52'].forEach((tipo) => {
+  ['MRP', 'DATA', 'MB52', 'MONITOR'].forEach((tipo) => {
     if (cache[tipo]) {
       state.archivos[tipo] = {
         nombreArchivo: cache[tipo].nombreArchivo,
@@ -154,9 +153,9 @@ function bindDropzone() {
   });
 
   document.getElementById('btn-borrar-cache').addEventListener('click', async () => {
-    if (!confirm('¿Borrar los 3 archivos guardados en este navegador? Vas a tener que volver a cargarlos.')) return;
+    if (!confirm('¿Borrar los archivos guardados en este navegador? Vas a tener que volver a cargarlos.')) return;
     await Storage.borrarTodo();
-    state.archivos = { MRP: null, DATA: null, MB52: null };
+    state.archivos = { MRP: null, DATA: null, MB52: null, MONITOR: null };
     actualizarEstadoArchivos();
     actualizarBotonContinuar();
   });
@@ -173,7 +172,7 @@ async function manejarArchivos(fileList) {
   const resultado = await FileParser.procesarArchivos(fileList);
 
   const persistencias = [];
-  ['MRP', 'DATA', 'MB52'].forEach((tipo) => {
+  ['MRP', 'DATA', 'MB52', 'MONITOR'].forEach((tipo) => {
     if (resultado[tipo]) {
       state.archivos[tipo] = { ...resultado[tipo], deCache: false };
       persistencias.push(Storage.guardarArchivo(tipo, resultado[tipo].nombreArchivo, resultado[tipo].filas));
@@ -194,6 +193,12 @@ async function manejarArchivos(fileList) {
 
   if (state.archivos.MRP && state.archivos.DATA && state.archivos.MB52) {
     calcularTodo();
+  } else if (resultado.MONITOR && state.calculados.length > 0) {
+    // El dashboard ya estaba armado y solo se reemplazó el Monitor — no hace
+    // falta recalcular todo, solo refrescar lo que depende del Monitor.
+    renderValorizacionReal();
+    renderMonitorUsuario();
+    renderMonitorDetalle();
   }
 }
 
@@ -207,7 +212,7 @@ function mostrarAvisoArchivos(desconocidos, errores) {
 }
 
 function actualizarEstadoArchivos() {
-  ['MRP', 'DATA', 'MB52'].forEach((tipo) => {
+  ['MRP', 'DATA', 'MB52', 'MONITOR'].forEach((tipo) => {
     const chip = document.getElementById(`chip-${tipo}`);
     const info = state.archivos[tipo];
     if (info) {
@@ -306,6 +311,9 @@ function mostrarDashboard() {
 
 function renderTodo() {
   renderValorizacionReal();
+  renderAceiteHarina();
+  renderMonitorUsuario();
+  renderMonitorDetalle();
   renderResumen();
   renderMaterialesPlanificados();
   renderEstacionalidad();
@@ -319,10 +327,99 @@ function renderTodo() {
   poblarListaTendencia();
 }
 
+// ---------------- ACEITE / HARINA / MONITOR (Detalle PPTT) ----------------
+const ALMACENES_ACEITE = ['TK01', 'TK02', 'TK03', 'DK01', 'DK02', 'DK03', 'CL01'];
+const ALMACENES_HARINA = ['C001'];
+
+function obtenerMonitorFilas() {
+  return state.archivos.MONITOR ? state.archivos.MONITOR.filas : null;
+}
+
+function tablaAceiteHarinaHTML(filas, vacioTexto) {
+  if (filas.length === 0) return `<tr><td colspan="4" class="muted centrado">${vacioTexto}</td></tr>`;
+  const filasHTML = filas
+    .map(
+      (r) => `<tr>
+      <td>${r.material}</td>
+      <td class="desc">${r.descripcion}</td>
+      <td>${r.almacen}</td>
+      <td class="num">${fmtNum(r.stock, 2)}</td>
+    </tr>`
+    )
+    .join('');
+  const total = filas.reduce((a, r) => a + r.stock, 0);
+  return filasHTML + `<tr class="fila-total"><td colspan="3">Total</td><td class="num">${fmtNum(total, 2)}</td></tr>`;
+}
+
+function renderAceiteHarina() {
+  if (!state.archivos.MB52) return;
+  const mb52Rows = state.archivos.MB52.filas;
+  const aceite = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_ACEITE);
+  const harina = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_HARINA);
+  document.getElementById('tabla-aceite-body').innerHTML = tablaAceiteHarinaHTML(aceite, 'Sin stock de Aceite de Pescado en estos almacenes.');
+  document.getElementById('tabla-harina-body').innerHTML = tablaAceiteHarinaHTML(harina, 'Sin stock de Harina de Pescado en C001.');
+}
+
+function renderAvisoSinMonitor() {
+  const aviso = document.getElementById('aviso-sin-monitor');
+  if (!aviso) return;
+  aviso.style.display = obtenerMonitorFilas() ? 'none' : 'block';
+}
+
+function renderMonitorUsuario() {
+  const cont = document.getElementById('grafico-monitor-usuario');
+  const monitorRows = obtenerMonitorFilas();
+  renderAvisoSinMonitor();
+  if (!monitorRows) {
+    cont.innerHTML = '<p class="muted centrado">Sube tu Monitor (chip opcional en la pantalla de carga) para ver este gráfico.</p>';
+    return;
+  }
+  const porUsuario = SupplyEngine.agruparMonitorPorUsuario(monitorRows);
+  const max = Math.max(...porUsuario.map((u) => u.importe), 1);
+  cont.innerHTML = porUsuario
+    .map((u) => {
+      const pct = max > 0 ? (u.importe / max) * 100 : 0;
+      return `<div class="barra-h-fila">
+        <span class="barra-h-label">${u.usuario}</span>
+        <div class="barra-h-track"><div class="barra-h-fill barra-celeste" style="width:${pct}%"></div></div>
+        <span class="barra-h-valor">${fmtUSD(u.importe)}</span>
+      </div>`;
+    })
+    .join('');
+}
+
+function renderMonitorDetalle() {
+  const tbody = document.getElementById('tabla-monitor-detalle-body');
+  const monitorRows = obtenerMonitorFilas();
+  if (!monitorRows) {
+    tbody.innerHTML = '<tr><td colspan="5" class="muted centrado">Sube tu Monitor (chip opcional en la pantalla de carga) para ver el detalle.</td></tr>';
+    return;
+  }
+  const items = SupplyEngine.detalleMonitor(monitorRows);
+  if (items.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="muted centrado">Tu Monitor no tiene filas.</td></tr>';
+    return;
+  }
+  const totalImporte = items.reduce((a, r) => a + r.importe, 0);
+  tbody.innerHTML =
+    items
+      .map(
+        (r) => `<tr>
+      <td>${r.material}</td>
+      <td class="desc">${r.descripcion}</td>
+      <td class="num">${fmtNum(r.stockNoVal, 0)}</td>
+      <td class="num">${fmtUSD(r.importe)}</td>
+      <td>${r.usuario}</td>
+    </tr>`
+      )
+      .join('') + `<tr class="fila-total"><td colspan="3">Total</td><td class="num">${fmtUSD(totalImporte)}</td><td></td></tr>`;
+}
+
 // ---------------- VALORIZACIÓN EN DÓLARES ----------------
 function renderValorizacionReal() {
   const aviso = document.getElementById('aviso-valorizacion');
   const mb52Rows = state.archivos.MB52 ? state.archivos.MB52.filas : null;
+  const monitorRows = obtenerMonitorFilas();
 
   if (!mb52Rows) {
     ['kpi-real-almacen', 'kpi-real-pptt', 'kpi-real-monitor', 'kpi-real-pct-monitor', 'kpi-real-pct-vencido'].forEach((id) => {
@@ -331,41 +428,18 @@ function renderValorizacionReal() {
     return;
   }
 
-  const kpi = SupplyEngine.calcularValorizacionReal(mb52Rows, state.monitorReal || [], state.tipoCambio);
+  const kpi = SupplyEngine.calcularValorizacionReal(mb52Rows, monitorRows || [], state.tipoCambio);
   document.getElementById('kpi-real-almacen').textContent = fmtUSD(kpi.valorizadoAlmacen);
   document.getElementById('kpi-real-pptt').textContent = fmtUSD(kpi.valorizadoPPTT);
   document.getElementById('kpi-real-monitor').textContent = fmtUSD(kpi.valorizadoMonitor);
   document.getElementById('kpi-real-pct-monitor').textContent = fmtPct(kpi.pctMonitor);
   document.getElementById('kpi-real-pct-vencido').textContent = fmtPct(kpi.pctVencido);
 
-  if (!state.monitorReal) {
+  if (!monitorRows) {
     aviso.style.display = 'block';
     aviso.textContent = 'Todavía no subes tu Monitor (ZMMR0105) — Valorizado Monitor y % Monitor están en $0 hasta que lo cargues.';
   } else {
     aviso.style.display = 'none';
-  }
-}
-
-async function manejarArchivoMonitor(file) {
-  if (!file) return;
-  const aviso = document.getElementById('aviso-valorizacion');
-  try {
-    const wb = await leerArchivoComoWorkbook(file);
-    const filas = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: null });
-    if (!filas.some((f) => 'Importe' in f)) {
-      aviso.style.display = 'block';
-      aviso.textContent = 'Ese archivo no parece un Monitor (no encontré la columna "Importe").';
-      return;
-    }
-    state.monitorReal = filas;
-    const dz = document.getElementById('dropzone-monitor-real');
-    dz.classList.add('dropzone-cargado');
-    dz.querySelector('.dropzone-mini-texto').textContent = `✓ Monitor cargado (${filas.length.toLocaleString('es-PE')} filas) — clic para reemplazar`;
-    renderValorizacionReal();
-  } catch (err) {
-    console.error(err);
-    aviso.style.display = 'block';
-    aviso.textContent = 'Error leyendo el Monitor: ' + err.message;
   }
 }
 
@@ -436,9 +510,8 @@ function renderResumen() {
 
 // ---------------- ESTACIONALIDAD ----------------
 function renderEstacionalidad() {
-  const cont = document.getElementById('grafico-estacional');
   const maxIdx = Math.max(...Object.values(state.indiceEstacional));
-  cont.innerHTML = SupplyEngine.NOMBRES_MES.map((nombre, i) => {
+  const html = SupplyEngine.NOMBRES_MES.map((nombre, i) => {
     const mes = i + 1;
     const idx = state.indiceEstacional[mes];
     const temp = state.mesATemporada[mes];
@@ -451,7 +524,15 @@ function renderEstacionalidad() {
     </div>`;
   }).join('');
 
-  document.getElementById('rango-fechas').textContent = `${state.fechaMin} a ${state.fechaMax}`;
+  const rango = `${state.fechaMin} a ${state.fechaMax}`;
+  ['grafico-estacional', 'grafico-estacional-resumen'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  });
+  ['rango-fechas', 'rango-fechas-resumen'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = rango;
+  });
 }
 
 // ---------------- PARAMETROS ----------------
@@ -473,14 +554,6 @@ function bindFormularios() {
       renderValorizacionReal();
     }
   });
-
-  const dzMonitor = document.getElementById('dropzone-monitor-real');
-  const inputMonitor = document.getElementById('file-input-monitor');
-  dzMonitor.addEventListener('click', () => inputMonitor.click());
-  inputMonitor.addEventListener('change', (e) => manejarArchivoMonitor(e.target.files[0]));
-  ['dragenter', 'dragover'].forEach((evt) => dzMonitor.addEventListener(evt, (e) => { e.preventDefault(); dzMonitor.classList.add('dragging'); }));
-  ['dragleave', 'drop'].forEach((evt) => dzMonitor.addEventListener(evt, (e) => { e.preventDefault(); dzMonitor.classList.remove('dragging'); }));
-  dzMonitor.addEventListener('drop', (e) => manejarArchivoMonitor(e.dataTransfer.files[0]));
 
   document.getElementById('form-parametros').addEventListener('submit', (e) => {
     e.preventDefault();
