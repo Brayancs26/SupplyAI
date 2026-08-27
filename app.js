@@ -29,6 +29,8 @@ const state = {
   marcados: {},
   coberturaIdealDias: 12,
   filtroCategoriaCobertura: 'Insumos',
+  tipoCambio: Number(localStorage.getItem('tipo_cambio_v1')) || 3.75,
+  monitorReal: null,
   movClasificacionMap: null,
   materialesConConsumoPI01: null,
   mrpRowsCache: null,
@@ -41,6 +43,10 @@ const fmtNum = (n, dec = 1) =>
     : Number(n).toLocaleString('es-PE', { maximumFractionDigits: dec, minimumFractionDigits: dec });
 const fmtSoles = (n) =>
   n === null || n === undefined ? '—' : 'S/. ' + Number(n).toLocaleString('es-PE', { maximumFractionDigits: 0 });
+const fmtUSD = (n) =>
+  n === null || n === undefined ? '—' : 'US$ ' + Number(n).toLocaleString('es-PE', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+const fmtPct = (n) =>
+  n === null || n === undefined ? '—' : Number(n).toLocaleString('es-PE', { maximumFractionDigits: 2, minimumFractionDigits: 2 }) + '%';
 
 function hoyISO() {
   const d = new Date();
@@ -299,6 +305,7 @@ function mostrarDashboard() {
 }
 
 function renderTodo() {
+  renderValorizacionReal();
   renderResumen();
   renderMaterialesPlanificados();
   renderEstacionalidad();
@@ -310,6 +317,56 @@ function renderTodo() {
   renderListaPedido();
   renderSimulacion();
   poblarListaTendencia();
+}
+
+// ---------------- VALORIZACIÓN EN DÓLARES ----------------
+function renderValorizacionReal() {
+  const aviso = document.getElementById('aviso-valorizacion');
+  const mb52Rows = state.archivos.MB52 ? state.archivos.MB52.filas : null;
+
+  if (!mb52Rows) {
+    ['kpi-real-almacen', 'kpi-real-pptt', 'kpi-real-monitor', 'kpi-real-pct-monitor', 'kpi-real-pct-vencido'].forEach((id) => {
+      document.getElementById(id).textContent = '—';
+    });
+    return;
+  }
+
+  const kpi = SupplyEngine.calcularValorizacionReal(mb52Rows, state.monitorReal || [], state.tipoCambio);
+  document.getElementById('kpi-real-almacen').textContent = fmtUSD(kpi.valorizadoAlmacen);
+  document.getElementById('kpi-real-pptt').textContent = fmtUSD(kpi.valorizadoPPTT);
+  document.getElementById('kpi-real-monitor').textContent = fmtUSD(kpi.valorizadoMonitor);
+  document.getElementById('kpi-real-pct-monitor').textContent = fmtPct(kpi.pctMonitor);
+  document.getElementById('kpi-real-pct-vencido').textContent = fmtPct(kpi.pctVencido);
+
+  if (!state.monitorReal) {
+    aviso.style.display = 'block';
+    aviso.textContent = 'Todavía no subes tu Monitor (ZMMR0105) — Valorizado Monitor y % Monitor están en $0 hasta que lo cargues.';
+  } else {
+    aviso.style.display = 'none';
+  }
+}
+
+async function manejarArchivoMonitor(file) {
+  if (!file) return;
+  const aviso = document.getElementById('aviso-valorizacion');
+  try {
+    const wb = await leerArchivoComoWorkbook(file);
+    const filas = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: null });
+    if (!filas.some((f) => 'Importe' in f)) {
+      aviso.style.display = 'block';
+      aviso.textContent = 'Ese archivo no parece un Monitor (no encontré la columna "Importe").';
+      return;
+    }
+    state.monitorReal = filas;
+    const dz = document.getElementById('dropzone-monitor-real');
+    dz.classList.add('dropzone-cargado');
+    dz.querySelector('.dropzone-mini-texto').textContent = `✓ Monitor cargado (${filas.length.toLocaleString('es-PE')} filas) — clic para reemplazar`;
+    renderValorizacionReal();
+  } catch (err) {
+    console.error(err);
+    aviso.style.display = 'block';
+    aviso.textContent = 'Error leyendo el Monitor: ' + err.message;
+  }
 }
 
 // ---------------- NAV ----------------
@@ -407,6 +464,24 @@ function renderParametros() {
 }
 
 function bindFormularios() {
+  document.getElementById('input-tipo-cambio').value = state.tipoCambio;
+  document.getElementById('input-tipo-cambio').addEventListener('input', (e) => {
+    const val = Number(e.target.value);
+    if (val > 0) {
+      state.tipoCambio = val;
+      localStorage.setItem('tipo_cambio_v1', String(val));
+      renderValorizacionReal();
+    }
+  });
+
+  const dzMonitor = document.getElementById('dropzone-monitor-real');
+  const inputMonitor = document.getElementById('file-input-monitor');
+  dzMonitor.addEventListener('click', () => inputMonitor.click());
+  inputMonitor.addEventListener('change', (e) => manejarArchivoMonitor(e.target.files[0]));
+  ['dragenter', 'dragover'].forEach((evt) => dzMonitor.addEventListener(evt, (e) => { e.preventDefault(); dzMonitor.classList.add('dragging'); }));
+  ['dragleave', 'drop'].forEach((evt) => dzMonitor.addEventListener(evt, (e) => { e.preventDefault(); dzMonitor.classList.remove('dragging'); }));
+  dzMonitor.addEventListener('drop', (e) => manejarArchivoMonitor(e.dataTransfer.files[0]));
+
   document.getElementById('form-parametros').addEventListener('submit', (e) => {
     e.preventDefault();
     state.params.Z = Number(document.getElementById('input-z').value);
