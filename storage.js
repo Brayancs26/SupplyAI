@@ -50,15 +50,16 @@ async function obtenerArchivo(tipo) {
 
 async function obtenerTodos() {
   try {
-    const [MRP, DATA, MB52] = await Promise.all([
+    const [MRP, DATA, MB52, MONITOR] = await Promise.all([
       obtenerArchivo('MRP'),
       obtenerArchivo('DATA'),
       obtenerArchivo('MB52'),
+      obtenerArchivo('MONITOR'),
     ]);
-    return { MRP, DATA, MB52 };
+    return { MRP, DATA, MB52, MONITOR };
   } catch (err) {
     console.warn('No se pudo leer IndexedDB (¿modo incógnito?):', err);
-    return { MRP: null, DATA: null, MB52: null };
+    return { MRP: null, DATA: null, MB52: null, MONITOR: null };
   }
 }
 
@@ -73,7 +74,7 @@ async function borrarArchivo(tipo) {
 }
 
 async function borrarTodo() {
-  await Promise.all([borrarArchivo('MRP'), borrarArchivo('DATA'), borrarArchivo('MB52')]);
+  await Promise.all([borrarArchivo('MRP'), borrarArchivo('DATA'), borrarArchivo('MB52'), borrarArchivo('MONITOR')]);
 }
 
 window.Storage = { guardarArchivo, obtenerArchivo, obtenerTodos, borrarArchivo, borrarTodo };
