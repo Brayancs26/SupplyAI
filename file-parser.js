@@ -32,15 +32,16 @@ function detectarTipo(filas) {
   if (headers.has('Libre utilización') && headers.has('Valor libre util.')) return 'MB52';
   if (headers.has('Punto de pedido') && headers.has('Stock de seguridad')) return 'MRP';
   if (headers.has('Clase de movimiento') && headers.has('Ctd.en UM entrada')) return 'DATA';
+  if (headers.has('Importe') && headers.has('Nombre del usuario')) return 'MONITOR';
   return 'DESCONOCIDO';
 }
 
 /**
- * Procesa una lista de File. Devuelve { MRP, DATA, MB52, desconocidos }
+ * Procesa una lista de File. Devuelve { MRP, DATA, MB52, MONITOR, desconocidos }
  * con las filas ya parseadas (o null si no se detectó ese tipo).
  */
 async function procesarArchivos(fileList) {
-  const resultado = { MRP: null, DATA: null, MB52: null, desconocidos: [], errores: [] };
+  const resultado = { MRP: null, DATA: null, MB52: null, MONITOR: null, desconocidos: [], errores: [] };
 
   for (const file of fileList) {
     if (!/\.xlsx?$/i.test(file.name)) {
