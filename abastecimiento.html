@@ -33,14 +33,15 @@
         <p class="brand-sub">Estacional · SS · ROP · EOQ · Inmovilizados</p>
       </div>
     </div>
+    <a href="index.html" class="btn-volver-inicio">← Inicio</a>
   </div>
 </header>
 
 <!-- ===================== PANTALLA DE CARGA ===================== -->
 <div id="pantalla-carga">
   <div class="carga-inner">
-    <h2>Suelta tus 3 archivos de SAP</h2>
-    <p class="carga-sub">MRP, DATA (movimientos históricos) y MB52 (stock actual). Los detecto automáticamente, no importa el orden ni el nombre exacto del archivo.</p>
+    <h2>Suelta tus archivos de SAP</h2>
+    <p class="carga-sub">MRP, DATA (movimientos históricos), MB52 (stock actual) y, si lo tienes, el Monitor (ZMMR0105, opcional). Los detecto automáticamente, no importa el orden ni el nombre exacto del archivo.</p>
 
     <div id="dropzone" class="dropzone">
       <input type="file" id="file-input" multiple accept=".xlsx,.xls" hidden />
@@ -73,6 +74,14 @@
         <button type="button" class="btn-reemplazar" data-tipo="MB52">Reemplazar</button>
         <input type="file" class="input-individual" data-tipo="MB52" accept=".xlsx,.xls" hidden />
       </div>
+      <div class="chip-archivo" id="chip-MONITOR">
+        <div class="chip-texto">
+          <span class="chip-nombre">Monitor (ZMMR0105) — opcional</span>
+          <span class="chip-status">Esperando archivo…</span>
+        </div>
+        <button type="button" class="btn-reemplazar" data-tipo="MONITOR">Reemplazar</button>
+        <input type="file" class="input-individual" data-tipo="MONITOR" accept=".xlsx,.xls" hidden />
+      </div>
     </div>
 
     <button type="button" id="btn-continuar" class="btn-continuar" disabled>Continuar con estos archivos</button>
@@ -82,7 +91,7 @@
     <p class="carga-nota">
       Todo se procesa en tu navegador — ningún archivo se sube a ningún servidor. Los archivos que sueltes
       quedan guardados en este navegador para la próxima vez que abras la página; usa "Reemplazar" en
-      cualquiera de los tres si quieres cargar una versión nueva.
+      cualquiera de ellos si quieres cargar una versión nueva.
     </p>
     <button type="button" id="btn-borrar-cache" class="btn-texto">Borrar todos los datos guardados en este navegador</button>
   </div>
@@ -118,7 +127,7 @@
         <div class="valorizacion-header">
           <div>
             <h2>Valorización en Dólares</h2>
-            <p class="valorizacion-sub">Usa el mismo MB52 que ya cargaste — solo el Monitor (ZMMR0105) es un archivo aparte.</p>
+            <p class="valorizacion-sub">Usa el mismo MB52 y Monitor que ya cargaste en la pantalla inicial.</p>
           </div>
           <label class="tipo-cambio-control">
             <span>Tipo de cambio (S/. por US$)</span>
@@ -126,10 +135,6 @@
           </label>
         </div>
 
-        <div class="dropzone-mini" id="dropzone-monitor-real">
-          <input type="file" id="file-input-monitor" accept=".xlsx,.xls" hidden />
-          <span class="dropzone-mini-texto">⇩ Cargar Monitor (ZMMR0105 — columna "Importe" en USD)</span>
-        </div>
         <p id="aviso-valorizacion" class="aviso-archivos" style="display:none"></p>
 
         <div class="kpi-grid valorizacion-kpi-grid">
@@ -156,6 +161,57 @@
         </div>
       </div>
 
+      <p id="aviso-sin-monitor" class="aviso-archivos" style="display:none">
+        Todavía no cargaste el Monitor (ZMMR0105) — súbelo en el chip "Monitor" de la pantalla de carga inicial (botón "Cargar mis archivos"), es opcional.
+      </p>
+
+      <div class="grid-tres-paneles">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Stock de Aceite de Pescado</h2>
+            <p class="panel-sub">Almacenes TK01, TK02, TK03, DK01, DK02, DK03 y CL01.</p>
+          </div>
+          <div class="table-wrap tall">
+            <table>
+              <thead><tr><th>Material</th><th>Descripción</th><th>Almacén</th><th class="num">Stock</th></tr></thead>
+              <tbody id="tabla-aceite-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Stock de Harina de Pescado</h2>
+            <p class="panel-sub">Almacén C001.</p>
+          </div>
+          <div class="table-wrap tall">
+            <table>
+              <thead><tr><th>Material</th><th>Descripción</th><th>Almacén</th><th class="num">Stock</th></tr></thead>
+              <tbody id="tabla-harina-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-tres-paneles">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Importe Monitor por Usuario</h2>
+          </div>
+          <div id="grafico-monitor-usuario" class="grafico-barras-h"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Detalle de Monitor</h2>
+          </div>
+          <div class="table-wrap tall">
+            <table>
+              <thead><tr><th>Material</th><th>Descripción</th><th class="num">Stock no Val</th><th class="num">Importe</th><th>Usuario</th></tr></thead>
+              <tbody id="tabla-monitor-detalle-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    
       <p class="linea-temporada">Temporada vigente este mes: <span class="chip" id="temporada-actual">—</span></p>
 
       <div class="resumen-top">
@@ -212,6 +268,19 @@
             <tbody id="tabla-prioritarios-body"></tbody>
           </table>
         </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Índice de estacionalidad — derivado de tus datos</h2>
+          <p class="panel-sub">Consumo promedio de cada mes-calendario vs. el promedio general. Rango analizado: <span id="rango-fechas-resumen">—</span></p>
+        </div>
+        <div id="grafico-estacional-resumen" class="grafico-estacional"></div>
+        <p class="leyenda-estacional">
+          <span class="leyenda-item"><span class="dot dot-roja"></span> Alta</span>
+          <span class="leyenda-item"><span class="dot dot-amarilla"></span> Media</span>
+          <span class="leyenda-item"><span class="dot dot-verde"></span> Baja</span>
+        </p>
       </div>
     </section>
 
@@ -485,7 +554,8 @@
       </div>
     </section>
 
-    <!-- ===================== SIMULACIÓN ===================== -->
+    <!-- ===================== DETALLE PPTT Y MONITOR ===================== -->
+        <!-- ===================== SIMULACIÓN ===================== -->
     <section id="tab-simulacion" class="tab-panel">
       <div class="panel panel-form">
         <div class="panel-header">
