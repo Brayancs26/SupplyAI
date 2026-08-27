@@ -1,800 +1,537 @@
+:root {
+  --bg: #0a0e17;
+  --panel: #121926;
+  --panel-2: #182236;
+  --border: #232d40;
+  --text: #eef2f8;
+  --text-muted: #8b96ab;
+  --cyan: #22d3ee;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  --green: #22c55e;
+  --amber: #f5a623;
+  --red: #ef4444;
+  --green-soft: rgba(34, 197, 94, 0.14);
+  --amber-soft: rgba(245, 166, 35, 0.16);
+  --red-soft: rgba(239, 68, 68, 0.14);
+  --cyan-soft: rgba(34, 211, 238, 0.12);
+  --font-display: 'Poppins', 'Century Gothic', sans-serif;
+  --font-ui: 'Inter', 'Segoe UI', sans-serif;
+}
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Abastecimiento L001 · Matarani</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css" />
-<script src="vendor/xlsx.full.min.js"></script>
-<script src="engine.js" defer></script>
-<script src="file-parser.js" defer></script>
-<script src="storage.js" defer></script>
-<script src="reportes.js" defer></script>
-<script src="app.js" defer></script>
-</head>
-<body>
+* { box-sizing: border-box; }
 
-<div id="loading-overlay" style="display:none">
-  <div class="loader-content">
-    <div class="pulse-dot"></div>
-    <p id="loading-msg">Calando datos…</p>
-  </div>
-</div>
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
 
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <span class="brand-mark">L001</span>
-      <div>
-        <h1>ABASTECIMIENTO <span class="accent">MATARANI</span></h1>
-        <p class="brand-sub">Estacional · SS · ROP · EOQ · Inmovilizados</p>
-      </div>
-    </div>
-  </div>
-</header>
+/* ---------- Loading ---------- */
+#loading-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(10, 14, 23, 0.94);
+  display: flex; align-items: center; justify-content: center;
+}
+.loader-content { text-align: center; color: var(--text-muted); }
+.pulse-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--cyan); margin: 0 auto 14px;
+  box-shadow: 0 0 16px 4px var(--cyan-soft);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.6; }
+}
 
-<!-- ===================== PANTALLA DE CARGA ===================== -->
-<div id="pantalla-carga">
-  <div class="carga-inner">
-    <h2>Suelta tus 3 archivos de SAP</h2>
-    <p class="carga-sub">MRP, DATA (movimientos históricos) y MB52 (stock actual). Los detecto automáticamente, no importa el orden ni el nombre exacto del archivo.</p>
+/* ---------- Header ---------- */
+.topbar { background: var(--panel); border-bottom: 1px solid var(--border); }
+.topbar-inner {
+  max-width: 1800px; margin: 0 auto; padding: 22px 28px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.brand { display: flex; align-items: center; gap: 16px; }
+.brand-mark {
+  font-family: var(--font-display); font-weight: 700; font-size: 13px;
+  color: var(--bg); background: var(--cyan);
+  padding: 6px 12px; border-radius: 6px; letter-spacing: 0.05em;
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.35);
+}
+.brand h1 {
+  font-family: var(--font-display); font-size: 20px; margin: 0; font-weight: 700;
+  letter-spacing: 0.02em; color: var(--text);
+}
+.brand h1 .accent { color: var(--cyan); }
+.brand-sub { margin: 3px 0 0; font-size: 12.5px; color: var(--text-muted); }
 
-    <div id="dropzone" class="dropzone">
-      <input type="file" id="file-input" multiple accept=".xlsx,.xls" hidden />
-      <div class="dropzone-icon">⇩</div>
-      <p class="dropzone-texto"><strong>Arrastra aquí</strong> tus archivos .xlsx, o haz clic para elegirlos</p>
-    </div>
+/* ---------- Pantalla de carga ---------- */
+#pantalla-carga { padding: 60px 28px; }
+.carga-inner { max-width: 720px; margin: 0 auto; text-align: center; }
+.carga-inner h2 { font-family: var(--font-display); font-size: 26px; margin-bottom: 8px; color: var(--text); }
+.carga-sub { color: var(--text-muted); font-size: 14px; margin-bottom: 32px; line-height: 1.6; }
 
-    <div class="chips-archivos">
-      <div class="chip-archivo" id="chip-MRP">
-        <div class="chip-texto">
-          <span class="chip-nombre">MRP</span>
-          <span class="chip-status">Esperando archivo…</span>
-        </div>
-        <button type="button" class="btn-reemplazar" data-tipo="MRP">Reemplazar</button>
-        <input type="file" class="input-individual" data-tipo="MRP" accept=".xlsx,.xls" hidden />
-      </div>
-      <div class="chip-archivo" id="chip-DATA">
-        <div class="chip-texto">
-          <span class="chip-nombre">DATA (movimientos)</span>
-          <span class="chip-status">Esperando archivo…</span>
-        </div>
-        <button type="button" class="btn-reemplazar" data-tipo="DATA">Reemplazar</button>
-        <input type="file" class="input-individual" data-tipo="DATA" accept=".xlsx,.xls" hidden />
-      </div>
-      <div class="chip-archivo" id="chip-MB52">
-        <div class="chip-texto">
-          <span class="chip-nombre">MB52 (stock)</span>
-          <span class="chip-status">Esperando archivo…</span>
-        </div>
-        <button type="button" class="btn-reemplazar" data-tipo="MB52">Reemplazar</button>
-        <input type="file" class="input-individual" data-tipo="MB52" accept=".xlsx,.xls" hidden />
-      </div>
-    </div>
+.dropzone {
+  border: 2px dashed var(--border); border-radius: 16px; padding: 48px 24px;
+  cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  background: var(--panel);
+}
+.dropzone:hover, .dropzone.dragging { border-color: var(--cyan); background: var(--cyan-soft); }
+.dropzone-icon { font-size: 34px; color: var(--cyan); margin-bottom: 10px; }
+.dropzone-texto { color: var(--text); font-size: 15px; margin: 0; }
+.dropzone-texto strong { color: var(--cyan); }
 
-    <button type="button" id="btn-continuar" class="btn-continuar" disabled>Continuar con estos archivos</button>
+.chips-archivos { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; justify-content: center; }
+.chip-archivo {
+  flex: 1; min-width: 220px; background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 16px; text-align: left;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.chip-archivo.chip-listo { border-color: var(--green); background: var(--green-soft); }
+.chip-texto { display: flex; flex-direction: column; min-width: 0; }
+.chip-nombre { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; color: var(--text); }
+.chip-status { display: block; font-size: 11.5px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip-archivo.chip-listo .chip-status { color: var(--green); }
+.btn-reemplazar {
+  flex-shrink: 0; background: var(--bg); border: 1px solid var(--border); color: var(--text-muted);
+  padding: 6px 12px; border-radius: 7px; font-size: 11.5px; cursor: pointer; font-family: var(--font-ui);
+}
+.btn-reemplazar:hover { border-color: var(--cyan); color: var(--cyan); }
 
-    <p id="aviso-archivos" class="aviso-archivos" style="display:none"></p>
+.btn-continuar {
+  margin-top: 22px; background: var(--cyan); color: var(--bg); border: none; font-weight: 700;
+  padding: 13px 26px; border-radius: 9px; cursor: pointer; font-family: var(--font-ui); font-size: 14.5px;
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.25);
+}
+.btn-continuar:disabled { background: #2a3548; color: #64708a; cursor: not-allowed; box-shadow: none; }
+.btn-continuar:not(:disabled):hover { filter: brightness(1.1); }
 
-    <p class="carga-nota">
-      Todo se procesa en tu navegador — ningún archivo se sube a ningún servidor. Los archivos que sueltes
-      quedan guardados en este navegador para la próxima vez que abras la página; usa "Reemplazar" en
-      cualquiera de los tres si quieres cargar una versión nueva.
-    </p>
-    <button type="button" id="btn-borrar-cache" class="btn-texto">Borrar todos los datos guardados en este navegador</button>
-  </div>
-</div>
+.btn-texto {
+  display: block; margin: 18px auto 0; background: none; border: none; color: var(--text-muted);
+  font-size: 11.5px; text-decoration: underline; cursor: pointer; font-family: var(--font-ui);
+}
+.btn-texto:hover { color: var(--red); }
 
-<!-- ===================== DASHBOARD ===================== -->
-<div id="dashboard" style="display:none">
+.aviso-archivos {
+  margin-top: 18px; color: var(--amber); background: var(--amber-soft);
+  border-radius: 8px; padding: 10px 14px; font-size: 13px;
+}
+.carga-nota { margin-top: 30px; font-size: 12px; color: var(--text-muted); }
 
-  <nav class="tabs">
-    <button class="tab-btn active" data-tab="resumen">Resumen</button>
-    <button class="tab-btn" data-tab="planificados">Materiales Planificados</button>
-    <button class="tab-btn" data-tab="estacionalidad">Estacionalidad</button>
-    <button class="tab-btn" data-tab="materiales">Materiales</button>
-    <button class="tab-btn" data-tab="abcxyz">Análisis ABC</button>
-    <button class="tab-btn" data-tab="cobertura">Cobertura</button>
-    <button class="tab-btn" data-tab="simulacion">Parámetros y Simulación</button>
-    <button class="tab-btn" data-tab="traslados">Lista de Pedido</button>
-    <button class="tab-btn" data-tab="inmovilizados">Inmovilizados</button>
-    <button class="tab-btn" data-tab="reportes">Reportes de Inventario</button>
-    <div class="tabs-acciones">
-      <button id="btn-exportar" class="btn-secundario">Exportar Excel</button>
-      <button id="btn-nuevos-archivos" class="btn-secundario">Cargar mis archivos</button>
-    </div>
-  </nav>
+/* ---------- Tabs ---------- */
+.tabs {
+  max-width: 1800px; margin: 0 auto; padding: 14px 28px 0;
+  display: flex; gap: 6px; align-items: center; border-bottom: 1px solid var(--border);
+}
+.tab-btn {
+  font-family: var(--font-ui); font-size: 14px; font-weight: 500;
+  background: none; border: none; color: var(--text-muted);
+  padding: 10px 16px; cursor: pointer; border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+.tabs-acciones { margin-left: auto; display: flex; gap: 8px; padding-bottom: 8px; }
+.btn-secundario {
+  background: var(--panel); border: 1px solid var(--border); color: var(--text);
+  padding: 7px 14px; border-radius: 8px; font-size: 12.5px; cursor: pointer; font-family: var(--font-ui);
+}
+.btn-secundario:hover { border-color: var(--cyan); color: var(--cyan); }
 
-  <main>
+main { max-width: 1800px; margin: 0 auto; padding: 26px 28px 60px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
 
-    <!-- ===================== RESUMEN ===================== -->
-    <section id="tab-resumen" class="tab-panel active">
+/* ---------- Resumen: gauge + KPIs ---------- */
+.linea-temporada { color: var(--text-muted); font-size: 13.5px; margin: 0 0 16px; }
+.resumen-top { display: flex; gap: 16px; margin-bottom: 8px; flex-wrap: wrap; }
+.gauge-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-width: 220px;
+}
+.gauge-wrap { padding: 10px; }
+.gauge {
+  --pct: 0; --gauge-color: #22c55e;
+  width: 150px; height: 150px; border-radius: 50%;
+  background: conic-gradient(var(--gauge-color) calc(var(--pct) * 1%), #232d40 0);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.4s;
+}
+.gauge-inner {
+  width: 112px; height: 112px; border-radius: 50%; background: var(--panel);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+}
+.gauge-valor { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--text); }
+.gauge-label { font-size: 10px; color: var(--text-muted); margin-top: 4px; padding: 0 10px; line-height: 1.3; }
+.gauge-nota { font-size: 11px; color: var(--text-muted); text-align: center; margin: 12px 0 0; max-width: 200px; }
 
-      <!-- ===================== VALORIZACIÓN EN DÓLARES ===================== -->
-      <div class="valorizacion-panel">
-        <div class="valorizacion-header">
-          <div>
-            <h2>Valorización en Dólares</h2>
-            <p class="valorizacion-sub">Usa el mismo MB52 que ya cargaste — solo el Monitor (ZMMR0105) es un archivo aparte.</p>
-          </div>
-          <label class="tipo-cambio-control">
-            <span>Tipo de cambio (S/. por US$)</span>
-            <input type="number" id="input-tipo-cambio" step="0.001" value="3.75" />
-          </label>
-        </div>
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 8px; }
+.kpi-grid-resumen { flex: 1; grid-template-columns: repeat(5, 1fr); }
+.kpi-card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;
+}
+.kpi-label { font-size: 12px; color: var(--text-muted); }
+.kpi-value { font-family: var(--font-display); font-size: 30px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+.kpi-value-small { font-size: 18px; }
+.kpi-card.kpi-rojo { border-color: rgba(239, 68, 68, 0.35); }
+.kpi-card.kpi-rojo .kpi-value { color: var(--red); }
+.kpi-card.kpi-amarillo { border-color: rgba(245, 166, 35, 0.35); }
+.kpi-card.kpi-amarillo .kpi-value { color: var(--amber); }
+.kpi-card.kpi-verde { border-color: rgba(34, 197, 94, 0.35); }
+.kpi-card.kpi-verde .kpi-value { color: var(--green); }
+.kpi-card.kpi-purpura { border-color: rgba(168, 85, 247, 0.35); }
+.kpi-card.kpi-purpura .kpi-value { color: var(--purple); }
+.confianza-linea { color: var(--text-muted); font-size: 13px; margin: 10px 0 24px; }
 
-        <div class="dropzone-mini" id="dropzone-monitor-real">
-          <input type="file" id="file-input-monitor" accept=".xlsx,.xls" hidden />
-          <span class="dropzone-mini-texto">⇩ Cargar Monitor (ZMMR0105 — columna "Importe" en USD)</span>
-        </div>
-        <p id="aviso-valorizacion" class="aviso-archivos" style="display:none"></p>
+/* ---------- Panels ---------- */
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+.panel-header { padding: 18px 20px 4px; }
+.panel-header h2 { font-family: var(--font-display); font-size: 16px; margin: 0 0 4px; font-weight: 600; color: var(--text); }
+.panel-sub { font-size: 12.5px; color: var(--text-muted); margin: 0 0 12px; }
 
-        <div class="kpi-grid valorizacion-kpi-grid">
-          <div class="kpi-card kpi-val-azul">
-            <span class="kpi-label">Valorizado Almacén (US$)</span>
-            <span class="kpi-value" id="kpi-real-almacen">—</span>
-          </div>
-          <div class="kpi-card kpi-val-verde">
-            <span class="kpi-label">Valorizado PPTT (US$)</span>
-            <span class="kpi-value" id="kpi-real-pptt">—</span>
-          </div>
-          <div class="kpi-card kpi-val-rojo">
-            <span class="kpi-label">Valorizado Monitor (US$)</span>
-            <span class="kpi-value" id="kpi-real-monitor">—</span>
-          </div>
-          <div class="kpi-card kpi-val-amarillo">
-            <span class="kpi-label">% Monitor</span>
-            <span class="kpi-value" id="kpi-real-pct-monitor">—</span>
-          </div>
-          <div class="kpi-card kpi-val-celeste">
-            <span class="kpi-label">% Vencido</span>
-            <span class="kpi-value" id="kpi-real-pct-vencido">—</span>
-          </div>
-        </div>
-      </div>
+/* ---------- Tables ---------- */
+.table-wrap { overflow-x: auto; padding: 0 4px 12px; }
+.table-wrap.tall { max-height: 620px; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12.8px; }
+thead th {
+  position: sticky; top: 0; background: var(--panel-2);
+  text-align: left; padding: 10px 12px; font-weight: 500; color: var(--text-muted);
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text); }
+tbody tr:hover { background: rgba(34, 211, 238, 0.06); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td.desc { white-space: normal; max-width: 260px; }
+.muted { color: var(--text-muted); font-style: italic; }
+.centrado { text-align: center; }
 
-      <p class="linea-temporada">Temporada vigente este mes: <span class="chip" id="temporada-actual">—</span></p>
+/* ---------- Chips ---------- */
+.chip {
+  display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 9px;
+  border-radius: 20px; font-family: var(--font-ui);
+}
+.chip-roja { background: var(--red-soft); color: var(--red); }
+.chip-amarilla { background: var(--amber-soft); color: var(--amber); }
+.chip-verde { background: var(--green-soft); color: var(--green); }
+.chip-alta { background: var(--green-soft); color: var(--green); }
+.chip-media { background: var(--amber-soft); color: var(--amber); }
+.chip-baja { background: rgba(139, 150, 171, 0.14); color: var(--text-muted); }
+.chip-sindatos { background: rgba(139, 150, 171, 0.1); color: var(--text-muted); }
+.salud-critico { background: rgba(239, 68, 68, 0.22); color: #ff6b5e; font-weight: 700; }
+.salud-urgente { background: var(--amber-soft); color: var(--amber); }
+.salud-optimo { background: var(--green-soft); color: var(--green); }
+.salud-sobrestock { background: rgba(168, 85, 247, 0.18); color: var(--purple); }
+.salud-muerto { background: rgba(139, 150, 171, 0.16); color: var(--text-muted); font-style: italic; }
+.salud-nd { background: rgba(139, 150, 171, 0.1); color: var(--text-muted); }
+.chip-nd { background: rgba(139, 150, 171, 0.12); color: var(--text-muted); }
+.chip-reclasificado { background: var(--cyan-soft); color: var(--cyan); font-size: 9.5px; padding: 2px 7px; }
 
-      <div class="resumen-top">
-        <div class="gauge-card">
-          <div class="gauge-wrap">
-            <div class="gauge" id="gauge-salud" style="--pct:0">
-              <div class="gauge-inner">
-                <span class="gauge-valor" id="gauge-valor">—</span>
-                <span class="gauge-label">Salud de abastecimiento</span>
-              </div>
-            </div>
-          </div>
-          <p class="gauge-nota">% de materiales en estado Óptimo (dentro del rango saludable de stock)</p>
-        </div>
+/* ---------- Filters ---------- */
+.filtros { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.filtros input, .filtros select {
+  background: var(--panel); border: 1px solid var(--border); color: var(--text);
+  padding: 9px 12px; border-radius: 8px; font-family: var(--font-ui); font-size: 13px;
+}
+.filtros input { flex: 1; min-width: 220px; }
+.conteo { color: var(--text-muted); font-size: 12.5px; margin-left: auto; }
 
-        <div class="kpi-grid kpi-grid-resumen">
-          <div class="kpi-card">
-            <span class="kpi-label">Materiales analizados</span>
-            <span class="kpi-value" id="kpi-total">—</span>
-          </div>
-          <div class="kpi-card kpi-rojo">
-            <span class="kpi-label">Riesgo de quiebre</span>
-            <span class="kpi-value" id="kpi-rojo">—</span>
-          </div>
-          <div class="kpi-card kpi-verde">
-            <span class="kpi-label">Óptimo</span>
-            <span class="kpi-value" id="kpi-verde">—</span>
-          </div>
-          <div class="kpi-card kpi-purpura">
-            <span class="kpi-label">Sobrestock</span>
-            <span class="kpi-value" id="kpi-sobrestock">—</span>
-          </div>
-          <div class="kpi-card kpi-amarillo">
-            <span class="kpi-label">Sin movimiento</span>
-            <span class="kpi-value" id="kpi-amarillo">—</span>
-          </div>
-        </div>
-      </div>
-      <p class="confianza-linea">Confianza del dato histórico: <span id="kpi-confianza">—</span></p>
+/* ---------- Inmovilizados thresholds ---------- */
+.umbrales { padding: 16px 20px; display: flex; gap: 24px; flex-wrap: wrap; }
+.umbrales label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--text-muted); }
+.umbrales input, .umbrales select {
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+  padding: 7px 10px; border-radius: 6px; width: 160px; font-family: var(--font-ui); font-size: 12.5px;
+}
 
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Top 25 prioritarios</h2>
-          <p class="panel-sub">Riesgo real de quiebre + historial de consumo confiable (Alta/Media), usando la demanda de la temporada objetivo de cada material según su lead time.</p>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Material</th><th>Descripción</th><th>Clasificación</th><th>Temp. Objetivo</th>
-                <th class="num">Stock Real</th><th class="num">ROP Calculado</th><th>Confianza</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-prioritarios-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+/* ---------- Parametros form ---------- */
+.panel-form form { padding: 4px 20px 22px; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; }
+.panel-form label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--text-muted); }
+.panel-form input {
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+  padding: 9px 11px; border-radius: 8px; width: 160px;
+}
+.hint { font-size: 10.5px; color: var(--text-muted); font-style: italic; }
+.panel-form button {
+  background: var(--cyan); color: var(--bg); border: none; font-weight: 700;
+  padding: 10px 18px; border-radius: 8px; cursor: pointer; font-family: var(--font-ui); font-size: 13.5px;
+}
+.panel-form button:hover { filter: brightness(1.1); }
+.guardado-msg { color: var(--green); font-size: 12.5px; opacity: 0; transition: opacity 0.3s; }
 
-    <!-- ===================== MATERIALES PLANIFICADOS ===================== -->
-    <section id="tab-planificados" class="tab-panel">
-      <div class="kpi-row-tag">
-        <div class="tag-label">KPIs<br />Generales</div>
-        <div class="kpi-grid-inline">
-          <div class="kpi-inline-card">
-            <span class="kpi-value" id="kpi-plan-total">—</span>
-            <span class="kpi-label">Materiales Planificados</span>
-          </div>
-          <div class="kpi-inline-card">
-            <span class="kpi-value" id="kpi-plan-reclasificados">—</span>
-            <span class="kpi-label">Reclasificados desde Uso Inmediato</span>
-          </div>
-          <div class="kpi-inline-card">
-            <span class="kpi-value" id="kpi-plan-stock">—</span>
-            <span class="kpi-label">% con Stock Disponible</span>
-          </div>
-          <div class="kpi-inline-card">
-            <span class="kpi-value" id="kpi-plan-estrategicos">—</span>
-            <span class="kpi-label">% Estratégicos</span>
-          </div>
-        </div>
-      </div>
+/* ---------- Estacionalidad ---------- */
+.grafico-estacional {
+  display: flex; align-items: flex-end; gap: 10px; height: 220px;
+  padding: 20px 20px 8px; margin: 0 4px;
+}
+.barra-mes { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.barra-valor { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+.barra { width: 100%; border-radius: 4px 4px 0 0; transition: height 0.3s; }
+.barra-roja { background: var(--red); box-shadow: 0 0 10px rgba(239, 68, 68, 0.35); }
+.barra-amarilla { background: var(--amber); box-shadow: 0 0 10px rgba(245, 166, 35, 0.3); }
+.barra-verde { background: var(--green); box-shadow: 0 0 10px rgba(34, 197, 94, 0.3); }
+.barra-label { font-size: 11.5px; color: var(--text-muted); margin-top: 8px; }
+.leyenda-estacional { display: flex; gap: 20px; padding: 0 20px 18px; font-size: 12px; color: var(--text-muted); }
+.leyenda-item { display: flex; align-items: center; gap: 6px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot-roja { background: var(--red); }
+.dot-amarilla { background: var(--amber); }
+.dot-verde { background: var(--green); }
 
-      <div class="kpi-row-tag">
-        <div class="tag-label tag-amarilla">Sin<br />Tratamiento</div>
-        <div class="kpi-grid-inline">
-          <div class="kpi-inline-card">
-            <span class="kpi-value" id="kpi-sintrat-total">—</span>
-            <span class="kpi-label">Materiales sin SS/ROP definido en SAP</span>
-          </div>
-          <div class="kpi-inline-card">
-            <span class="kpi-value" id="kpi-sintrat-altabaja">—</span>
-            <span class="kpi-label">De ellos, Alta o Baja Rotación</span>
-          </div>
-          <div class="kpi-inline-card">
-            <span class="kpi-value kpi-value-alerta" id="kpi-sintrat-pct">—</span>
-            <span class="kpi-label">% de planificados sin tratamiento</span>
-          </div>
-        </div>
-      </div>
+/* ---------- Tendencia por producto ---------- */
+.buscador-tendencia { padding: 0 20px 16px; }
+.buscador-tendencia input {
+  width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+  padding: 11px 14px; border-radius: 8px; font-family: var(--font-ui); font-size: 13.5px;
+}
+.tendencia-vacio { padding: 40px 20px 50px; text-align: center; color: var(--text-muted); font-size: 13.5px; }
+.tendencia-info {
+  display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;
+  padding: 0 20px 16px;
+}
+.tendencia-material { display: block; font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--text); }
+.tendencia-material-clasif { display: block; font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.tendencia-stats { display: flex; gap: 22px; }
+.tendencia-stats > div { display: flex; flex-direction: column; align-items: flex-end; }
+.stat-label { font-size: 10.5px; color: var(--text-muted); }
+.stat-valor { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--cyan); font-variant-numeric: tabular-nums; }
+.tendencia-grafico { padding: 0 20px 24px; }
 
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Qué queda fuera de la planificación, y por qué</h2>
-          <p class="panel-sub">Inactivo y Producción no entran a este cálculo. Uso Inmediato se revisa material por material contra su histórico real.</p>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Motivo</th><th class="num">Materiales</th></tr></thead>
-            <tbody id="tabla-exclusiones-body"></tbody>
-          </table>
-        </div>
-      </div>
+/* ---------- ABC-XYZ ---------- */
+.abcxyz-grid { padding: 8px 20px 24px; max-width: 560px; }
+.abcxyz-row { display: grid; grid-template-columns: 44px repeat(4, 1fr); gap: 8px; margin-bottom: 8px; }
+.abcxyz-row.abcxyz-header { margin-bottom: 10px; }
+.abcxyz-col-label, .abcxyz-row-label {
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 600; font-size: 13px; color: var(--text-muted);
+}
+.abcxyz-celda {
+  border: 1px solid var(--border); border-radius: 8px; padding: 14px 6px; cursor: pointer;
+  background: var(--panel-2); transition: transform 0.1s, border-color 0.15s;
+}
+.abcxyz-celda:hover { transform: translateY(-1px); border-color: var(--cyan); }
+.abcxyz-celda.activa { border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan); }
+.abcxyz-celda .celda-valor { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); }
+.celda-X { background: var(--green-soft); }
+.celda-Y { background: var(--amber-soft); }
+.celda-Z { background: var(--red-soft); }
+.celda-ND { background: rgba(139, 150, 171, 0.1); }
 
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Reclasificación de materiales "Uso Inmediato"</h2>
-          <p class="panel-sub">Materiales que SAP marcó como Uso Inmediato (compra solo por reserva), pero que su histórico de movimientos muestra un patrón de consumo regular — se reclasificaron y ya llevan SS/ROP calculado.</p>
-        </div>
-        <div class="table-wrap tall">
-          <table>
-            <thead>
-              <tr>
-                <th>Material</th><th>Descripción</th><th>Nueva Clasificación</th>
-                <th class="num">Meses con consumo</th><th class="num">Stock Real</th><th>Riesgo</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-reclasificados-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+.conteo-inline { font-family: var(--font-ui); font-size: 12px; font-weight: 400; color: var(--text-muted); }
+.chip-abc { background: var(--cyan-soft); color: var(--cyan); }
+.chip-xyz-x { background: var(--green-soft); color: var(--green); }
+.chip-xyz-y { background: var(--amber-soft); color: var(--amber); }
+.chip-xyz-z { background: var(--red-soft); color: var(--red); }
+.chip-xyz-nd { background: rgba(139, 150, 171, 0.14); color: var(--text-muted); }
+.chip-cat-combustibles { background: rgba(245, 166, 35, 0.16); color: var(--amber); }
+.chip-cat-insumos { background: rgba(168, 85, 247, 0.16); color: var(--purple); }
+.chip-cat-otros { background: rgba(139, 150, 171, 0.14); color: var(--text-muted); }
 
-    <!-- ===================== ESTACIONALIDAD ===================== -->
-    <section id="tab-estacionalidad" class="tab-panel">
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Índice de estacionalidad — derivado de tus datos</h2>
-          <p class="panel-sub">Consumo promedio de cada mes-calendario (a través de todos los años en tus archivos) vs. el promedio general. Rango analizado: <span id="rango-fechas">—</span></p>
-        </div>
-        <div id="grafico-estacional" class="grafico-estacional"></div>
-        <p class="leyenda-estacional">
-          <span class="leyenda-item"><span class="dot dot-roja"></span> Alta</span>
-          <span class="leyenda-item"><span class="dot dot-amarilla"></span> Media</span>
-          <span class="leyenda-item"><span class="dot dot-verde"></span> Baja</span>
-        </p>
-      </div>
-    </section>
+/* ---------- Tag + KPIs en línea (estilo "Monitor de Traslados") ---------- */
+.kpi-row-tag {
+  display: flex; align-items: stretch; border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden; margin-bottom: 22px; background: var(--panel);
+}
+.tag-label {
+  background: var(--green); color: var(--bg); font-family: var(--font-display); font-weight: 700;
+  font-size: 14px; display: flex; align-items: center; justify-content: center; text-align: center;
+  padding: 18px 22px; min-width: 130px; line-height: 1.3;
+}
+.kpi-grid-inline { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); }
+.kpi-inline-card {
+  padding: 16px 18px; display: flex; flex-direction: column-reverse; gap: 6px; justify-content: center;
+  border-left: 1px solid var(--border);
+}
+.kpi-inline-card:first-child { border-left: none; }
+.kpi-inline-card .kpi-value { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--cyan); }
+.kpi-inline-card .kpi-label { font-size: 11px; color: var(--text-muted); line-height: 1.3; }
 
-    <!-- ===================== MATERIALES ===================== -->
-    <section id="tab-materiales" class="tab-panel">
-      <div class="filtros">
-        <input type="text" id="buscar-material" placeholder="Buscar por código o descripción…" />
-        <select id="filtro-riesgo">
-          <option value="TODOS">Todos los riesgos</option>
-          <option value="ROJO">Riesgo de quiebre</option>
-          <option value="AMARILLO">Vigilar</option>
-          <option value="VERDE">OK</option>
-        </select>
-        <select id="filtro-confianza">
-          <option value="TODAS">Toda confianza</option>
-          <option value="Alta">Alta</option>
-          <option value="Media">Media</option>
-          <option value="Baja">Baja</option>
-          <option value="Sin datos">Sin datos</option>
-        </select>
-        <select id="filtro-tratamiento">
-          <option value="TODOS">Planificados y excluidos</option>
-          <option value="PLANIFICADOS">Solo planificados</option>
-          <option value="EXCLUIDOS">Solo excluidos</option>
-        </select>
-        <span class="conteo" id="conteo-materiales"></span>
-      </div>
-      <div class="panel">
-        <div class="table-wrap tall">
-          <table>
-            <thead>
-              <tr>
-                <th>Pedir</th><th class="num">Cantidad</th>
-                <th>Material</th><th>Descripción</th><th>Clasif. SAP</th><th>Clasif. Final</th><th>Temp.</th>
-                <th class="num">LT (días)</th><th class="num">Stock Real</th>
-                <th class="num">SS SAP</th><th class="num">SS Calc.</th>
-                <th class="num">ROP SAP</th><th class="num">ROP Calc.</th>
-                <th>Confianza</th><th>Últ. Movimiento</th><th class="num">Costo Unit.</th><th class="num">EOQ</th><th>Riesgo</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-materiales-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+.tag-label.tag-amarilla { background: var(--amber); }
+.kpi-value-alerta { color: var(--red) !important; }
 
-    <!-- ===================== ABC-XYZ ===================== -->
-    <section id="tab-abcxyz" class="tab-panel">
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Análisis ABC-XYZ</h2>
-          <p class="panel-sub">
-            <strong>ABC</strong> clasifica por valor de consumo anual (costo unitario × demanda anual): A = el 80% del valor, B = el siguiente 15%, C = el resto.
-            El Pareto se calcula <strong>por separado dentro de cada categoría</strong> (Combustibles / Insumos / Otros), para que un material de muy alto valor
-            como el diesel no arrastre a todo lo demás a C.
-            <strong>XYZ</strong> clasifica por variabilidad de la demanda diaria a lo largo de todo el período: X = predecible, Y = variable, Z = errática, N/D = muy pocos datos.
-            Haz clic en una celda para filtrar la tabla; clic de nuevo para quitar el filtro.
-          </p>
-        </div>
-        <div class="filtros" style="padding: 0 20px 16px;">
-          <label style="display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:var(--text-muted);">
-            Categoría
-            <select id="filtro-categoria-abcxyz">
-              <option value="TODAS">Todas las categorías</option>
-              <option value="Combustibles">Combustibles</option>
-              <option value="Insumos">Insumos</option>
-              <option value="Otros">Otros (repuestos, EPP, ferretería, etc.)</option>
-            </select>
-          </label>
-        </div>
-        <div id="grid-abcxyz" class="abcxyz-grid"></div>
-      </div>
+.chk-marcar { width: 16px; height: 16px; cursor: pointer; accent-color: var(--cyan); }
+.input-cantidad-pedido {
+  width: 70px; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+  padding: 5px 7px; border-radius: 6px; font-family: var(--font-ui); font-size: 12px; text-align: right;
+}
+.btn-quitar-pedido {
+  background: var(--red-soft); border: 1px solid rgba(239, 68, 68, 0.35); color: var(--red);
+  padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-family: var(--font-ui);
+}
+.btn-quitar-pedido:hover { filter: brightness(1.15); }
 
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Materiales <span id="conteo-abcxyz" class="conteo-inline"></span></h2>
-          <p class="panel-sub">Ordenados por valor de consumo anual (mayor a menor).</p>
-        </div>
-        <div class="table-wrap tall">
-          <table>
-            <thead>
-              <tr>
-                <th>Material</th><th>Descripción</th><th>Grupo de artículo</th><th>Categoría</th>
-                <th class="num">Valor Consumo Anual</th><th>ABC</th><th>XYZ</th>
-                <th class="num">Stock Real</th><th>Riesgo</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-abcxyz-body"></tbody>
-          </table>
-        </div>
-      </div>
-    
-<div class="separador-subseccion"></div>
+.dot-cobertura { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.dot-cobertura.dot-verde { background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.5); }
+.dot-cobertura.dot-roja { background: var(--red); box-shadow: 0 0 6px rgba(239,68,68,0.5); }
+.dot-cobertura.dot-nd { background: var(--text-muted); }
 
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Tendencia de consumo por producto</h2>
-          <p class="panel-sub">Elige un material para ver su historial de consumo real mes a mes.</p>
-        </div>
-        <div class="buscador-tendencia">
-          <input type="text" id="buscar-tendencia" list="lista-materiales-tendencia" placeholder="Busca por código o descripción…" />
-          <datalist id="lista-materiales-tendencia"></datalist>
-        </div>
-        <div id="tendencia-vacio" class="tendencia-vacio">Selecciona un material para ver su tendencia.</div>
-        <div id="tendencia-contenido" style="display:none">
-          <div class="tendencia-info">
-            <div>
-              <span class="tendencia-material" id="tendencia-material-nombre">—</span>
-              <span class="tendencia-material-clasif" id="tendencia-material-clasif">—</span>
-            </div>
-            <div class="tendencia-stats">
-              <div><span class="stat-label">Total período</span><span class="stat-valor" id="tendencia-total">—</span></div>
-              <div><span class="stat-label">Promedio mensual</span><span class="stat-valor" id="tendencia-promedio">—</span></div>
-              <div><span class="stat-label">Mes pico</span><span class="stat-valor" id="tendencia-pico">—</span></div>
-              <div><span class="stat-label">Mes valle</span><span class="stat-valor" id="tendencia-valle">—</span></div>
-            </div>
-          </div>
-          <div id="tendencia-grafico" class="tendencia-grafico"></div>
-        </div>
-      </div>
-    
-</section>
+/* ---------- Simulador de Escenarios ---------- */
+.sim-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 18px; }
+.sim-controles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
+.sim-control-card { padding: 18px 20px; }
+.sim-control-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.sim-control-header span:first-child { font-size: 11.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.sim-control-valor { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; color: var(--cyan); }
+.sim-control-card input[type="range"] { width: 100%; accent-color: var(--cyan); margin: 6px 0; }
+.sim-control-extremos { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); font-family: var(--font-mono, monospace); }
+.sim-control-nota { font-size: 11.5px; color: var(--text-muted); margin: 10px 0 0; line-height: 1.4; }
+.sim-botones-nivel { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 6px 0; }
+.btn-nivel-servicio {
+  background: var(--bg); border: 1px solid var(--border); color: var(--text-muted);
+  padding: 8px 4px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: var(--font-ui);
+}
+.btn-nivel-servicio.activo { background: var(--cyan); border-color: var(--cyan); color: var(--bg); }
+.btn-nivel-servicio:hover:not(.activo) { border-color: var(--cyan); color: var(--cyan); }
 
-    <!-- ===================== COBERTURA ===================== -->
-    <section id="tab-cobertura" class="tab-panel">
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Cobertura de Insumos y Materia Prima</h2>
-          <p class="panel-sub">
-            El consumo promedio de cualquier material ya suma lo consumido en L001 <strong>y en PI01 (Planta)</strong> —
-            varios materiales (combustibles, insumos) se consumen casi enteramente en PI01, no en L001.
-            "Stock Ideal" = consumo promedio diario × cobertura ideal. "Cobertura" = (Stock Real + Planta +
-            Tránsito) ÷ consumo promedio diario — si sale por debajo de la cobertura ideal, aparece en rojo.
-            <em>Nota: "Capacidad Instalada" y "Forecast Accuracy" del Excel original no están acá — necesitarían
-            datos de producción y de forecast histórico que no vienen en tus 3 archivos.</em>
-          </p>
-        </div>
-        <div class="filtros" style="padding: 0 20px 16px;">
-          <label style="display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:var(--text-muted);">
-            Categoría
-            <select id="filtro-categoria-cobertura">
-              <option value="Insumos" selected>Insumos</option>
-              <option value="Combustibles">Combustibles</option>
-              <option value="Otros">Otros</option>
-              <option value="TODAS">Todas</option>
-            </select>
-          </label>
-          <label style="display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:var(--text-muted);">
-            Cobertura ideal (días)
-            <input type="number" id="input-cobertura-ideal" value="12" min="1" step="1" style="width:90px;" />
-          </label>
-        </div>
-        <div class="kpi-grid" style="padding: 0 20px 16px;">
-          <div class="kpi-card">
-            <span class="kpi-label">Materiales en esta vista</span>
-            <span class="kpi-value" id="kpi-cob-total">—</span>
-          </div>
-          <div class="kpi-card kpi-rojo">
-            <span class="kpi-label">Por debajo de la cobertura ideal</span>
-            <span class="kpi-value" id="kpi-cob-bajo">—</span>
-          </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Unidades a solicitar (total)</span>
-            <span class="kpi-value kpi-value-small" id="kpi-cob-solicitar">—</span>
-          </div>
-        </div>
-        <div class="table-wrap tall">
-          <table>
-            <thead>
-              <tr>
-                <th>Tipo</th><th>Código</th><th>Descripción</th>
-                <th class="num">Consumo Prom.</th><th class="num">Desv. Consumo</th>
-                <th class="num">Cobertura Ideal</th><th class="num">Stock Ideal</th>
-                <th class="num">Stock Real</th><th class="num">Cobertura</th>
-                <th class="num">Solicitar</th><th class="num">Tránsito</th><th class="num">Planta</th><th>ST</th><th>Módulo</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-cobertura-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+.sim-resultados-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+.sim-resultado-card { padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; }
+.sim-resultado-label { font-size: 11.5px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+.sim-resultado-linea { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.sim-resultado-valor { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--text); }
+.sim-resultado-rojo { color: var(--red); }
+.sim-resultado-purpura { color: var(--purple); }
+.sim-diff { font-size: 12px; font-weight: 700; }
+.sim-diff-mal { color: var(--amber); }
+.sim-diff-bien { color: var(--green); }
+.sim-resultado-base { font-size: 11.5px; color: var(--text-muted); }
 
-    <!-- ===================== SIMULACIÓN ===================== -->
-    <section id="tab-simulacion" class="tab-panel">
-      <div class="panel panel-form">
-        <div class="panel-header">
-          <h2>Parámetros del modelo</h2>
-          <p class="panel-sub">Se guardan en este navegador. Al guardar, se vuelve a calcular todo automáticamente.</p>
-        </div>
-        <form id="form-parametros">
-          <label>Nivel de servicio — Z
-            <input type="number" id="input-z" step="0.001" />
-            <span class="hint">1.645 ≈ 95% · 1.881 ≈ 97% · 2.05 ≈ 98%</span>
-          </label>
-          <label>Costo de ordenar S (S/. por orden)
-            <input type="number" id="input-s" step="1" />
-          </label>
-          <label>Costo de mantener H (% anual)
-            <input type="number" id="input-h" step="0.5" />
-          </label>
-          <label>Umbral Temporada Alta (índice ≥)
-            <input type="number" id="input-umbral-alta" step="0.05" />
-          </label>
-          <label>Umbral Temporada Baja (índice &lt;)
-            <input type="number" id="input-umbral-baja" step="0.05" />
-          </label>
-          <button type="submit">Guardar y recalcular</button>
-          <span class="guardado-msg" id="guardado-msg">Guardado ✓</span>
-        </form>
-      </div>
-    
-<div class="separador-subseccion"></div>
+.sim-notas-panel { padding: 18px 20px; }
+.sim-nota { font-size: 12.5px; line-height: 1.6; padding: 12px 14px; border-radius: 10px; margin: 0 0 10px; background: rgba(139, 150, 171, 0.08); color: var(--text-muted); }
+.sim-nota:last-child { margin-bottom: 0; }
+.sim-nota-roja { background: var(--red-soft); color: #ffb3a3; }
+.sim-nota-azul { background: var(--cyan-soft); color: #a8e8f5; }
+.sim-nota-amarilla { background: var(--amber-soft); color: #ffe4a8; }
 
-      <div class="panel">
-        <div class="panel-header sim-header">
-          <div>
-            <h2>Simulador de Escenarios "Qué pasaría si…"</h2>
-            <p class="panel-sub">Evalúa el impacto de retrasos de proveedor, picos de demanda o cambios de nivel de servicio — todo se recalcula en vivo, sin tocar tus datos reales.</p>
-          </div>
-          <button type="button" id="btn-reset-simulacion" class="btn-secundario">Restablecer</button>
-        </div>
-      </div>
+/* ---------- SKU clickeable ---------- */
+.sku-link {
+  background: none; border: none; color: var(--cyan); font-family: var(--font-ui); font-size: inherit;
+  cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 2px;
+}
+.sku-link:hover { color: #fff; }
 
-      <div class="sim-controles-grid">
-        <div class="panel sim-control-card">
-          <div class="sim-control-header">
-            <span>Tiempo de Entrega (Lead Time)</span>
-            <span class="sim-control-valor" id="sim-leadtime-valor">Normal (1.0x)</span>
-          </div>
-          <input type="range" id="sim-leadtime-slider" min="0.5" max="2.0" step="0.1" value="1.0" />
-          <div class="sim-control-extremos"><span>-50% (Express)</span><span>+100% (Crisis logística)</span></div>
-          <p class="sim-control-nota">Simula retrasos portuarios, huelgas o escasez de proveedores.</p>
-        </div>
+/* ---------- Ficha de detalle de material (modal) ---------- */
+.overlay-detalle {
+  display: none; position: fixed; inset: 0; z-index: 200; background: rgba(6, 10, 17, 0.72);
+  align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto;
+}
+.modal-detalle {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+  max-width: 760px; width: 100%; padding: 28px 30px 30px; position: relative;
+}
+.btn-cerrar-detalle {
+  position: absolute; top: 18px; right: 18px; background: var(--bg); border: 1px solid var(--border);
+  color: var(--text-muted); width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-size: 14px;
+}
+.btn-cerrar-detalle:hover { color: var(--red); border-color: var(--red); }
+.detalle-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 6px; padding-right: 34px; }
+.detalle-codigo { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: #fff; }
+.detalle-descripcion { font-size: 14px; color: var(--text-muted); margin: 4px 0 10px; }
+.detalle-chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.detalle-temporada { font-size: 11.5px; color: var(--text-muted); }
+.detalle-diagnostico {
+  font-size: 13px; line-height: 1.6; color: var(--text); background: rgba(34, 211, 238, 0.06);
+  border-left: 3px solid var(--cyan); padding: 12px 14px; border-radius: 6px; margin: 16px 0 20px;
+}
+.detalle-metricas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.detalle-metrica {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.detalle-metrica-label { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.02em; }
+.detalle-metrica-valor { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--text); }
+.detalle-tendencia-header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.detalle-tendencia-header h3 { font-family: var(--font-display); font-size: 13.5px; margin: 0; color: var(--text); }
+.detalle-tendencia-stats { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); }
+.detalle-tendencia-stats strong { color: var(--cyan); }
+.detalle-grafico { background: var(--bg); border-radius: 10px; padding: 10px; }
 
-        <div class="panel sim-control-card">
-          <div class="sim-control-header">
-            <span>Nivel de Servicio Deseado</span>
-            <span class="sim-control-valor" id="sim-nivel-servicio-valor">95%</span>
-          </div>
-          <div class="sim-botones-nivel">
-            <button type="button" class="btn-nivel-servicio" data-z="1.282">90%</button>
-            <button type="button" class="btn-nivel-servicio activo" data-z="1.645">95%</button>
-            <button type="button" class="btn-nivel-servicio" data-z="2.05">98%</button>
-            <button type="button" class="btn-nivel-servicio" data-z="2.33">99%</button>
-          </div>
-          <p class="sim-control-nota">Un nivel de servicio más alto sube el Stock de Seguridad de forma no lineal.</p>
-        </div>
+/* ---------- Tooltip del gráfico de tendencia ---------- */
+.punto-hover { fill: #22d3ee; cursor: pointer; transition: r 0.12s; }
+.punto-hover:hover { r: 7; fill: #7fe6f7; }
+.tooltip-tendencia {
+  position: fixed; z-index: 300; pointer-events: none;
+  background: var(--panel-2); border: 1px solid var(--cyan); border-radius: 10px;
+  padding: 10px 14px; font-family: var(--font-ui); font-size: 12px; color: var(--text);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); min-width: 180px;
+}
+.tooltip-mes { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; color: #fff; margin-bottom: 2px; }
+.tooltip-cantidad { color: var(--cyan); font-weight: 600; margin-bottom: 3px; }
+.tooltip-meta { color: var(--text-muted); font-size: 11px; }
+.tooltip-separador { height: 1px; background: var(--border); margin: 8px 0 6px; }
+.tooltip-detalle-fila { display: flex; justify-content: space-between; gap: 14px; font-size: 11px; color: var(--text-muted); padding: 1px 0; }
+.tooltip-detalle-fila span:last-child { color: var(--text); font-variant-numeric: tabular-nums; }
 
-        <div class="panel sim-control-card">
-          <div class="sim-control-header">
-            <span>Fluctuación de Demanda</span>
-            <span class="sim-control-valor" id="sim-demanda-valor">Normal (1.0x)</span>
-          </div>
-          <input type="range" id="sim-demanda-slider" min="0.5" max="1.8" step="0.1" value="1.0" />
-          <div class="sim-control-extremos"><span>-50% (Baja)</span><span>+80% (Pico / Temporada)</span></div>
-          <p class="sim-control-nota">Simula temporada alta, campañas o caídas de consumo.</p>
-        </div>
-      </div>
+/* ---------- Separador entre subsecciones combinadas ---------- */
+.separador-subseccion { margin: 30px 0 16px; padding-top: 6px; border-top: 1px solid var(--border); }
 
-      <div class="sim-resultados-grid">
-        <div class="panel sim-resultado-card">
-          <span class="sim-resultado-label">Presupuesto de Compras Requerido</span>
-          <div class="sim-resultado-linea">
-            <span class="sim-resultado-valor" id="sim-presupuesto-valor">—</span>
-            <span class="sim-diff" id="sim-presupuesto-diff"></span>
-          </div>
-          <span class="sim-resultado-base" id="sim-presupuesto-base"></span>
-        </div>
-        <div class="panel sim-resultado-card">
-          <span class="sim-resultado-label">Materiales en Riesgo de Quiebre</span>
-          <div class="sim-resultado-linea">
-            <span class="sim-resultado-valor sim-resultado-rojo" id="sim-riesgo-valor">—</span>
-            <span class="sim-diff" id="sim-riesgo-diff"></span>
-          </div>
-          <span class="sim-resultado-base" id="sim-riesgo-base"></span>
-        </div>
-        <div class="panel sim-resultado-card">
-          <span class="sim-resultado-label">Capital en Exceso de Stock</span>
-          <div class="sim-resultado-linea">
-            <span class="sim-resultado-valor sim-resultado-purpura" id="sim-sobrestock-valor">—</span>
-            <span class="sim-diff" id="sim-sobrestock-diff"></span>
-          </div>
-          <span class="sim-resultado-base" id="sim-sobrestock-base"></span>
-        </div>
-        <div class="panel sim-resultado-card">
-          <span class="sim-resultado-label">Cobertura Promedio</span>
-          <div class="sim-resultado-linea">
-            <span class="sim-resultado-valor" id="sim-cobertura-valor">—</span>
-            <span class="sim-diff" id="sim-cobertura-diff"></span>
-          </div>
-          <span class="sim-resultado-base" id="sim-cobertura-base"></span>
-        </div>
-      </div>
+/* ---------- Reportes de Inventario ---------- */
+.reportes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 4px 20px 20px; }
+.reporte-card {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.reporte-card h3 { font-family: var(--font-display); font-size: 15px; margin: 0; color: var(--text); }
+.reporte-card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0 0 6px; min-height: 36px; }
+.reporte-card .btn-continuar { margin-top: 0; width: 100%; text-align: center; box-sizing: border-box; }
+.reporte-card-pendiente { opacity: 0.6; }
+.reporte-card-estado { font-size: 11.5px; margin: 4px 0 0; min-height: 14px; }
+.reporte-estado-ok { color: var(--green); }
+.reporte-estado-error { color: var(--red); }
+.reporte-estado-alerta { color: var(--amber); }
 
-      <div class="panel sim-notas-panel">
-        <h2>Conclusión Operativa</h2>
-        <div id="sim-notas"></div>
-      </div>
-    
-</section>
+/* ---------- Valorización en Dólares (integrada en Resumen) ---------- */
+.valorizacion-panel {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px 22px; margin-bottom: 22px; position: relative; overflow: hidden;
+}
+.valorizacion-panel::before {
+  content: ''; position: absolute; inset: 0; z-index: 0;
+  background-image: linear-gradient(120deg, rgba(10, 14, 23, 0.94) 40%, rgba(10, 14, 23, 0.55) 100%), url('assets/fondo_tasa.png');
+  background-size: cover; background-position: center 40%; opacity: 0.9;
+}
+.valorizacion-panel > * { position: relative; z-index: 1; }
+.valorizacion-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 14px; }
+.valorizacion-header h2 { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: #fff; margin: 0 0 4px; }
+.valorizacion-sub { font-size: 12px; color: var(--text-muted); margin: 0; }
+.tipo-cambio-control { display: flex; flex-direction: column; gap: 5px; }
+.tipo-cambio-control span { font-size: 10.5px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.03em; }
+.tipo-cambio-control input {
+  background: var(--bg); border: 1px solid var(--cyan); color: #fff; font-weight: 700;
+  padding: 9px 12px; border-radius: 8px; font-family: var(--font-display); font-size: 15px; width: 140px;
+}
+.dropzone-mini {
+  border: 1px dashed var(--border); border-radius: 8px; padding: 10px 14px; font-size: 12.5px;
+  color: var(--text-muted); cursor: pointer; text-align: center; margin-bottom: 10px;
+  transition: border-color 0.2s, color 0.2s; background: rgba(10, 14, 23, 0.5);
+}
+.dropzone-mini:hover, .dropzone-mini.dragging { border-color: var(--cyan); color: var(--cyan); }
+.dropzone-mini.dropzone-cargado { border-color: var(--green); color: var(--green); border-style: solid; }
+.valorizacion-kpi-grid { grid-template-columns: repeat(5, 1fr); margin-bottom: 0; }
+.kpi-val-azul { border-color: rgba(24, 74, 125, 0.5); background: linear-gradient(135deg, rgba(28, 80, 137, 0.35), rgba(15, 58, 104, 0.35)); }
+.kpi-val-azul .kpi-value { color: #5cbdeb; }
+.kpi-val-verde { border-color: rgba(118, 161, 64, 0.5); background: linear-gradient(135deg, rgba(134, 178, 74, 0.3), rgba(106, 146, 53, 0.3)); }
+.kpi-val-verde .kpi-value { color: #9ed060; }
+.kpi-val-rojo { border-color: rgba(202, 45, 0, 0.5); background: linear-gradient(135deg, rgba(214, 58, 16, 0.3), rgba(176, 40, 0, 0.3)); }
+.kpi-val-rojo .kpi-value { color: #ff7a52; }
+.kpi-val-amarillo { border-color: rgba(240, 196, 25, 0.5); background: linear-gradient(135deg, rgba(244, 207, 58, 0.28), rgba(224, 175, 15, 0.28)); }
+.kpi-val-amarillo .kpi-value { color: #ffd75e; }
+.kpi-val-celeste { border-color: rgba(92, 189, 235, 0.5); background: linear-gradient(135deg, rgba(111, 202, 242, 0.28), rgba(63, 169, 219, 0.28)); }
+.kpi-val-celeste .kpi-value { color: #7fd4f7; }
 
-    <!-- ===================== TRASLADOS/LISTA DE PEDIDO ===================== -->
-    <section id="tab-traslados" class="tab-panel">
-      <div class="kpi-row-tag">
-        <div class="tag-label">Lista de<br />Pedido</div>
-        <div class="kpi-grid-inline">
-          <div class="kpi-inline-card">
-            <span class="kpi-value" id="kpi-pedido-total">—</span>
-            <span class="kpi-label">Materiales marcados para pedir</span>
-          </div>
-          <div class="kpi-inline-card">
-            <span class="kpi-value" id="kpi-pedido-cantidad">—</span>
-            <span class="kpi-label">Unidades totales a pedir</span>
-          </div>
-          <div class="kpi-inline-card">
-            <span class="kpi-value" id="kpi-pedido-valor">—</span>
-            <span class="kpi-label">Valor estimado del pedido</span>
-          </div>
-          <div class="kpi-inline-card">
-            <span class="kpi-value" id="kpi-pedido-rojo">—</span>
-            <span class="kpi-label">De ellos, en riesgo de quiebre</span>
-          </div>
-        </div>
-      </div>
+footer {
+  text-align: center; color: var(--text-muted); font-size: 11.5px; padding: 20px 24px;
+  border-top: 1px solid var(--border);
+}
 
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Materiales marcados para aprovisionar <span id="conteo-pedido" class="conteo-inline"></span></h2>
-          <p class="panel-sub">
-            Marca la casilla "Pedir" en la pestaña Materiales para agregar un material aquí — se guarda en
-            este navegador. Ajusta la cantidad directamente en cualquiera de las dos pestañas.
-          </p>
-        </div>
-        <div class="table-wrap tall">
-          <table>
-            <thead>
-              <tr>
-                <th>Material</th><th>Descripción</th>
-                <th class="num">Stock Real</th><th class="num">ROP Calculado</th>
-                <th class="num">Cantidad a Pedir</th><th class="num">Costo Unit.</th>
-                <th class="num">Valor Estimado</th><th>Riesgo</th><th></th>
-              </tr>
-            </thead>
-            <tbody id="tabla-pedido-body"></tbody>
-          </table>
-        </div>
-        <div class="acciones-publicar" style="padding: 0 20px 20px;">
-          <button type="button" id="btn-exportar-pedido" class="btn-secundario">Exportar Lista de Pedido</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===================== TENDENCIA POR PRODUCTO ===================== -->
-    
-
-    <!-- ===================== INMOVILIZADOS ===================== -->
-    <section id="tab-inmovilizados" class="tab-panel">
-      <div class="panel umbrales">
-        <label>Umbral moderado (días sin consumo)
-          <input type="number" id="umbral-moderado" value="180" min="30" step="10" />
-        </label>
-        <label>Umbral crítico (días sin consumo)
-          <input type="number" id="umbral-critico" value="365" min="60" step="10" />
-        </label>
-        <label>Antigüedad mínima
-          <select id="filtro-antiguedad-inmov">
-            <option value="0">Todos</option>
-            <option value="180">Más de 6 meses</option>
-            <option value="365">Más de 1 año</option>
-            <option value="730">Más de 2 años</option>
-            <option value="1095">Más de 3 años</option>
-          </select>
-        </label>
-        <label>Valor mínimo
-          <select id="filtro-valor-inmov">
-            <option value="0">Todos</option>
-            <option value="1000">Mayor a S/. 1,000</option>
-            <option value="2000">Mayor a S/. 2,000</option>
-            <option value="5000">Mayor a S/. 5,000</option>
-          </select>
-        </label>
-      </div>
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <span class="kpi-label">Materiales inmovilizados</span>
-          <span class="kpi-value" id="kpi-inmov-total">—</span>
-        </div>
-        <div class="kpi-card kpi-rojo">
-          <span class="kpi-label">Crítico</span>
-          <span class="kpi-value" id="kpi-inmov-critico">—</span>
-        </div>
-        <div class="kpi-card kpi-amarillo">
-          <span class="kpi-label">Moderado</span>
-          <span class="kpi-value" id="kpi-inmov-moderado">—</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Valor estimado inmovilizado</span>
-          <span class="kpi-value kpi-value-small" id="kpi-inmov-valor">—</span>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Materiales con stock físico y sin consumo real reciente <span id="conteo-inmov" class="conteo-inline"></span></h2>
-          <p class="panel-sub">Costo unitario y fecha de vencimiento ya vienen de MB52 (ponderado por lote / lote más próximo a vencer) — no hace falta cargarlo a mano.</p>
-        </div>
-        <div class="table-wrap tall">
-          <table>
-            <thead>
-              <tr>
-                <th>Material</th><th>Descripción</th><th>Clasif.</th>
-                <th class="num">Stock Real</th><th class="num">Días sin mov.</th>
-                <th>Último consumo</th><th>Vencimiento</th><th>Severidad</th><th class="num">Valor</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-inmovilizados-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===================== REPORTES DE INVENTARIO ===================== -->
-    <section id="tab-reportes" class="tab-panel">
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Reportes formales de inventario</h2>
-          <p class="panel-sub">
-            Genera el "Listado Final y Descargo de Diferencias de Inventario" en el formato oficial (SLO03-F05),
-            con el stock SAP y costo unitario ya llenados desde tu MB52 — solo te queda completar a mano la
-            Cantidad Física del conteo y firmar. El formato, bordes, fórmulas y firmas quedan exactamente
-            iguales a la plantilla original.
-          </p>
-        </div>
-        <div class="reportes-grid">
-          <div class="reporte-card">
-            <h3>Combustibles</h3>
-            <p class="reporte-card-desc">Petróleo Industrial R500 y Diesel — hojas R500 y DIESEL de la plantilla.</p>
-            <button type="button" id="btn-reporte-combustibles" class="btn-continuar">Descargar Reporte de Combustibles</button>
-            <p class="reporte-card-estado" id="estado-reporte-combustibles"></p>
-          </div>
-          <div class="reporte-card">
-            <h3>Balones de Gases</h3>
-            <p class="reporte-card-desc">Propano 45kg, Propano 10kg, GLP 15kg y Oxígeno 10m³ — una fila por lote, igual que tu plantilla.</p>
-            <button type="button" id="btn-reporte-gases" class="btn-continuar">Descargar Reporte de Gases</button>
-            <p class="reporte-card-estado" id="estado-reporte-gases"></p>
-          </div>
-          <div class="reporte-card">
-            <h3>IQBF (Insumos Químicos)</h3>
-            <p class="reporte-card-desc">Hidróxido de Sodio, Ácido Sulfúrico, Hexano y MEK Aditivo — una fila por lote, en L001 / I.Q.B.F.</p>
-            <button type="button" id="btn-reporte-iqbf" class="btn-continuar">Descargar Reporte IQBF</button>
-            <p class="reporte-card-estado" id="estado-reporte-iqbf"></p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<footer>
-  Almacén L001 (Matarani) · Todo el cálculo corre en tu navegador, ningún dato sale de tu equipo
-</footer>
-
-<!-- ===================== FICHA DE DETALLE DE MATERIAL ===================== -->
-<div id="overlay-detalle" class="overlay-detalle">
-  <div class="modal-detalle">
-    <button type="button" id="btn-cerrar-detalle" class="btn-cerrar-detalle">✕</button>
-    <div class="detalle-header">
-      <div>
-        <span class="detalle-codigo" id="detalle-codigo">—</span>
-        <p class="detalle-descripcion" id="detalle-descripcion"></p>
-        <div class="detalle-chips">
-          <span class="chip chip-abc" id="detalle-clasificacion"></span>
-          <span class="chip chip-cat-insumos" id="detalle-categoria"></span>
-          <span class="detalle-temporada" id="detalle-temporada"></span>
-        </div>
-      </div>
-      <div id="detalle-estado-chip"></div>
-    </div>
-
-    <p class="detalle-diagnostico" id="detalle-diagnostico"></p>
-
-    <div class="detalle-metricas-grid" id="detalle-metricas"></div>
-
-    <div class="detalle-tendencia-header">
-      <h3>Tendencia de consumo mensual</h3>
-      <div class="detalle-tendencia-stats" id="detalle-tendencia-stats"></div>
-    </div>
-    <div id="detalle-grafico" class="detalle-grafico"></div>
-  </div>
-</div>
-
-<div id="tooltip-tendencia" class="tooltip-tendencia" style="display:none"></div>
-
-</body>
-</html>
+@media (max-width: 900px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .chips-archivos { flex-direction: column; }
+  .resumen-top { flex-direction: column; }
+  .kpi-row-tag { flex-direction: column; }
+  .kpi-grid-inline { grid-template-columns: repeat(2, 1fr); }
+  .kpi-inline-card:nth-child(2n+1) { border-left: none; }
+}
