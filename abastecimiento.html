@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -111,6 +112,50 @@
 
     <!-- ===================== RESUMEN ===================== -->
     <section id="tab-resumen" class="tab-panel active">
+
+      <!-- ===================== VALORIZACIÓN EN DÓLARES ===================== -->
+      <div class="valorizacion-panel">
+        <div class="valorizacion-header">
+          <div>
+            <h2>Valorización en Dólares</h2>
+            <p class="valorizacion-sub">Usa el mismo MB52 que ya cargaste — solo el Monitor (ZMMR0105) es un archivo aparte.</p>
+          </div>
+          <label class="tipo-cambio-control">
+            <span>Tipo de cambio (S/. por US$)</span>
+            <input type="number" id="input-tipo-cambio" step="0.001" value="3.75" />
+          </label>
+        </div>
+
+        <div class="dropzone-mini" id="dropzone-monitor-real">
+          <input type="file" id="file-input-monitor" accept=".xlsx,.xls" hidden />
+          <span class="dropzone-mini-texto">⇩ Cargar Monitor (ZMMR0105 — columna "Importe" en USD)</span>
+        </div>
+        <p id="aviso-valorizacion" class="aviso-archivos" style="display:none"></p>
+
+        <div class="kpi-grid valorizacion-kpi-grid">
+          <div class="kpi-card kpi-val-azul">
+            <span class="kpi-label">Valorizado Almacén (US$)</span>
+            <span class="kpi-value" id="kpi-real-almacen">—</span>
+          </div>
+          <div class="kpi-card kpi-val-verde">
+            <span class="kpi-label">Valorizado PPTT (US$)</span>
+            <span class="kpi-value" id="kpi-real-pptt">—</span>
+          </div>
+          <div class="kpi-card kpi-val-rojo">
+            <span class="kpi-label">Valorizado Monitor (US$)</span>
+            <span class="kpi-value" id="kpi-real-monitor">—</span>
+          </div>
+          <div class="kpi-card kpi-val-amarillo">
+            <span class="kpi-label">% Monitor</span>
+            <span class="kpi-value" id="kpi-real-pct-monitor">—</span>
+          </div>
+          <div class="kpi-card kpi-val-celeste">
+            <span class="kpi-label">% Vencido</span>
+            <span class="kpi-value" id="kpi-real-pct-vencido">—</span>
+          </div>
+        </div>
+      </div>
+
       <p class="linea-temporada">Temporada vigente este mes: <span class="chip" id="temporada-actual">—</span></p>
 
       <div class="resumen-top">
