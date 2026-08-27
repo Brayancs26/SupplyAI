@@ -855,6 +855,65 @@ function calcularValorizacionReal(mb52Rows, monitorRows, tipoCambio) {
   return { valorizadoAlmacen, valorizadoPPTT, valorizadoMonitor, pctMonitor, pctVencido };
 }
 
+/**
+ * Stock de un conjunto de materiales/almacenes específicos (para las tablas
+ * de "Stock de Aceite de Pescado" y "Stock de Harina de Pescado" — se
+ * definen por almacén, no por categoría, tal como me indicaste).
+ */
+function stockPorAlmacenes(mb52Rows, almacenes) {
+  const acc = new Map(); // material -> {descripcion, almacen, stock}
+  for (const row of mb52Rows) {
+    const almacen = String(row['Almacén'] || '').trim();
+    if (!almacenes.includes(almacen)) continue;
+    const material = String(row['Material'] || '').trim();
+    const clave = material + '|' + almacen;
+    const stock = Number(row['Libre utilización']) || 0;
+    if (!acc.has(clave)) {
+      acc.set(clave, {
+        material,
+        descripcion: row['Texto breve de material'] || '',
+        almacen,
+        stock: 0,
+      });
+    }
+    acc.get(clave).stock += stock;
+  }
+  return [...acc.values()].sort((a, b) => b.stock - a.stock);
+}
+
+/**
+ * Agrupa el Monitor (ZMMR0105) por Nombre del usuario, sumando Importe.
+ */
+function agruparMonitorPorUsuario(monitorRows) {
+  const mapa = new Map();
+  for (const row of monitorRows) {
+    const usuario = String(row['Nombre del usuario'] || 'Sin usuario').trim();
+    mapa.set(usuario, (mapa.get(usuario) || 0) + (Number(row['Importe']) || 0));
+  }
+  return [...mapa.entries()]
+    .map(([usuario, importe]) => ({ usuario, importe }))
+    .sort((a, b) => b.importe - a.importe);
+}
+
+/**
+ * Detalle línea por línea del Monitor (ZMMR0105), para la tabla de detalle.
+ */
+function detalleMonitor(monitorRows) {
+  return monitorRows
+    .map((row) => ({
+      // "Material" trae el código de referencia interno (ej. BSU-002025);
+      // "Material_1" es el código real de SAP — el que se usa en todo el resto
+      // de la app (Excel duplica el encabezado "Material" y SheetJS numera
+      // la segunda ocurrencia con el sufijo _1 automáticamente).
+      material: String(row['Material_1'] ?? row['Material'] ?? '').trim(),
+      descripcion: row['Texto breve de material'] || '',
+      stockNoVal: Number(row['Stock no Val']) || 0,
+      importe: Number(row['Importe']) || 0,
+      usuario: row['Nombre del usuario'] || '',
+    }))
+    .sort((a, b) => b.importe - a.importe);
+}
+
 const SupplyEngine = {
   NOMBRES_MES,
   CODIGOS_CONSUMO,
@@ -883,6 +942,9 @@ const SupplyEngine = {
   calcularResumenSimulacion,
   generarDiagnostico,
   calcularValorizacionReal,
+  stockPorAlmacenes,
+  agruparMonitorPorUsuario,
+  detalleMonitor,
   confianza,
 };
 
