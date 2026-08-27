@@ -788,6 +788,73 @@ function generarDiagnostico(m) {
   }
 }
 
+// ============================================================
+// VALORIZACIÓN EN DÓLARES — Almacén / PPTT / Monitor / % Vencido
+// (usa el mismo MB52 ya cargado para el resto de la app, más un
+// archivo Monitor/ZMMR0105 aparte, que sí es un archivo distinto)
+// ============================================================
+
+const ALMACENES_PPTT = ['C001', 'TK01', 'TK02', 'TK03', 'DK01', 'DK02', 'DK03', 'CL01'];
+const ALMACENES_VENCIDO_SCOPE = ['L001', 'L002', 'L003', 'L004', 'L005', 'L006', 'L007', 'L008', 'L010'];
+
+function sumValorPorAlmacenes(mb52Rows, almacenes) {
+  let total = 0;
+  for (const row of mb52Rows) {
+    const alm = String(row['Almacén'] || '').trim();
+    if (!almacenes.includes(alm)) continue;
+    total += Number(row['Valor libre util.']) || 0;
+  }
+  return total;
+}
+
+function sumValorVencido(mb52Rows) {
+  let total = 0;
+  for (const row of mb52Rows) {
+    const alm = String(row['Almacén'] || '').trim();
+    const dias = Number(row['Días Res.']);
+    if (!ALMACENES_VENCIDO_SCOPE.includes(alm)) continue;
+    if (!(dias < 0)) continue;
+    total += Number(row['Valor libre util.']) || 0;
+  }
+  return total;
+}
+
+function sumImporteMonitor(monitorRows) {
+  let total = 0;
+  for (const row of monitorRows) {
+    total += Number(row['Importe']) || 0;
+  }
+  return total;
+}
+
+/**
+ * Calcula los 5 KPIs de "Valorización en Dólares":
+ * - Valorizado Almacén = Valor libre util. de L001, dividido entre el dólar.
+ * - Valorizado PPTT = Valor libre util. de los almacenes de producto
+ *   terminado (C001, TK01-03, DK01-03, CL01), dividido entre el dólar.
+ * - % Vencido = Valor libre util. con Días Res. < 0 (en L001-L008, L010)
+ *   dividido entre el Valor libre util. de L001 — ambos en soles, el
+ *   tipo de cambio se cancela así que no hace falta convertir para este %.
+ * - Valorizado Monitor = suma de Importe del Monitor — YA está en dólares.
+ * - % Monitor = Valorizado Monitor (US$) entre Valorizado Almacén (US$).
+ */
+function calcularValorizacionReal(mb52Rows, monitorRows, tipoCambio) {
+  const tc = tipoCambio > 0 ? tipoCambio : 1;
+
+  const valorAlmacenSoles = sumValorPorAlmacenes(mb52Rows, ['L001']);
+  const valorPPTTSoles = sumValorPorAlmacenes(mb52Rows, ALMACENES_PPTT);
+  const valorVencidoSoles = sumValorVencido(mb52Rows);
+
+  const valorizadoAlmacen = valorAlmacenSoles / tc;
+  const valorizadoPPTT = valorPPTTSoles / tc;
+  const valorizadoMonitor = sumImporteMonitor(monitorRows); // ya en USD
+
+  const pctVencido = valorAlmacenSoles > 0 ? (valorVencidoSoles / valorAlmacenSoles) * 100 : 0;
+  const pctMonitor = valorizadoAlmacen > 0 ? (valorizadoMonitor / valorizadoAlmacen) * 100 : 0;
+
+  return { valorizadoAlmacen, valorizadoPPTT, valorizadoMonitor, pctMonitor, pctVencido };
+}
+
 const SupplyEngine = {
   NOMBRES_MES,
   CODIGOS_CONSUMO,
@@ -815,6 +882,7 @@ const SupplyEngine = {
   determinarTratamiento,
   calcularResumenSimulacion,
   generarDiagnostico,
+  calcularValorizacionReal,
   confianza,
 };
 
