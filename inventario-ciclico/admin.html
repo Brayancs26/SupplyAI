@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
-<script src="xlsx.full.min.js"></script>
 <script src="engine.js" defer></script>
 <script src="github-sync.js" defer></script>
 <script src="admin.js" defer></script>
@@ -28,7 +27,7 @@
       <span class="brand-mark">L001</span>
       <div>
         <h1>INVENTARIO CÍCLICO <span class="accent">· Admin</span></h1>
-        <p class="brand-sub">Programar zonas, ver resultados, configurar GitHub</p>
+        <p class="brand-sub">Ver resultados de conteo, configurar GitHub</p>
       </div>
     </div>
     <div style="display:flex; gap:10px;">
@@ -39,66 +38,19 @@
 </header>
 
 <nav class="tabs">
-  <button class="tab-btn active" data-tab="programar">Programar</button>
-  <button class="tab-btn" data-tab="resultados">Resultados</button>
+  <button class="tab-btn active" data-tab="resultados">Resultados</button>
   <button class="tab-btn" data-tab="config">Configuración</button>
 </nav>
 
 <main>
 
-  <!-- ===================== PROGRAMAR ===================== -->
-  <section id="tab-programar" class="tab-panel active">
-    <div class="panel">
-      <div class="panel-header">
-        <h2>Generar el programa de conteo</h2>
-        <p class="panel-sub">Sube tu MB52 — arma las zonas a partir de la columna "Ubicación" y las reparte entre las semanas del ciclo.</p>
-      </div>
-      <div class="dropzone-mini" id="dropzone-mb52" style="margin: 0 20px 16px;">
-        <input type="file" id="file-input-mb52" accept=".xlsx,.xls" hidden />
-        <span class="dropzone-mini-texto">⇩ Cargar MB52</span>
-      </div>
-
-      <div class="filtros-programa">
-        <label>Agrupar ubicaciones por
-          <select id="input-nivel-agrupacion">
-            <option value="1">1 segmento (pocas zonas, grandes)</option>
-            <option value="2" selected>2 segmentos (recomendado)</option>
-            <option value="3">3 segmentos (más zonas, chicas)</option>
-            <option value="0">Ubicación completa (una por casillero)</option>
-          </select>
-        </label>
-        <label>Duración del ciclo (semanas)
-          <input type="number" id="input-ciclo-semanas" value="4" min="1" max="26" />
-        </label>
-        <label>Fecha de inicio del programa
-          <input type="date" id="input-fecha-inicio" />
-        </label>
-      </div>
-
-      <p id="preview-zonas" class="panel-sub" style="padding: 0 20px 16px;"></p>
-
-      <div class="acciones-publicar" style="padding: 0 20px 20px;">
-        <button type="button" id="btn-generar-programa" class="btn-continuar">Generar programa</button>
-        <button type="button" id="btn-publicar-programa" class="btn-continuar" disabled>Publicar programa</button>
-        <span id="estado-publicar-programa" class="estado-publicar"></span>
-      </div>
-    </div>
-
-    <div class="panel" id="panel-preview-programa" style="display:none">
-      <div class="panel-header">
-        <h2>Vista previa del programa</h2>
-      </div>
-      <div class="table-wrap tall">
-        <table>
-          <thead><tr><th class="num">Semana</th><th>Zona</th><th class="num">Materiales</th></tr></thead>
-          <tbody id="tabla-preview-programa-body"></tbody>
-        </table>
-      </div>
-    </div>
-  </section>
+  <p class="panel-sub" style="padding: 16px 4px 0;">
+    ¿Buscas "Programar" (definir zonas y generar el ciclo)? Se movió a la pestaña
+    <strong>"Reportes de Inventario"</strong> de <a href="../abastecimiento.html" style="color:var(--cyan)">Abastecimiento</a>.
+  </p>
 
   <!-- ===================== RESULTADOS ===================== -->
-  <section id="tab-resultados" class="tab-panel">
+  <section id="tab-resultados" class="tab-panel active">
     <div class="panel">
       <div class="panel-header">
         <h2>Resultados de conteo</h2>
