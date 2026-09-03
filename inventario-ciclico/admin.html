@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Administración · Inventario Cíclico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="engine.js" defer></script>
+<script src="github-sync.js" defer></script>
+<script src="admin.js" defer></script>
+</head>
+<body>
+
+<div id="loading-overlay" style="display:none">
+  <div class="loader-content">
+    <div class="pulse-dot"></div>
+    <p id="loading-msg">Trabajando…</p>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark">L001</span>
+      <div>
+        <h1>INVENTARIO CÍCLICO <span class="accent">· Admin</span></h1>
+        <p class="brand-sub">Programar zonas, ver resultados, configurar GitHub</p>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <a href="index.html" class="btn-volver-inicio">Ir a Contar</a>
+      <a href="../index.html" class="btn-volver-inicio">← Inicio</a>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="programar">Programar</button>
+  <button class="tab-btn" data-tab="resultados">Resultados</button>
+  <button class="tab-btn" data-tab="config">Configuración</button>
+</nav>
+
+<main>
+
+  <!-- ===================== PROGRAMAR ===================== -->
+  <section id="tab-programar" class="tab-panel active">
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Generar el programa de conteo</h2>
+        <p class="panel-sub">Sube tu MB52 — arma las zonas a partir de la columna "Ubicación" y las reparte entre las semanas del ciclo.</p>
+      </div>
+      <div class="dropzone-mini" id="dropzone-mb52" style="margin: 0 20px 16px;">
+        <input type="file" id="file-input-mb52" accept=".xlsx,.xls" hidden />
+        <span class="dropzone-mini-texto">⇩ Cargar MB52</span>
+      </div>
+
+      <div class="filtros-programa">
+        <label>Agrupar ubicaciones por
+          <select id="input-nivel-agrupacion">
+            <option value="1">1 segmento (pocas zonas, grandes)</option>
+            <option value="2" selected>2 segmentos (recomendado)</option>
+            <option value="3">3 segmentos (más zonas, chicas)</option>
+            <option value="0">Ubicación completa (una por casillero)</option>
+          </select>
+        </label>
+        <label>Duración del ciclo (semanas)
+          <input type="number" id="input-ciclo-semanas" value="4" min="1" max="26" />
+        </label>
+        <label>Fecha de inicio del programa
+          <input type="date" id="input-fecha-inicio" />
+        </label>
+      </div>
+
+      <p id="preview-zonas" class="panel-sub" style="padding: 0 20px 16px;"></p>
+
+      <div class="acciones-publicar" style="padding: 0 20px 20px;">
+        <button type="button" id="btn-generar-programa" class="btn-continuar">Generar programa</button>
+        <button type="button" id="btn-publicar-programa" class="btn-continuar" disabled>Publicar programa</button>
+        <span id="estado-publicar-programa" class="estado-publicar"></span>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-preview-programa" style="display:none">
+      <div class="panel-header">
+        <h2>Vista previa del programa</h2>
+      </div>
+      <div class="table-wrap tall">
+        <table>
+          <thead><tr><th class="num">Semana</th><th>Zona</th><th class="num">Materiales</th></tr></thead>
+          <tbody id="tabla-preview-programa-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== RESULTADOS ===================== -->
+  <section id="tab-resultados" class="tab-panel">
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Resultados de conteo</h2>
+        <p class="panel-sub">Lee todos los conteos guardados en <code>conteo/resultados/</code> del repositorio.</p>
+      </div>
+      <div class="acciones-publicar" style="padding: 0 20px 18px;">
+        <button type="button" id="btn-cargar-resultados" class="btn-continuar">Actualizar resultados</button>
+        <span id="estado-resultados" class="estado-publicar"></span>
+      </div>
+    </div>
+
+    <div class="kpi-grid" id="kpi-resultados" style="display:none;">
+      <div class="kpi-card">
+        <span class="kpi-label">Conteos registrados</span>
+        <span class="kpi-value" id="kpi-total-conteos">—</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Materiales contados</span>
+        <span class="kpi-value" id="kpi-total-materiales">—</span>
+      </div>
+      <div class="kpi-card kpi-rojo">
+        <span class="kpi-label">Con diferencia &gt; 10%</span>
+        <span class="kpi-value" id="kpi-con-diferencia">—</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="table-wrap tall">
+        <table>
+          <thead>
+            <tr>
+              <th>Zona</th><th>Fecha</th><th>Contado por</th><th>Material</th><th>Descripción</th>
+              <th class="num">Sistema</th><th class="num">Físico</th><th class="num">Diferencia</th><th class="num">%</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-resultados-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CONFIGURACIÓN ===================== -->
+  <section id="tab-config" class="tab-panel">
+    <div class="panel panel-form">
+      <div class="panel-header">
+        <h2>Configuración de GitHub</h2>
+        <p class="panel-sub">
+          Leer el programa y los resultados NO necesita token (el repo es público). Solo necesitas el token
+          para <strong>publicar el programa</strong> — configúralo una vez en este navegador.
+        </p>
+      </div>
+      <form id="form-github">
+        <label>Usuario/organización de GitHub
+          <input type="text" id="input-gh-owner" placeholder="tu-usuario" />
+        </label>
+        <label>Nombre del repositorio
+          <input type="text" id="input-gh-repo" placeholder="SupplyAI" />
+        </label>
+        <label>Rama
+          <input type="text" id="input-gh-branch" placeholder="main" value="main" />
+        </label>
+        <label class="label-ancho">Token de acceso personal (fine-grained, solo este repo, permiso "Contents: Read and write")
+          <input type="password" id="input-gh-token" placeholder="github_pat_..." />
+        </label>
+        <button type="submit">Guardar configuración</button>
+        <span class="guardado-msg" id="guardado-gh-msg">Guardado ✓</span>
+      </form>
+      <p class="datos-info">
+        <strong>Cómo crear el token:</strong> en GitHub, ve a Settings → Developer settings → Personal access
+        tokens → Fine-grained tokens → Generate new token. Limita "Repository access" solo a este repositorio,
+        y en "Permissions" dale a "Contents" el nivel "Read and write". El token queda guardado solo en este
+        navegador — nunca se sube a ningún lado.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Almacén L001 (Matarani) · El programa y los conteos se guardan en el repositorio de GitHub
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contar Inventario · L001</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<script src="engine.js" defer></script>
+<script src="github-sync.js" defer></script>
+<script src="contar.js" defer></script>
+</head>
+<body class="pagina-contar">
+
+<div id="loading-overlay" style="display:none">
+  <div class="loader-content">
+    <div class="pulse-dot"></div>
+    <p id="loading-msg">Cargando…</p>
+  </div>
+</div>
+
+<header class="topbar-simple">
+  <span class="brand-mark">L001</span>
+  <div>
+    <h1>Contar Inventario</h1>
+    <p class="brand-sub">Almacén Matarani</p>
+  </div>
+</header>
+
+<main class="main-angosto">
+
+  <div class="panel" id="panel-sin-programa">
+    <div class="panel-header">
+      <h2>Cargando el programa de conteo…</h2>
+      <p class="panel-sub" id="estado-programa">Un momento.</p>
+    </div>
+  </div>
+
+  <div id="contar-contenido" style="display:none">
+
+    <div class="panel semana-actual-card">
+      <span class="semana-label">Semana <span id="semana-actual-valor">—</span> del ciclo</span>
+      <div id="zonas-esta-semana-botones" class="zonas-botones"></div>
+    </div>
+
+    <div class="panel">
+      <p class="panel-sub" style="padding: 16px 20px 4px;">¿Vas a contar otra zona (no de esta semana)?</p>
+      <div style="padding: 0 20px 18px;">
+        <select id="selector-zona"></select>
+      </div>
+    </div>
+
+    <div id="conteo-formulario" style="display:none">
+      <div class="panel">
+        <div class="panel-header">
+          <h2 id="zona-titulo">—</h2>
+          <p class="panel-sub" id="zona-subtitulo"></p>
+        </div>
+        <div style="padding: 0 20px 14px;">
+          <input type="text" id="input-contado-por" placeholder="Tu nombre (opcional)" />
+        </div>
+        <div id="lista-conteo-movil"></div>
+        <div class="acciones-publicar" style="padding: 16px 20px; flex-direction: column; align-items: stretch;">
+          <button type="button" id="btn-guardar-conteo" class="btn-continuar btn-grande">Guardar conteo</button>
+          <span id="estado-guardar-conteo" class="estado-publicar" style="margin-top: 10px;"></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<footer class="footer-simple">
+  <a href="admin.html">Panel de administración</a>
+</footer>
+
+</body>
+</html>
