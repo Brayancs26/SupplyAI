@@ -1394,6 +1394,160 @@ function bindBotonReporte(botonId, estadoId, generador) {
   });
 }
 
+// ---------------- INVENTARIO CÍCLICO POR ZONAS ----------------
+const RUTA_ZONAS_CICLICO = 'conteo/zonas.json';
+let zonasCiclico = []; // [{ zona, ubicaciones: [...] }]
+let programaCiclicoGenerado = null;
+
+function nuevaFilaZonaVacia() {
+  return { zona: '', ubicaciones: [] };
+}
+
+function renderTablaZonas() {
+  const tbody = document.getElementById('tabla-zonas-ciclico-body');
+  if (zonasCiclico.length === 0) zonasCiclico.push(nuevaFilaZonaVacia());
+  tbody.innerHTML = zonasCiclico
+    .map(
+      (z, i) => `<tr>
+      <td><input type="text" class="input-zona-nombre" data-idx="${i}" value="${z.zona}" placeholder="Ej. Pasillo 1" /></td>
+      <td><input type="text" class="input-zona-ubicaciones" data-idx="${i}" value="${(z.ubicaciones || []).join(', ')}" placeholder="Ej. 01.1, 01.2, 01.3" /></td>
+      <td class="num"><button type="button" class="btn-quitar-zona" data-idx="${i}" title="Quitar zona">✕</button></td>
+    </tr>`
+    )
+    .join('');
+
+  tbody.querySelectorAll('.input-zona-nombre').forEach((inp) => {
+    inp.addEventListener('input', (e) => {
+      zonasCiclico[Number(e.target.dataset.idx)].zona = e.target.value;
+    });
+  });
+  tbody.querySelectorAll('.input-zona-ubicaciones').forEach((inp) => {
+    inp.addEventListener('input', (e) => {
+      zonasCiclico[Number(e.target.dataset.idx)].ubicaciones = e.target.value
+        .split(',')
+        .map((u) => u.trim())
+        .filter(Boolean);
+    });
+  });
+  tbody.querySelectorAll('.btn-quitar-zona').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      zonasCiclico.splice(Number(e.target.dataset.idx), 1);
+      renderTablaZonas();
+    });
+  });
+}
+
+async function cargarZonasGuardadas() {
+  const estado = document.getElementById('estado-gh-ciclico');
+  try {
+    const guardado = await GitHubSync.leerJSONPublico(RUTA_ZONAS_CICLICO);
+    if (guardado && Array.isArray(guardado.zonas) && guardado.zonas.length > 0) {
+      zonasCiclico = guardado.zonas;
+      estado.textContent = `Zonas cargadas desde el repositorio (guardadas el ${new Date(guardado.actualizadoEn).toLocaleString('es-PE')}).`;
+    } else {
+      estado.textContent = 'Todavía no hay zonas guardadas — defínelas y dale "Guardar zonas".';
+    }
+  } catch (err) {
+    estado.textContent = 'No se pudo leer las zonas guardadas (puede que aún no exista el archivo, es normal la primera vez).';
+  }
+  renderTablaZonas();
+}
+
+async function guardarZonasCiclico() {
+  const estado = document.getElementById('estado-gh-ciclico');
+  const boton = document.getElementById('btn-guardar-zonas');
+  const zonasValidas = zonasCiclico.filter((z) => z.zona.trim() && z.ubicaciones.length > 0);
+  if (zonasValidas.length === 0) {
+    estado.textContent = 'Define al menos una zona con nombre y ubicaciones antes de guardar.';
+    return;
+  }
+  boton.disabled = true;
+  estado.textContent = 'Guardando zonas…';
+  try {
+    await GitHubSync.escribirJSON(
+      RUTA_ZONAS_CICLICO,
+      { actualizadoEn: new Date().toISOString(), zonas: zonasValidas },
+      'Actualizar definición de zonas del inventario cíclico'
+    );
+    estado.textContent = '✓ Zonas guardadas en el repositorio.';
+  } catch (err) {
+    console.error(err);
+    estado.textContent = 'Error guardando zonas: ' + err.message;
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+function generarProgramaCiclico() {
+  if (!state.archivos.MB52) {
+    alert('Primero carga tu MB52 (pantalla de carga inicial).');
+    return;
+  }
+  const zonasValidas = zonasCiclico.filter((z) => z.zona.trim() && z.ubicaciones.length > 0);
+  if (zonasValidas.length === 0) {
+    document.getElementById('preview-zonas-ciclico').textContent = 'Define al menos una zona con nombre y ubicaciones.';
+    return;
+  }
+  const cicloSemanas = Math.max(1, Number(document.getElementById('input-ciclo-semanas').value) || 4);
+  const fechaInicio = document.getElementById('input-fecha-inicio-ciclico').value || hoyISO();
+
+  const zonasConMateriales = SupplyEngine.construirZonasManual(state.archivos.MB52.filas, 'L001', zonasValidas);
+  const sinMateriales = zonasConMateriales.filter((z) => z.materiales.length === 0).map((z) => z.zona);
+  const conSemana = SupplyEngine.asignarSemanasCiclo(zonasConMateriales.filter((z) => z.materiales.length > 0), cicloSemanas);
+
+  programaCiclicoGenerado = { cicloSemanas, fechaInicio, zonas: conSemana };
+
+  const totalMateriales = conSemana.reduce((a, z) => a + z.materiales.length, 0);
+  document.getElementById('preview-zonas-ciclico').textContent =
+    `${conSemana.length} zona(s) con materiales, ${totalMateriales} materiales en total.` +
+    (sinMateriales.length ? ` Sin materiales encontrados en: ${sinMateriales.join(', ')} (revisa los códigos de Ubicación).` : '');
+
+  const tbody = document.getElementById('tabla-preview-programa-ciclico-body');
+  tbody.innerHTML = conSemana
+    .map((z) => `<tr><td class="num">${z.semana}</td><td>${z.zona}</td><td class="num">${z.materiales.length}</td></tr>`)
+    .join('');
+  document.getElementById('panel-preview-programa-ciclico').style.display = 'block';
+  document.getElementById('btn-publicar-programa-ciclico').disabled = false;
+}
+
+async function publicarProgramaCiclico() {
+  if (!programaCiclicoGenerado) return;
+  const estado = document.getElementById('estado-publicar-ciclico');
+  const boton = document.getElementById('btn-publicar-programa-ciclico');
+  boton.disabled = true;
+  estado.className = 'reporte-card-estado';
+  estado.textContent = 'Publicando…';
+  try {
+    const objeto = {
+      publicadoEn: new Date().toISOString(),
+      fechaInicio: programaCiclicoGenerado.fechaInicio,
+      cicloSemanas: programaCiclicoGenerado.cicloSemanas,
+      zonas: programaCiclicoGenerado.zonas,
+    };
+    await GitHubSync.escribirJSON(GitHubSync.RUTA_PROGRAMA, objeto, 'Actualizar programa de inventario cíclico');
+    estado.className = 'reporte-card-estado reporte-estado-ok';
+    estado.textContent = '✓ Programa publicado — ya está disponible para el personal en la página de Contar.';
+  } catch (err) {
+    console.error(err);
+    estado.className = 'reporte-card-estado reporte-estado-error';
+    estado.textContent = 'Error: ' + err.message;
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+function bindInventarioCiclico() {
+  document.getElementById('input-fecha-inicio-ciclico').value = hoyISO();
+  document.getElementById('btn-agregar-zona').addEventListener('click', () => {
+    zonasCiclico.push(nuevaFilaZonaVacia());
+    renderTablaZonas();
+  });
+  document.getElementById('btn-guardar-zonas').addEventListener('click', guardarZonasCiclico);
+  document.getElementById('btn-generar-programa-ciclico').addEventListener('click', generarProgramaCiclico);
+  document.getElementById('btn-publicar-programa-ciclico').addEventListener('click', publicarProgramaCiclico);
+  cargarZonasGuardadas();
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   cargarParametrosGuardados();
   cargarMarcados();
@@ -1402,5 +1556,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindFormularios();
   bindEventosDelegados();
   bindTooltipTendencia();
+  bindInventarioCiclico();
   await cargarCacheAlIniciar();
 });
