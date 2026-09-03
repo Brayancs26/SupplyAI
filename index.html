@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <meta charset="utf-8">
@@ -38,7 +39,7 @@
   .hero p{color:var(--muted);margin:0;font-size:15.5px}
 
   /* módulos */
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:34px}
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:34px}
   .mod{position:relative;background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);
     border-radius:14px;padding:22px 22px 20px;display:flex;flex-direction:column;gap:14px;min-height:238px;
     transition:border-color .18s,transform .18s,box-shadow .18s;overflow:hidden}
@@ -61,12 +62,14 @@
 
   .mod-plan{--accent:var(--cyan)}
   .mod-abas{--accent:var(--violet)}
+  .mod-inv{--accent:var(--amber)}
 
   /* pie */
   .strip{margin-top:30px;display:flex;gap:26px;flex-wrap:wrap;padding-top:18px;border-top:1px solid var(--line-soft);
     font-size:12.5px;color:var(--dim)}
   .strip b{color:var(--muted);font-weight:600}
   footer{margin-top:26px;font-size:12px;color:var(--dim)}
+  @media (max-width:920px){ .grid{grid-template-columns:1fr 1fr} }
   @media (max-width:720px){ .grid{grid-template-columns:1fr} .hero h1{font-size:28px} }
 </style>
 
@@ -86,7 +89,7 @@
   <div class="hero">
     <div class="kicker">Plataforma interna</div>
     <h1>Decisiones de almacén con datos, no con intuición.</h1>
-    <p>Dos módulos operativos sobre la misma base: uno organiza a la gente, el otro organiza el material. Elige por dónde empezar.</p>
+    <p>Tres módulos operativos sobre la misma base: uno organiza a la gente, otro organiza el material, y el tercero verifica que el material esté donde el sistema dice. Elige por dónde empezar.</p>
   </div>
 
   <div class="grid">
@@ -112,6 +115,18 @@
       <h2>Abastecimiento</h2>
       <p>Motor de reposición sobre datos de SAP: stock de seguridad, punto de reorden y EOQ con estacionalidad, prioridades de compra e inmovilizados.</p>
       <div class="tags"><span class="tag">SS · ROP · EOQ</span><span class="tag">Estacionalidad</span><span class="tag">Inmovilizados</span></div>
+      <div class="go">Abrir módulo <span class="arrow">→</span></div>
+    </a>
+
+    <a class="mod mod-inv" href="inventario-ciclico/index.html">
+      <div class="ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+      </div>
+      <h2>Inventario Cíclico</h2>
+      <p>Conteo físico por zonas del MB52, repartido en partes iguales entre las semanas del ciclo. El personal cuenta desde el celular, sin apps ni cuentas.</p>
+      <div class="tags"><span class="tag">Por zonas</span><span class="tag">Desde el celular</span><span class="tag">Diferencias vs. SAP</span></div>
       <div class="go">Abrir módulo <span class="arrow">→</span></div>
     </a>
   </div>
