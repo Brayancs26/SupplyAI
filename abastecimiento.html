@@ -13,6 +13,7 @@
 <script src="engine.js" defer></script>
 <script src="file-parser.js" defer></script>
 <script src="storage.js" defer></script>
+<script src="inventario-ciclico/github-sync.js" defer></script>
 <script src="reportes.js" defer></script>
 <script src="app.js" defer></script>
 </head>
@@ -808,6 +809,57 @@
             <p class="reporte-card-desc">Hidróxido de Sodio, Ácido Sulfúrico, Hexano y MEK Aditivo — una fila por lote, en L001 / I.Q.B.F.</p>
             <button type="button" id="btn-reporte-iqbf" class="btn-continuar">Descargar Reporte IQBF</button>
             <p class="reporte-card-estado" id="estado-reporte-iqbf"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Inventario Cíclico — Programar por Zonas</h2>
+          <p class="panel-sub">
+            Tú defines las zonas: un nombre y qué códigos de "Ubicación" del MB52 caen ahí. Con eso arma cuántos
+            materiales tiene cada zona y las reparte entre las semanas del ciclo. El personal cuenta después desde
+            <a href="inventario-ciclico/index.html" target="_blank" style="color:var(--cyan)">esta página</a> en su celular.
+          </p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th style="width:30%">Zona</th><th>Ubicaciones (separadas por coma)</th><th style="width:60px"></th></tr></thead>
+            <tbody id="tabla-zonas-ciclico-body"></tbody>
+          </table>
+        </div>
+        <div style="padding: 8px 20px 18px;">
+          <button type="button" id="btn-agregar-zona" class="btn-secundario">+ Agregar zona</button>
+        </div>
+
+        <div class="filtros-programa" style="padding: 0 20px 16px; display:flex; gap:16px; flex-wrap:wrap;">
+          <label style="display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--text-muted);">
+            Duración del ciclo (semanas)
+            <input type="number" id="input-ciclo-semanas" value="4" min="1" max="26" style="width:140px;" />
+          </label>
+          <label style="display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--text-muted);">
+            Fecha de inicio del programa
+            <input type="date" id="input-fecha-inicio-ciclico" />
+          </label>
+        </div>
+
+        <p id="preview-zonas-ciclico" class="panel-sub" style="padding: 0 20px 10px;"></p>
+        <p id="estado-gh-ciclico" class="panel-sub" style="padding: 0 20px 16px;"></p>
+
+        <div class="acciones-publicar" style="padding: 0 20px 20px; display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+          <button type="button" id="btn-guardar-zonas" class="btn-secundario">Guardar zonas</button>
+          <button type="button" id="btn-generar-programa-ciclico" class="btn-continuar">Generar programa</button>
+          <button type="button" id="btn-publicar-programa-ciclico" class="btn-continuar" disabled>Publicar programa</button>
+          <span id="estado-publicar-ciclico" class="reporte-card-estado"></span>
+        </div>
+
+        <div id="panel-preview-programa-ciclico" style="display:none; padding: 0 20px 20px;">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th class="num">Semana</th><th>Zona</th><th class="num">Materiales</th></tr></thead>
+              <tbody id="tabla-preview-programa-ciclico-body"></tbody>
+            </table>
           </div>
         </div>
       </div>
