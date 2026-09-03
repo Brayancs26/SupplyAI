@@ -914,6 +914,77 @@ function detalleMonitor(monitorRows) {
     .sort((a, b) => b.importe - a.importe);
 }
 
+// ============================================================
+// INVENTARIO CÍCLICO POR ZONAS (definidas a mano) — usa el mismo
+// MB52 ya cargado en la app. Cada zona la define el usuario con un
+// nombre y una lista de códigos de "Ubicación" del MB52.
+// ============================================================
+
+/**
+ * Arma, para cada zona definida a mano, la lista de materiales que caen
+ * ahí (por Ubicación, dentro de un almacén), sumando stock si un material
+ * aparece en más de un lote de la misma ubicación.
+ */
+function construirZonasManual(mb52Rows, almacen, definicionesZona) {
+  return definicionesZona
+    .filter((def) => def.zona && def.ubicaciones && def.ubicaciones.length > 0)
+    .map((def) => {
+      const ubicacionesSet = new Set(def.ubicaciones.map((u) => u.trim().toUpperCase()).filter(Boolean));
+      const materiales = new Map();
+      for (const row of mb52Rows) {
+        if (String(row['Almacén'] || '').trim() !== almacen) continue;
+        const ubic = String(row['Ubicación'] || '').trim().toUpperCase();
+        if (!ubicacionesSet.has(ubic)) continue;
+        const material = String(row['Material'] || '').trim();
+        if (!material) continue;
+        const cantidad = Number(row['Libre utilización']) || 0;
+        if (!materiales.has(material)) {
+          materiales.set(material, {
+            material,
+            descripcion: row['Texto breve de material'] || '',
+            um: row['Unidad medida base'] || '',
+            cantidadSistema: 0,
+          });
+        }
+        materiales.get(material).cantidadSistema += cantidad;
+      }
+      return {
+        zona: def.zona,
+        ubicaciones: def.ubicaciones,
+        materiales: [...materiales.values()].sort((a, b) => a.material.localeCompare(b.material)),
+      };
+    });
+}
+
+/**
+ * Reparte las zonas entre las semanas del ciclo — reparto "greedy" por
+ * carga de trabajo (cantidad de materiales), no solo por cantidad de
+ * zonas, para que ninguna semana quede con muchísimo más trabajo que otra.
+ */
+function asignarSemanasCiclo(zonas, cicloSemanas) {
+  const ordenado = [...zonas].sort((a, b) => b.materiales.length - a.materiales.length);
+  const cargaPorSemana = new Array(cicloSemanas).fill(0);
+  const resultado = ordenado.map((z) => {
+    let semanaMin = 0;
+    for (let s = 1; s < cicloSemanas; s++) {
+      if (cargaPorSemana[s] < cargaPorSemana[semanaMin]) semanaMin = s;
+    }
+    cargaPorSemana[semanaMin] += z.materiales.length;
+    return { ...z, semana: semanaMin + 1 };
+  });
+  return resultado.sort((a, b) => a.semana - b.semana || a.zona.localeCompare(b.zona));
+}
+
+function slugZonaCiclo(zona) {
+  return (
+    String(zona)
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'ZONA'
+  );
+}
+
 const SupplyEngine = {
   NOMBRES_MES,
   CODIGOS_CONSUMO,
@@ -945,6 +1016,9 @@ const SupplyEngine = {
   stockPorAlmacenes,
   agruparMonitorPorUsuario,
   detalleMonitor,
+  construirZonasManual,
+  asignarSemanasCiclo,
+  slugZonaCiclo,
   confianza,
 };
 
