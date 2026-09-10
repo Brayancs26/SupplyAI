@@ -84,6 +84,14 @@
         <button type="button" class="btn-reemplazar" data-tipo="MONITOR">Reemplazar</button>
         <input type="file" class="input-individual" data-tipo="MONITOR" accept=".xlsx,.xls" hidden />
       </div>
+      <div class="chip-archivo" id="chip-BSU">
+        <div class="chip-texto">
+          <span class="chip-nombre">Bienes de Segundo Uso (ZMMR0080) — opcional</span>
+          <span class="chip-status">Esperando archivo…</span>
+        </div>
+        <button type="button" class="btn-reemplazar" data-tipo="BSU">Reemplazar</button>
+        <input type="file" class="input-individual" data-tipo="BSU" accept=".xlsx,.xls" hidden />
+      </div>
     </div>
 
     <button type="button" id="btn-continuar" class="btn-continuar" disabled>Continuar con estos archivos</button>
@@ -112,6 +120,7 @@
     <button class="tab-btn" data-tab="traslados">Lista de Pedido</button>
     <button class="tab-btn" data-tab="inmovilizados">Inmovilizados</button>
     <button class="tab-btn" data-tab="reportes">Reportes de Inventario</button>
+    <button class="tab-btn" data-tab="bsu">Bienes de Segundo Uso</button>
     <div class="tabs-acciones">
       <button id="btn-exportar" class="btn-secundario">Exportar Excel</button>
       <button id="btn-nuevos-archivos" class="btn-secundario">Cargar mis archivos</button>
@@ -124,16 +133,19 @@
     <section id="tab-resumen" class="tab-panel active">
 
       <!-- ===================== VALORIZACIÓN EN DÓLARES ===================== -->
+      <div class="valorizacion-top-bar">
+        <label class="tipo-cambio-control">
+          <span>Tipo de cambio (S/. por US$)</span>
+          <input type="number" id="input-tipo-cambio" step="0.001" value="3.75" />
+        </label>
+      </div>
+
       <div class="valorizacion-panel">
         <div class="valorizacion-header">
           <div>
-            <h2>Valorización en Dólares</h2>
+            <h2>Logística Matarani</h2>
             <p class="valorizacion-sub">Usa el mismo MB52 y Monitor que ya cargaste en la pantalla inicial.</p>
           </div>
-          <label class="tipo-cambio-control">
-            <span>Tipo de cambio (S/. por US$)</span>
-            <input type="number" id="input-tipo-cambio" step="0.001" value="3.75" />
-          </label>
         </div>
 
         <p id="aviso-valorizacion" class="aviso-archivos" style="display:none"></p>
@@ -861,6 +873,71 @@
               <tbody id="tabla-preview-programa-ciclico-body"></tbody>
             </table>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== BIENES DE SEGUNDO USO (BSU) ===================== -->
+    <section id="tab-bsu" class="tab-panel">
+      <div class="panel" id="bsu-sin-datos">
+        <div class="panel-header">
+          <h2>Bienes de Segundo Uso</h2>
+          <p class="panel-sub">Carga tu archivo Monitor de Bienes de Segundo Uso (ZMMR0080) en el chip opcional de la pantalla de carga inicial para ver este análisis.</p>
+        </div>
+      </div>
+
+      <div id="bsu-contenido" style="display:none">
+        <div class="panel">
+          <div class="panel-header bsu-header">
+            <h2>¿Cuántos hay por año de ingreso?</h2>
+            <span class="bsu-tag">REGISTROS BSU &gt; 2 AÑOS</span>
+          </div>
+          <div class="bsu-panel-split">
+            <div>
+              <div id="bsu-grafico-anio" class="bsu-grafico-anio"></div>
+            </div>
+            <div class="bsu-como-leerlo">
+              <span class="bsu-como-leerlo-titulo">CÓMO LEERLO</span>
+              <div id="bsu-leyenda-niveles"></div>
+              <p id="bsu-nota-anios-faltantes" class="bsu-nota"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header bsu-header">
+            <h2>Dónde está concentrado</h2>
+            <span class="bsu-tag">CANTIDAD LIBRE</span>
+          </div>
+          <div class="bsu-panel-split">
+            <div>
+              <p class="bsu-subtitulo">ÍTEMS CON MAYOR CANTIDAD LIBRE</p>
+              <div id="bsu-lista-items" class="bsu-lista-items"></div>
+              <p id="bsu-nota-restantes" class="bsu-nota" style="padding: 12px 0 0;"></p>
+            </div>
+            <div>
+              <p class="bsu-subtitulo">MAYOR CANTIDAD LIBRE</p>
+              <div id="bsu-destacado" class="bsu-destacado-card"></div>
+              <p class="bsu-subtitulo" style="margin-top:18px;">DISTRIBUCIÓN POR ALMACÉN</p>
+              <div id="bsu-lista-almacen" class="bsu-lista-almacen"></div>
+              <p id="bsu-nota-variedad" class="bsu-nota"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header bsu-header">
+            <h2>Seguimiento Semanal — Total de Registros BSU</h2>
+            <div class="acciones-publicar">
+              <button type="button" id="btn-guardar-snapshot-bsu" class="btn-secundario">Guardar snapshot de esta semana</button>
+              <span id="estado-snapshot-bsu" class="reporte-card-estado"></span>
+            </div>
+          </div>
+          <p class="panel-sub" style="padding: 0 20px 10px;">
+            Cada vez que subas un ZMMR0080 nuevo, dale a "Guardar snapshot" para que quede el número de esta
+            semana — así ves la tendencia semana a semana, aunque cierres el navegador.
+          </p>
+          <div id="bsu-grafico-historial" class="bsu-grafico-anio"></div>
         </div>
       </div>
     </section>
