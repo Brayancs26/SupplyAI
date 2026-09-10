@@ -601,6 +601,15 @@ tr.fila-total td { font-weight: 700; color: var(--cyan); border-top: 1px solid v
   .bsu-panel-split { grid-template-columns: 1fr; }
 }
 
+.fila-material-expandible { cursor: pointer; }
+.fila-material-expandible:hover { background: rgba(34, 211, 238, 0.06); }
+.chevron { display: inline-block; color: var(--cyan); font-size: 11px; transition: transform 0.15s; width: 10px; }
+.fila-material-expandible.expandida .chevron { transform: rotate(90deg); }
+.fila-detalle-lotes td { padding: 0; background: rgba(10, 14, 23, 0.5); }
+.lotes-lista { padding: 8px 20px 10px 40px; display: flex; flex-direction: column; gap: 4px; }
+.fila-lote { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); max-width: 320px; }
+.fila-lote span:last-child { color: var(--text); font-variant-numeric: tabular-nums; }
+
 footer {
   text-align: center; color: var(--text-muted); font-size: 11.5px; padding: 20px 24px;
   border-top: 1px solid var(--border);
