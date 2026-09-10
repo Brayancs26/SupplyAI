@@ -861,24 +861,35 @@ function calcularValorizacionReal(mb52Rows, monitorRows, tipoCambio) {
  * definen por almacén, no por categoría, tal como me indicaste).
  */
 function stockPorAlmacenes(mb52Rows, almacenes) {
-  const acc = new Map(); // material -> {descripcion, almacen, stock}
+  const acc = new Map(); // material -> {descripcion, almacen, stock, lotes: Map(lote->stock)}
   for (const row of mb52Rows) {
     const almacen = String(row['Almacén'] || '').trim();
     if (!almacenes.includes(almacen)) continue;
     const material = String(row['Material'] || '').trim();
     const clave = material + '|' + almacen;
     const stock = Number(row['Libre utilización']) || 0;
+    const lote = String(row['Lote'] || '').trim() || 'Sin lote';
     if (!acc.has(clave)) {
       acc.set(clave, {
         material,
         descripcion: row['Texto breve de material'] || '',
         almacen,
         stock: 0,
+        lotes: new Map(),
       });
     }
-    acc.get(clave).stock += stock;
+    const entry = acc.get(clave);
+    entry.stock += stock;
+    entry.lotes.set(lote, (entry.lotes.get(lote) || 0) + stock);
   }
-  return [...acc.values()].sort((a, b) => b.stock - a.stock);
+  return [...acc.values()]
+    .map((e) => ({
+      ...e,
+      lotes: [...e.lotes.entries()]
+        .map(([lote, stock]) => ({ lote, stock }))
+        .sort((a, b) => b.stock - a.stock),
+    }))
+    .sort((a, b) => b.stock - a.stock);
 }
 
 /**
@@ -1074,21 +1085,28 @@ function bsuCodigoConMasVariedad(bsu) {
   return mejor;
 }
 
+/** Número de semana ISO-8601 del año para una fecha dada. */
+function numeroSemanaISO(fecha) {
+  const d = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()));
+  const diaSemana = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - diaSemana);
+  const inicioAnio = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d - inicioAnio) / 86400000 + 1) / 7);
+}
+
 /**
  * A partir del historial guardado [{fecha, totalRegistros}], arma la serie
- * para el gráfico de seguimiento semanal: cuántas semanas pasaron desde el
- * primer snapshot, y una etiqueta de fecha legible.
+ * para el gráfico de seguimiento semanal: la semana ISO real del año (no
+ * relativa al primer snapshot) y una etiqueta de fecha legible.
  */
 function construirSerieBSUHistorial(historial) {
   if (!historial || historial.length === 0) return [];
   const ordenado = [...historial].sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
-  const primera = new Date(ordenado[0].fecha + 'T00:00:00');
   return ordenado.map((h) => {
     const fecha = new Date(h.fecha + 'T00:00:00');
-    const semanas = Math.round((fecha - primera) / (7 * 86400000));
     return {
       ...h,
-      semana: semanas,
+      semana: numeroSemanaISO(fecha),
       fechaLabel: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }),
     };
   });
