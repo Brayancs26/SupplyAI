@@ -500,6 +500,7 @@ td.desc { white-space: normal; max-width: 260px; }
   background-size: cover; background-position: center 40%; opacity: 0.9;
 }
 .valorizacion-panel > * { position: relative; z-index: 1; }
+.valorizacion-top-bar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
 .valorizacion-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 14px; }
 .valorizacion-header h2 { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: #fff; margin: 0 0 4px; }
 .valorizacion-sub { font-size: 12px; color: var(--text-muted); margin: 0; }
@@ -538,6 +539,67 @@ td.desc { white-space: normal; max-width: 260px; }
 .barra-celeste { background: var(--cyan); }
 .barra-h-valor { font-size: 12px; color: var(--cyan); font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
 tr.fila-total td { font-weight: 700; color: var(--cyan); border-top: 1px solid var(--border); }
+
+/* ---------- Bienes de Segundo Uso (BSU) ---------- */
+.bsu-header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.bsu-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; color: var(--amber); }
+.bsu-panel-split { display: grid; grid-template-columns: 1.7fr 1fr; gap: 24px; padding: 4px 20px 22px; }
+.bsu-subtitulo { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; color: var(--text-muted); margin: 0 0 10px; }
+.bsu-nota { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+/* Niveles de antigüedad (colores fijos, iguales a las capturas) */
+.bsu-nivel-critico { background: linear-gradient(180deg, #e2504a, #b23a35); }
+.bsu-nivel-alto { background: linear-gradient(180deg, #e2954a, #c47635); }
+.bsu-nivel-vigilancia { background: linear-gradient(180deg, var(--cyan), #1aa8bd); }
+.bsu-nivel-reciente { background: linear-gradient(180deg, var(--green), #16a34a); }
+.dot.bsu-nivel-critico, .dot.bsu-nivel-alto, .dot.bsu-nivel-vigilancia, .dot.bsu-nivel-reciente { background: none; }
+.dot.bsu-nivel-critico { background: #e2504a; }
+.dot.bsu-nivel-alto { background: #e2954a; }
+.dot.bsu-nivel-vigilancia { background: var(--cyan); }
+.dot.bsu-nivel-reciente { background: var(--green); }
+
+/* Gráfico de barras por año */
+.bsu-grafico-anio { display: flex; align-items: flex-end; gap: 14px; height: 220px; padding-top: 10px; }
+.bsu-barra-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; }
+.bsu-barra-valor { font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--text); margin-bottom: 6px; }
+.bsu-barra-track { width: 100%; height: 100%; display: flex; align-items: flex-end; }
+.bsu-barra-fill { width: 100%; border-radius: 5px 5px 0 0; min-height: 3px; }
+.bsu-barra-anio { font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--text); margin-top: 8px; }
+.bsu-barra-anios { font-size: 10.5px; color: var(--text-muted); }
+
+/* Cómo leerlo */
+.bsu-como-leerlo { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+.bsu-como-leerlo-titulo { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 12px; }
+.bsu-leyenda-item { display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
+.bsu-leyenda-item .dot { margin-top: 5px; flex-shrink: 0; }
+.bsu-leyenda-item strong { color: var(--text); }
+
+/* Lista de items por cantidad libre */
+.bsu-lista-items { display: flex; flex-direction: column; gap: 12px; }
+.bsu-item-fila { display: grid; grid-template-columns: 1fr 100px 70px; align-items: center; gap: 12px; }
+.bsu-item-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bsu-item-desc { font-size: 12.5px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bsu-item-meta { font-size: 10.5px; color: var(--text-muted); }
+.bsu-item-barra-track { background: rgba(255, 255, 255, 0.06); border-radius: 5px; height: 10px; overflow: hidden; }
+.bsu-item-barra-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, #e2954a, #e2504a); min-width: 3px; }
+.bsu-item-valor { font-size: 12px; font-weight: 600; color: var(--text); text-align: right; }
+
+/* Tarjeta destacada */
+.bsu-destacado-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+.bsu-destacado-nombre { font-size: 12.5px; font-weight: 700; color: var(--text); text-transform: uppercase; }
+.bsu-destacado-valor { font-family: var(--font-display); font-size: 32px; font-weight: 700; color: #e2504a; }
+.bsu-destacado-sub { font-size: 12px; color: var(--text-muted); }
+.bsu-destacado-texto { font-size: 12px; color: var(--text-muted); margin: 10px 0 0; line-height: 1.5; }
+
+/* Distribución por almacén */
+.bsu-lista-almacen { display: flex; flex-direction: column; gap: 2px; }
+.bsu-almacen-fila { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.bsu-almacen-fila span:first-child { color: var(--text-muted); }
+.bsu-almacen-fila span:last-child { font-weight: 700; color: var(--text); }
+
+@media (max-width: 860px) {
+  .bsu-panel-split { grid-template-columns: 1fr; }
+}
 
 footer {
   text-align: center; color: var(--text-muted); font-size: 11.5px; padding: 20px 24px;
