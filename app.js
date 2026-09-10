@@ -6,7 +6,7 @@ const ALMACEN = 'L001';
 const ALMACEN_PLANTA = 'PI01';
 
 const state = {
-  archivos: { MRP: null, DATA: null, MB52: null, MONITOR: null },
+  archivos: { MRP: null, DATA: null, MB52: null, MONITOR: null, BSU: null },
   consumoReal: [],
   fechaMin: null,
   fechaMax: null,
@@ -62,7 +62,7 @@ function formatearFecha(iso) {
 // ---------------- CACHÉ (IndexedDB) ----------------
 async function cargarCacheAlIniciar() {
   const cache = await Storage.obtenerTodos();
-  ['MRP', 'DATA', 'MB52', 'MONITOR'].forEach((tipo) => {
+  ['MRP', 'DATA', 'MB52', 'MONITOR', 'BSU'].forEach((tipo) => {
     if (cache[tipo]) {
       state.archivos[tipo] = {
         nombreArchivo: cache[tipo].nombreArchivo,
@@ -155,7 +155,7 @@ function bindDropzone() {
   document.getElementById('btn-borrar-cache').addEventListener('click', async () => {
     if (!confirm('¿Borrar los archivos guardados en este navegador? Vas a tener que volver a cargarlos.')) return;
     await Storage.borrarTodo();
-    state.archivos = { MRP: null, DATA: null, MB52: null, MONITOR: null };
+    state.archivos = { MRP: null, DATA: null, MB52: null, MONITOR: null, BSU: null };
     actualizarEstadoArchivos();
     actualizarBotonContinuar();
   });
@@ -172,7 +172,7 @@ async function manejarArchivos(fileList) {
   const resultado = await FileParser.procesarArchivos(fileList);
 
   const persistencias = [];
-  ['MRP', 'DATA', 'MB52', 'MONITOR'].forEach((tipo) => {
+  ['MRP', 'DATA', 'MB52', 'MONITOR', 'BSU'].forEach((tipo) => {
     if (resultado[tipo]) {
       state.archivos[tipo] = { ...resultado[tipo], deCache: false };
       persistencias.push(Storage.guardarArchivo(tipo, resultado[tipo].nombreArchivo, resultado[tipo].filas));
@@ -199,6 +199,8 @@ async function manejarArchivos(fileList) {
     renderValorizacionReal();
     renderMonitorUsuario();
     renderMonitorDetalle();
+  } else if (resultado.BSU) {
+    renderBSU();
   }
 }
 
@@ -212,7 +214,7 @@ function mostrarAvisoArchivos(desconocidos, errores) {
 }
 
 function actualizarEstadoArchivos() {
-  ['MRP', 'DATA', 'MB52', 'MONITOR'].forEach((tipo) => {
+  ['MRP', 'DATA', 'MB52', 'MONITOR', 'BSU'].forEach((tipo) => {
     const chip = document.getElementById(`chip-${tipo}`);
     const info = state.archivos[tipo];
     if (info) {
@@ -325,6 +327,7 @@ function renderTodo() {
   renderListaPedido();
   renderSimulacion();
   poblarListaTendencia();
+  renderBSU();
 }
 
 // ---------------- ACEITE / HARINA / MONITOR (Detalle PPTT) ----------------
@@ -415,6 +418,222 @@ function renderMonitorDetalle() {
       .join('') + `<tr class="fila-total"><td colspan="3">Total</td><td class="num">${fmtUSD(totalImporte)}</td><td></td></tr>`;
 }
 
+// ---------------- BIENES DE SEGUNDO USO (BSU) ----------------
+function renderBSU() {
+  const sinDatos = document.getElementById('bsu-sin-datos');
+  const contenido = document.getElementById('bsu-contenido');
+  if (!state.archivos.BSU) {
+    sinDatos.style.display = 'block';
+    contenido.style.display = 'none';
+    return;
+  }
+  sinDatos.style.display = 'none';
+  contenido.style.display = 'block';
+
+  const bsu = SupplyEngine.procesarBSU(state.archivos.BSU.filas);
+  const anioActual = new Date().getFullYear();
+
+  renderBSUGraficoAnio(bsu, anioActual);
+  renderBSUConcentracion(bsu);
+  cargarHistorialBSU(bsu.length);
+}
+
+const RUTA_HISTORIAL_BSU = 'bsu/historial.json';
+
+async function cargarHistorialBSU(totalRegistrosActual) {
+  const estado = document.getElementById('estado-snapshot-bsu');
+  try {
+    const guardado = await GitHubSync.leerJSONPublico(RUTA_HISTORIAL_BSU);
+    const historial = guardado && Array.isArray(guardado.historial) ? guardado.historial : [];
+    renderGraficoHistorialBSU(historial);
+    const hoy = hoyISO();
+    const yaGuardadoHoy = historial.some((h) => h.fecha === hoy && h.totalRegistros === totalRegistrosActual);
+    estado.textContent = yaGuardadoHoy ? '✓ Ya guardaste el snapshot de hoy con este número.' : '';
+  } catch (err) {
+    renderGraficoHistorialBSU([]);
+  }
+}
+
+function renderGraficoHistorialBSU(historial) {
+  const cont = document.getElementById('bsu-grafico-historial');
+  const serie = SupplyEngine.construirSerieBSUHistorial(historial);
+  if (serie.length === 0) {
+    cont.innerHTML = '<p class="muted centrado" style="padding:20px 0;">Todavía no hay snapshots guardados — dale a "Guardar snapshot de esta semana".</p>';
+    return;
+  }
+  const maxValor = Math.max(...serie.map((s) => s.totalRegistros), 1);
+  cont.innerHTML = serie
+    .map((s) => {
+      const alturaPct = Math.max(6, (s.totalRegistros / maxValor) * 100);
+      return `<div class="bsu-barra-col">
+        <span class="bsu-barra-valor">${s.totalRegistros}</span>
+        <div class="bsu-barra-track"><div class="bsu-barra-fill bsu-nivel-alto" style="height:${alturaPct}%"></div></div>
+        <span class="bsu-barra-anio">SEM ${s.semana}</span>
+        <span class="bsu-barra-anios">${s.fechaLabel}</span>
+      </div>`;
+    })
+    .join('');
+}
+
+async function guardarSnapshotBSU() {
+  if (!state.archivos.BSU) return;
+  const estado = document.getElementById('estado-snapshot-bsu');
+  const boton = document.getElementById('btn-guardar-snapshot-bsu');
+  const totalRegistros = SupplyEngine.procesarBSU(state.archivos.BSU.filas).length;
+
+  boton.disabled = true;
+  estado.className = 'reporte-card-estado';
+  estado.textContent = 'Guardando…';
+  try {
+    const guardado = await GitHubSync.leerJSONPublico(RUTA_HISTORIAL_BSU);
+    const historial = guardado && Array.isArray(guardado.historial) ? guardado.historial : [];
+    const hoy = hoyISO();
+    const sinHoy = historial.filter((h) => h.fecha !== hoy);
+    sinHoy.push({ fecha: hoy, totalRegistros });
+
+    await GitHubSync.escribirJSON(
+      RUTA_HISTORIAL_BSU,
+      { actualizadoEn: new Date().toISOString(), historial: sinHoy },
+      `Snapshot BSU ${hoy}: ${totalRegistros} registros`
+    );
+    estado.className = 'reporte-card-estado reporte-estado-ok';
+    estado.textContent = `✓ Guardado — ${totalRegistros} registros esta semana.`;
+    renderGraficoHistorialBSU(sinHoy);
+  } catch (err) {
+    console.error(err);
+    estado.className = 'reporte-card-estado reporte-estado-error';
+    estado.textContent = 'Error: ' + err.message;
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+const BSU_NIVEL_INFO = {
+  critico: { label: 'Crítico (5+ años)', clase: 'bsu-nivel-critico' },
+  alto: { label: 'Alto (3-4 años)', clase: 'bsu-nivel-alto' },
+  vigilancia: { label: 'Vigilancia (2 años)', clase: 'bsu-nivel-vigilancia' },
+  reciente: { label: 'Reciente (0-1 años)', clase: 'bsu-nivel-reciente' },
+};
+
+function renderBSUGraficoAnio(bsu, anioActual) {
+  const serie = SupplyEngine.bsuPorAnioIngreso(bsu, anioActual);
+  const cont = document.getElementById('bsu-grafico-anio');
+  if (serie.length === 0) {
+    cont.innerHTML = '<p class="muted centrado">Sin fechas de entrada en el archivo.</p>';
+    return;
+  }
+  const maxCuenta = Math.max(...serie.map((s) => s.cuenta), 1);
+  cont.innerHTML = serie
+    .map((s) => {
+      const alturaPct = s.cuenta === 0 ? 3 : Math.max(6, (s.cuenta / maxCuenta) * 100);
+      const clase = BSU_NIVEL_INFO[s.nivel].clase;
+      return `<div class="bsu-barra-col">
+        <span class="bsu-barra-valor">${s.cuenta}</span>
+        <div class="bsu-barra-track"><div class="bsu-barra-fill ${clase}" style="height:${alturaPct}%"></div></div>
+        <span class="bsu-barra-anio">${s.anio}</span>
+        <span class="bsu-barra-anios">${s.antiguedad} año${s.antiguedad === 1 ? '' : 's'}</span>
+      </div>`;
+    })
+    .join('');
+
+  // Leyenda: solo los niveles que realmente aparecen en la serie, con su totales.
+  const totalesPorNivel = {};
+  serie.forEach((s) => {
+    if (!totalesPorNivel[s.nivel]) totalesPorNivel[s.nivel] = { total: 0, anios: [] };
+    totalesPorNivel[s.nivel].total += s.cuenta;
+    if (s.cuenta > 0) totalesPorNivel[s.nivel].anios.push(s.anio);
+  });
+  const ordenNiveles = ['critico', 'alto', 'vigilancia', 'reciente'];
+  const leyenda = ordenNiveles
+    .filter((n) => totalesPorNivel[n])
+    .map((n) => {
+      const info = BSU_NIVEL_INFO[n];
+      const t = totalesPorNivel[n];
+      const rangoAnios = t.anios.length ? `${Math.min(...t.anios)}–${Math.max(...t.anios)}` : '—';
+      const textoExtra =
+        n === 'critico'
+          ? 'Bienes ya sin trazabilidad de uso.'
+          : n === 'alto'
+          ? 'El bloque más numeroso.'
+          : n === 'vigilancia'
+          ? 'Aún recuperables para uso.'
+          : 'Recién ingresados.';
+      return `<div class="bsu-leyenda-item">
+        <span class="dot ${info.clase}"></span>
+        <div><strong>${info.label}:</strong> ${t.total} registros de ${rangoAnios}. ${textoExtra}</div>
+      </div>`;
+    })
+    .join('');
+  document.getElementById('bsu-leyenda-niveles').innerHTML = leyenda;
+
+  const faltantes = serie.filter((s) => s.cuenta === 0).map((s) => s.anio);
+  document.getElementById('bsu-nota-anios-faltantes').textContent = faltantes.length
+    ? `${faltantes.join(', ')} no aparece${faltantes.length === 1 ? '' : 'n'}: no hay registros BSU de ese año.`
+    : '';
+}
+
+function renderBSUConcentracion(bsu) {
+  const items = SupplyEngine.bsuPorCantidadLibre(bsu);
+  const totalUnidades = items.reduce((a, it) => a + it.cantidad, 0);
+
+  const top = items.slice(0, 8);
+  const maxCant = Math.max(...top.map((it) => it.cantidad), 1);
+  document.getElementById('bsu-lista-items').innerHTML = top
+    .map((it) => {
+      const pct = (it.cantidad / maxCant) * 100;
+      const anio = it.fechaEntrada ? it.fechaEntrada.getFullYear() : '—';
+      return `<div class="bsu-item-fila">
+        <div class="bsu-item-info">
+          <span class="bsu-item-desc">${it.descripcion}</span>
+          <span class="bsu-item-meta">${it.material} · ${anio}</span>
+        </div>
+        <div class="bsu-item-barra-track"><div class="bsu-item-barra-fill" style="width:${pct}%"></div></div>
+        <span class="bsu-item-valor">${fmtNum(it.cantidad, 0)} ${it.um}</span>
+      </div>`;
+    })
+    .join('');
+
+  const restantes = items.slice(8);
+  if (restantes.length > 0) {
+    const sumaRestantes = restantes.reduce((a, it) => a + it.cantidad, 0);
+    document.getElementById('bsu-nota-restantes').textContent =
+      `Los ${restantes.length} ítems restantes suman ${fmtNum(sumaRestantes, 0)} unidades.`;
+  } else {
+    document.getElementById('bsu-nota-restantes').textContent = '';
+  }
+
+  const destacado = items[0];
+  if (destacado) {
+    const pctTotal = totalUnidades > 0 ? (destacado.cantidad / totalUnidades) * 100 : 0;
+    const fechaTexto = destacado.fechaEntrada
+      ? destacado.fechaEntrada.toLocaleDateString('es-PE', { month: 'short', year: 'numeric' })
+      : 'sin fecha';
+    document.getElementById('bsu-destacado').innerHTML = `
+      <span class="bsu-destacado-nombre">${destacado.descripcion}</span>
+      <span class="bsu-destacado-valor">${fmtNum(destacado.cantidad, 0)}</span>
+      <span class="bsu-destacado-sub">unid. · ${fmtNum(pctTotal, 0)}% del total</span>
+      <p class="bsu-destacado-texto">Un solo ítem (${destacado.material}), ingresado en ${fechaTexto}.</p>
+    `;
+  }
+
+  const porAlmacen = SupplyEngine.bsuDistribucionPorAlmacen(bsu);
+  document.getElementById('bsu-lista-almacen').innerHTML = porAlmacen
+    .map((a) => `<div class="bsu-almacen-fila"><span>${a.almacen}</span><span>${a.cuenta}</span></div>`)
+    .join('');
+
+  const principal = porAlmacen[0];
+  const variedad = SupplyEngine.bsuCodigoConMasVariedad(bsu);
+  let notaVariedad = '';
+  if (principal) {
+    const pctPrincipal = bsu.length > 0 ? (principal.cuenta / bsu.length) * 100 : 0;
+    const ubicaciones = SupplyEngine.bsuUbicacionesDistintas(bsu, principal.almacen);
+    notaVariedad = `${fmtNum(pctPrincipal, 0)}% está en ${principal.almacen}, en ${ubicaciones} ubicaciones.`;
+  }
+  if (variedad) {
+    notaVariedad += ` Ojo: un mismo código BSU agrupa ítems distintos — ${variedad.material} contiene ${variedad.cantidadDescripciones} ítems (${variedad.ejemplos.join(', ').toLowerCase()}).`;
+  }
+  document.getElementById('bsu-nota-variedad').textContent = notaVariedad;
+}
 // ---------------- VALORIZACIÓN EN DÓLARES ----------------
 function renderValorizacionReal() {
   const aviso = document.getElementById('aviso-valorizacion');
@@ -1557,5 +1776,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindEventosDelegados();
   bindTooltipTendencia();
   bindInventarioCiclico();
+  document.getElementById('btn-guardar-snapshot-bsu').addEventListener('click', guardarSnapshotBSU);
   await cargarCacheAlIniciar();
 });
