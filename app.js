@@ -338,17 +338,24 @@ function obtenerMonitorFilas() {
   return state.archivos.MONITOR ? state.archivos.MONITOR.filas : null;
 }
 
-function tablaAceiteHarinaHTML(filas, vacioTexto) {
+function tablaAceiteHarinaHTML(filas, vacioTexto, prefijo) {
   if (filas.length === 0) return `<tr><td colspan="4" class="muted centrado">${vacioTexto}</td></tr>`;
   const filasHTML = filas
-    .map(
-      (r) => `<tr>
-      <td>${r.material}</td>
+    .map((r, i) => {
+      const idDetalle = `detalle-lotes-${prefijo}-${i}`;
+      const detalleLotes = r.lotes
+        .map((l) => `<div class="fila-lote"><span>${l.lote}</span><span>${fmtNum(l.stock, 2)}</span></div>`)
+        .join('');
+      return `<tr class="fila-material-expandible" data-target="${idDetalle}">
+      <td><span class="chevron">▸</span> ${r.material}</td>
       <td class="desc">${r.descripcion}</td>
       <td>${r.almacen}</td>
       <td class="num">${fmtNum(r.stock, 2)}</td>
-    </tr>`
-    )
+    </tr>
+    <tr class="fila-detalle-lotes" id="${idDetalle}" style="display:none">
+      <td colspan="4"><div class="lotes-lista">${detalleLotes}</div></td>
+    </tr>`;
+    })
     .join('');
   const total = filas.reduce((a, r) => a + r.stock, 0);
   return filasHTML + `<tr class="fila-total"><td colspan="3">Total</td><td class="num">${fmtNum(total, 2)}</td></tr>`;
@@ -359,8 +366,8 @@ function renderAceiteHarina() {
   const mb52Rows = state.archivos.MB52.filas;
   const aceite = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_ACEITE);
   const harina = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_HARINA);
-  document.getElementById('tabla-aceite-body').innerHTML = tablaAceiteHarinaHTML(aceite, 'Sin stock de Aceite de Pescado en estos almacenes.');
-  document.getElementById('tabla-harina-body').innerHTML = tablaAceiteHarinaHTML(harina, 'Sin stock de Harina de Pescado en C001.');
+  document.getElementById('tabla-aceite-body').innerHTML = tablaAceiteHarinaHTML(aceite, 'Sin stock de Aceite de Pescado en estos almacenes.', 'aceite');
+  document.getElementById('tabla-harina-body').innerHTML = tablaAceiteHarinaHTML(harina, 'Sin stock de Harina de Pescado en C001.', 'harina');
 }
 
 function renderAvisoSinMonitor() {
@@ -468,7 +475,7 @@ function renderGraficoHistorialBSU(historial) {
       return `<div class="bsu-barra-col">
         <span class="bsu-barra-valor">${s.totalRegistros}</span>
         <div class="bsu-barra-track"><div class="bsu-barra-fill bsu-nivel-alto" style="height:${alturaPct}%"></div></div>
-        <span class="bsu-barra-anio">SEM ${s.semana}</span>
+        <span class="bsu-barra-anio">Semana ${s.semana}</span>
         <span class="bsu-barra-anios">${s.fechaLabel}</span>
       </div>`;
     })
@@ -1339,6 +1346,16 @@ function bindEventosDelegados() {
     const btn = e.target.closest('.sku-link');
     if (btn) abrirDetalleMaterial(btn.dataset.material);
     if (e.target.closest('#btn-cerrar-detalle') || e.target.id === 'overlay-detalle') cerrarDetalleMaterial();
+
+    const filaExpandible = e.target.closest('.fila-material-expandible');
+    if (filaExpandible) {
+      const detalle = document.getElementById(filaExpandible.dataset.target);
+      if (detalle) {
+        const abierta = detalle.style.display !== 'none';
+        detalle.style.display = abierta ? 'none' : 'table-row';
+        filaExpandible.classList.toggle('expandida', !abierta);
+      }
+    }
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') cerrarDetalleMaterial();
