@@ -985,6 +985,115 @@ function slugZonaCiclo(zona) {
   );
 }
 
+// ============================================================
+// BIENES DE SEGUNDO USO (BSU) — reporte ZMMR0080
+// ============================================================
+
+function procesarBSU(bsuRows) {
+  return bsuRows
+    .filter((r) => r['Material'])
+    .map((r) => ({
+      material: String(r['Material']).trim(),
+      descripcion: r['Descripción del bien'] || '',
+      almacen: String(r['Almacén'] || '').trim(),
+      ubicacion: String(r['Ubicación'] || '').trim(),
+      lote: r['Lote'] || '',
+      cantidad: Number(r['Libre utilización']) || 0,
+      um: r['Unidad de medida'] || '',
+      fechaEntrada: r['Fecha última Entrada Mercancía'] ? new Date(r['Fecha última Entrada Mercancía']) : null,
+    }))
+    .filter((r) => r.cantidad > 0);
+}
+
+/**
+ * Serie de registros BSU por año de ingreso (año de "Fecha última Entrada
+ * Mercancía"), clasificada por antigüedad respecto al año actual:
+ * Reciente (0-1 años), Vigilancia (2 años), Alto (3-4 años), Crítico (5+).
+ * Rellena los años sin registros dentro del rango para detectarlos.
+ */
+function bsuPorAnioIngreso(bsu, anioActual) {
+  const mapa = new Map();
+  bsu.forEach((b) => {
+    if (!b.fechaEntrada) return;
+    const anio = b.fechaEntrada.getFullYear();
+    mapa.set(anio, (mapa.get(anio) || 0) + 1);
+  });
+  const anios = [...mapa.keys()].sort((a, b) => a - b);
+  if (anios.length === 0) return [];
+  const minAnio = anios[0];
+  const maxAnio = anios[anios.length - 1];
+
+  const serie = [];
+  for (let a = minAnio; a <= maxAnio; a++) {
+    const cuenta = mapa.get(a) || 0;
+    const antiguedad = anioActual - a;
+    let nivel;
+    if (antiguedad >= 5) nivel = 'critico';
+    else if (antiguedad >= 3) nivel = 'alto';
+    else if (antiguedad >= 2) nivel = 'vigilancia';
+    else nivel = 'reciente';
+    serie.push({ anio: a, cuenta, antiguedad, nivel });
+  }
+  return serie;
+}
+
+/** Items individuales ordenados por cantidad libre (mayor a menor). */
+function bsuPorCantidadLibre(bsu) {
+  return [...bsu].sort((a, b) => b.cantidad - a.cantidad);
+}
+
+/** Cantidad de registros por almacén. */
+function bsuDistribucionPorAlmacen(bsu) {
+  const mapa = new Map();
+  bsu.forEach((b) => mapa.set(b.almacen || 'Sin almacén', (mapa.get(b.almacen || 'Sin almacén') || 0) + 1));
+  return [...mapa.entries()].map(([almacen, cuenta]) => ({ almacen, cuenta })).sort((a, b) => b.cuenta - a.cuenta);
+}
+
+/** Cuántas ubicaciones distintas hay dentro de un almacén. */
+function bsuUbicacionesDistintas(bsu, almacen) {
+  return new Set(bsu.filter((b) => b.almacen === almacen).map((b) => b.ubicacion)).size;
+}
+
+/**
+ * Encuentra el código BSU que agrupa más descripciones de bien distintas
+ * (un mismo código genérico usado para varios tipos de ítem) — el insight
+ * "ojo: un mismo código BSU agrupa ítems distintos".
+ */
+function bsuCodigoConMasVariedad(bsu) {
+  const mapa = new Map(); // material -> Set(descripcion)
+  bsu.forEach((b) => {
+    if (!mapa.has(b.material)) mapa.set(b.material, new Set());
+    mapa.get(b.material).add(b.descripcion);
+  });
+  let mejor = null;
+  for (const [material, descs] of mapa.entries()) {
+    if (descs.size > 1 && (!mejor || descs.size > mejor.cantidadDescripciones)) {
+      mejor = { material, cantidadDescripciones: descs.size, ejemplos: [...descs].slice(0, 3) };
+    }
+  }
+  return mejor;
+}
+
+/**
+ * A partir del historial guardado [{fecha, totalRegistros}], arma la serie
+ * para el gráfico de seguimiento semanal: cuántas semanas pasaron desde el
+ * primer snapshot, y una etiqueta de fecha legible.
+ */
+function construirSerieBSUHistorial(historial) {
+  if (!historial || historial.length === 0) return [];
+  const ordenado = [...historial].sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
+  const primera = new Date(ordenado[0].fecha + 'T00:00:00');
+  return ordenado.map((h) => {
+    const fecha = new Date(h.fecha + 'T00:00:00');
+    const semanas = Math.round((fecha - primera) / (7 * 86400000));
+    return {
+      ...h,
+      semana: semanas,
+      fechaLabel: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }),
+    };
+  });
+}
+
 const SupplyEngine = {
   NOMBRES_MES,
   CODIGOS_CONSUMO,
@@ -1019,6 +1128,13 @@ const SupplyEngine = {
   construirZonasManual,
   asignarSemanasCiclo,
   slugZonaCiclo,
+  procesarBSU,
+  bsuPorAnioIngreso,
+  bsuPorCantidadLibre,
+  bsuDistribucionPorAlmacen,
+  bsuUbicacionesDistintas,
+  bsuCodigoConMasVariedad,
+  construirSerieBSUHistorial,
   confianza,
 };
 
