@@ -113,6 +113,7 @@
   <nav class="tabs">
     <button class="tab-btn active" data-tab="resumen">Resumen</button>
     <button class="tab-btn" data-tab="planificados">Materiales Planificados</button>
+    <button class="tab-btn" data-tab="mrp">MRP</button>
     <button class="tab-btn" data-tab="materiales">Materiales</button>
     <button class="tab-btn" data-tab="abcxyz">Análisis ABC</button>
     <button class="tab-btn" data-tab="cobertura">Cobertura</button>
@@ -144,7 +145,6 @@
         <div class="valorizacion-header">
           <div>
             <h2>Logística Matarani</h2>
-            <p class="valorizacion-sub">Usa el mismo MB52 y Monitor que ya cargaste en la pantalla inicial.</p>
           </div>
         </div>
 
@@ -285,6 +285,27 @@
 
       <div class="panel">
         <div class="panel-header">
+          <h2>Materiales Inactivos con Stock — gestionar salida</h2>
+          <p class="panel-sub">
+            Clasificados "Inactivo" en SAP (no entran en la planificación de compras), pero todavía tienen stock
+            físico en L001 — candidatos a venta, transferencia o transformación.
+          </p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th><th>Descripción</th><th class="num">Stock Real</th>
+                <th class="num">Costo Unitario</th><th class="num">Valor</th><th>Último Consumo</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-inactivos-stock-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
           <h2>Índice de estacionalidad — derivado de tus datos</h2>
           <p class="panel-sub">Consumo promedio de cada mes-calendario vs. el promedio general. Rango analizado: <span id="rango-fechas-resumen">—</span></p>
         </div>
@@ -367,6 +388,68 @@
             </thead>
             <tbody id="tabla-reclasificados-body"></tbody>
           </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== MRP (clasificación manual) ===================== -->
+    <section id="tab-mrp" class="tab-panel">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Clasificación de Materiales — MRP</h2>
+          <p class="panel-sub">
+            Clasificación SAP, la propuesta automática del sistema, y tu clasificación manual — si la defines, esa es
+            la que manda en todos los cálculos de la app (SS, ROP, riesgo, ABC-XYZ, todo).
+          </p>
+        </div>
+
+        <div class="filtros" style="padding: 0 20px 14px; display:flex; gap:12px; flex-wrap:wrap;">
+          <input type="text" id="mrp-buscar" placeholder="Buscar por código o descripción…" style="flex:1; min-width:220px;" />
+          <select id="mrp-filtro-clase" style="min-width:220px;">
+            <option value="TODAS">Todas las clasificaciones</option>
+            <option value="MANUALES">Solo con mi clasificación manual</option>
+            <option value="DIFERENTES">Donde SAP y la propuesta difieren</option>
+            <option value="Alta Rotación">Final: Alta Rotación</option>
+            <option value="Baja Rotación">Final: Baja Rotación</option>
+            <option value="Estratégico">Final: Estratégico</option>
+            <option value="Inactivo">Final: Inactivo</option>
+            <option value="Producción">Final: Producción</option>
+            <option value="Uso Inmediato (confirmado)">Final: Uso Inmediato (confirmado)</option>
+          </select>
+          <span id="mrp-conteo" class="panel-sub" style="padding:10px 0 0;"></span>
+        </div>
+
+        <div class="acciones-publicar" style="padding: 0 20px 18px; display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+          <button type="button" id="btn-guardar-clasificaciones" class="btn-continuar">Guardar mis clasificaciones</button>
+          <span id="mrp-pendientes-aviso" class="panel-sub"></span>
+          <span id="mrp-estado-guardar" class="reporte-card-estado"></span>
+        </div>
+
+        <div class="table-wrap tall">
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th><th>Descripción</th><th>Clasificación SAP</th>
+                <th>Propuesta del Sistema</th><th>Mi Clasificación</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-mrp-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Alertas de cambio de clasificación <span id="mrp-alertas-badge" class="chip chip-roja" style="display:none;"></span></h2>
+          <p class="panel-sub">
+            Cada vez que subes consumos nuevos, comparo la propuesta de hoy contra tu clasificación manual y contra
+            la última propuesta guardada como referencia — así ves qué materiales conviene revisar.
+          </p>
+        </div>
+        <div id="mrp-alertas-lista"></div>
+        <div class="acciones-publicar" style="padding: 0 20px 20px; display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+          <button type="button" id="btn-guardar-referencia-mrp" class="btn-secundario">Guardar la propuesta de hoy como referencia</button>
+          <span id="mrp-estado-referencia" class="panel-sub"></span>
         </div>
       </div>
     </section>
