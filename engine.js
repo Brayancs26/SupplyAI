@@ -290,7 +290,7 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
     const clasificacionSAP = m['Den.Clasificación'] || 'Sin Clasificar';
     const movInfo = movClasificacionMap ? movClasificacionMap.get(material) : null;
     const clasificacionManual = clasificacionesManuales ? clasificacionesManuales.get(material) : null;
-    const tratamiento = determinarTratamiento(clasificacionSAP, movInfo, clasificacionManual);
+    const tratamiento = determinarTratamiento(material, clasificacionSAP, movInfo, clasificacionManual);
 
     const stat = statsPorTemporada.get(material);
     const bucket = stat ? stat[tempObjetivo] : null;
@@ -506,9 +506,11 @@ function calcularStatsMensualesGenerales(consumoReal, fechaMinISO, fechaMaxISO) 
  * - Otros: todo lo demás (repuestos, EPP, ferretería, etc.), que en la
  *   práctica se consume casi todo en L001.
  */
+/** Diesel, Petróleo R500, y los 4 materiales de balones de gas/oxígeno. */
+const MATERIALES_ENERGETICOS = ['30000527', '30000528', '20000669', '20000670', '20000671', '20000699'];
+
 function categorizarMaterial(material, denomGrupoArticulo, materialesConConsumoPI01) {
-  const d = (denomGrupoArticulo || '').toUpperCase();
-  if (/PETROLEO|COMBUST|DIESEL|GAS/.test(d)) return 'Combustibles';
+  if (MATERIALES_ENERGETICOS.includes(material)) return 'Energéticos';
   if (materialesConConsumoPI01 && materialesConConsumoPI01.has(material)) return 'Insumos';
   return 'Otros';
 }
@@ -720,17 +722,23 @@ function calcularClasificacionMovimiento(consumoReal, fechaMinISO, fechaMaxISO) 
  * de siempre (SAP + reclasificación por historial de movimiento). No sabe
  * nada de anulaciones manuales; eso lo resuelve determinarTratamiento.
  */
-function proponerClasificacion(clasificacionSAP, movInfo) {
+function proponerClasificacion(material, clasificacionSAP, movInfo) {
   const sap = (clasificacionSAP || '').trim();
 
+  // Energéticos (Diesel, R500, balones de gas y oxígeno) se gestionan aparte,
+  // con su propia tabla de cobertura — no entran a la planificación SS/ROP
+  // estándar, sin importar qué diga SAP.
+  if (MATERIALES_ENERGETICOS.includes(material)) {
+    return { clasificacionFinal: 'Energéticos', incluido: false, reclasificado: false, motivo: 'Energético (combustible o gas) — se cubre aparte, en su propia tabla de Cobertura' };
+  }
   if (sap === 'Inactivo') {
     return { clasificacionFinal: 'Inactivo', incluido: false, reclasificado: false, motivo: 'Inactivo — código sin uso, no requiere gestión de stock' };
   }
   if (sap === 'Produción' || sap === 'Producción') {
-    return { clasificacionFinal: 'Producción', incluido: false, reclasificado: false, motivo: 'Uso en producción — requiere un módulo de planificación aparte, no se incluye aquí' };
+    return { clasificacionFinal: 'Producción', incluido: false, reclasificado: false, motivo: 'Uso en producción — se cubre aparte, en su propia tabla de Cobertura' };
   }
   if (sap === 'Estratégico') {
-    return { clasificacionFinal: 'Estratégico', incluido: true, reclasificado: false, motivo: null };
+    return { clasificacionFinal: 'Estratégico', incluido: false, reclasificado: false, motivo: 'Estratégico — se cubre aparte, en su propia tabla de Cobertura (no el semáforo SS/ROP estándar)' };
   }
   if (sap === 'Uso Inmediato') {
     const clase = movInfo ? movInfo.clasificacionMovimiento : 'Sin Movimiento';
@@ -739,7 +747,7 @@ function proponerClasificacion(clasificacionSAP, movInfo) {
     }
     return { clasificacionFinal: 'Uso Inmediato (confirmado)', incluido: false, reclasificado: false, motivo: 'Sin consumo regular en el período — se confirma compra solo por reserva, no requiere stock' };
   }
-  // Alta Rotación / Baja Rotación ya etiquetados por SAP, o sin clasificar -> tratamiento normal
+  // Alta Rotación / Baja Rotación ya etiquetados por SAP, o sin clasificar -> tratamiento normal (SÍ planificados)
   return { clasificacionFinal: sap || 'Sin Clasificar', incluido: true, reclasificado: false, motivo: null };
 }
 
@@ -750,6 +758,8 @@ const CLASIFICACIONES_MANUALES_VALIDAS = [
   'Estratégico',
   'Inactivo',
   'Producción',
+  'Energéticos',
+  'EPPS',
   'Uso Inmediato (confirmado)',
 ];
 
@@ -758,11 +768,11 @@ const CLASIFICACIONES_MANUALES_VALIDAS = [
  * clasificación manual para este código, esa manda (sin importar lo que
  * diga SAP o el historial). Si no, se usa la propuesta automática.
  */
-function determinarTratamiento(clasificacionSAP, movInfo, clasificacionManual) {
-  const propuesta = proponerClasificacion(clasificacionSAP, movInfo);
+function determinarTratamiento(material, clasificacionSAP, movInfo, clasificacionManual) {
+  const propuesta = proponerClasificacion(material, clasificacionSAP, movInfo);
 
   if (clasificacionManual && CLASIFICACIONES_MANUALES_VALIDAS.includes(clasificacionManual)) {
-    const incluido = clasificacionManual === 'Alta Rotación' || clasificacionManual === 'Baja Rotación' || clasificacionManual === 'Estratégico';
+    const incluido = clasificacionManual === 'Alta Rotación' || clasificacionManual === 'Baja Rotación';
     return {
       clasificacionFinal: clasificacionManual,
       incluido,
