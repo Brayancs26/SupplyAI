@@ -253,7 +253,7 @@ async function calcularTodo() {
     await cargarClasificacionesGuardadas();
 
     const materialesConConsumoPI01 = SupplyEngine.materialesConConsumoEnAlmacen(dataRows, ALMACEN_PLANTA);
-    const materialesCombustible = SupplyEngine.materialesPorCategoria(mrpRows, 'Combustibles', materialesConConsumoPI01);
+    const materialesCombustible = SupplyEngine.materialesPorCategoria(mrpRows, 'Energéticos', materialesConConsumoPI01);
 
     state.consumoReal = SupplyEngine.filtrarConsumoReal(dataRows, ALMACEN, {
       almacenExtra: ALMACEN_PLANTA,
@@ -1353,9 +1353,14 @@ function renderCobertura() {
   state.coberturaIdealDias = coberturaIdeal;
   state.filtroCategoriaCobertura = document.getElementById('filtro-categoria-cobertura').value;
 
+  const FILTROS_POR_CLASIFICACION = new Set(['Producción', 'EPPS', 'Estratégico']);
   let base = state.calculados.filter((m) => m.clasificacionFinal !== 'Inactivo');
   if (state.filtroCategoriaCobertura !== 'TODAS') {
-    base = base.filter((m) => m.categoria === state.filtroCategoriaCobertura);
+    if (FILTROS_POR_CLASIFICACION.has(state.filtroCategoriaCobertura)) {
+      base = base.filter((m) => m.clasificacionFinal === state.filtroCategoriaCobertura);
+    } else {
+      base = base.filter((m) => m.categoria === state.filtroCategoriaCobertura);
+    }
   }
 
   const filas = base.map((m) => {
