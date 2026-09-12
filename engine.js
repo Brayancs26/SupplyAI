@@ -277,7 +277,7 @@ function agregarMB52(mb52Rows, almacen) {
  * y Uso Inmediato se reclasifica según su histórico real de movimientos
  * (ver determinarTratamiento / calcularClasificacionMovimiento).
  */
-function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, params, hoyISO, movClasificacionMap, materialesConConsumoPI01, simParams) {
+function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, params, hoyISO, movClasificacionMap, materialesConConsumoPI01, simParams, clasificacionesManuales) {
   const { Z, S, H, diasAnio } = params;
   const leadTimeMult = simParams && simParams.leadTimeMult ? simParams.leadTimeMult : 1;
   const demandMult = simParams && simParams.demandMult ? simParams.demandMult : 1;
@@ -289,7 +289,8 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
 
     const clasificacionSAP = m['Den.Clasificación'] || 'Sin Clasificar';
     const movInfo = movClasificacionMap ? movClasificacionMap.get(material) : null;
-    const tratamiento = determinarTratamiento(clasificacionSAP, movInfo);
+    const clasificacionManual = clasificacionesManuales ? clasificacionesManuales.get(material) : null;
+    const tratamiento = determinarTratamiento(clasificacionSAP, movInfo, clasificacionManual);
 
     const stat = statsPorTemporada.get(material);
     const bucket = stat ? stat[tempObjetivo] : null;
@@ -352,6 +353,8 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
       descripcion: m['Texto breve de material'],
       clasificacion: clasificacionSAP,
       clasificacionFinal: tratamiento.clasificacionFinal,
+      clasificacionPropuesta: tratamiento.clasificacionPropuesta,
+      clasificacionEsManual: !!tratamiento.esManual,
       incluidoEnPlanificacion: tratamiento.incluido,
       reclasificadoDesdeUIN: tratamiento.reclasificado,
       motivoExclusion: tratamiento.motivo,
@@ -712,7 +715,12 @@ function calcularClasificacionMovimiento(consumoReal, fechaMinISO, fechaMaxISO) 
  * (Uso Inmediato). Devuelve si el material entra o no al cálculo de
  * SS/ROP/EOQ, con qué clasificación "final", y el motivo si queda fuera.
  */
-function determinarTratamiento(clasificacionSAP, movInfo) {
+/**
+ * Clasificación PROPUESTA automáticamente por el sistema — la misma lógica
+ * de siempre (SAP + reclasificación por historial de movimiento). No sabe
+ * nada de anulaciones manuales; eso lo resuelve determinarTratamiento.
+ */
+function proponerClasificacion(clasificacionSAP, movInfo) {
   const sap = (clasificacionSAP || '').trim();
 
   if (sap === 'Inactivo') {
@@ -733,6 +741,39 @@ function determinarTratamiento(clasificacionSAP, movInfo) {
   }
   // Alta Rotación / Baja Rotación ya etiquetados por SAP, o sin clasificar -> tratamiento normal
   return { clasificacionFinal: sap || 'Sin Clasificar', incluido: true, reclasificado: false, motivo: null };
+}
+
+/** Clasificaciones válidas que el usuario puede asignar a mano. */
+const CLASIFICACIONES_MANUALES_VALIDAS = [
+  'Alta Rotación',
+  'Baja Rotación',
+  'Estratégico',
+  'Inactivo',
+  'Producción',
+  'Uso Inmediato (confirmado)',
+];
+
+/**
+ * Decide el tratamiento EFECTIVO de un material: si el usuario definió una
+ * clasificación manual para este código, esa manda (sin importar lo que
+ * diga SAP o el historial). Si no, se usa la propuesta automática.
+ */
+function determinarTratamiento(clasificacionSAP, movInfo, clasificacionManual) {
+  const propuesta = proponerClasificacion(clasificacionSAP, movInfo);
+
+  if (clasificacionManual && CLASIFICACIONES_MANUALES_VALIDAS.includes(clasificacionManual)) {
+    const incluido = clasificacionManual === 'Alta Rotación' || clasificacionManual === 'Baja Rotación' || clasificacionManual === 'Estratégico';
+    return {
+      clasificacionFinal: clasificacionManual,
+      incluido,
+      reclasificado: clasificacionManual !== propuesta.clasificacionFinal,
+      motivo: `Clasificación manual definida por ti (la propuesta automática era "${propuesta.clasificacionFinal}")`,
+      esManual: true,
+      clasificacionPropuesta: propuesta.clasificacionFinal,
+    };
+  }
+
+  return { ...propuesta, esManual: false, clasificacionPropuesta: propuesta.clasificacionFinal };
 }
 
 /**
@@ -1137,6 +1178,8 @@ const SupplyEngine = {
   extraerTransitoPorMaterial,
   calcularClasificacionMovimiento,
   determinarTratamiento,
+  proponerClasificacion,
+  CLASIFICACIONES_MANUALES_VALIDAS,
   calcularResumenSimulacion,
   generarDiagnostico,
   calcularValorizacionReal,
