@@ -2,6 +2,8 @@
 // APP — Abastecimiento L001 (arrastra y suelta, todo en el navegador)
 // ============================================================
 
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
 const ALMACEN = 'L001';
 const ALMACEN_PLANTA = 'PI01';
 
@@ -28,6 +30,9 @@ const state = {
   filtroTratamiento: 'TODOS',
   marcados: {},
   coberturaIdealDias: 12,
+  clasificacionesManuales: new Map(), // material -> clasificación manual, cargado de GitHub
+  edicionesPendientesClasificacion: new Map(), // material -> valor editado sin guardar aún
+  alertasClasificacion: [],
   filtroCategoriaCobertura: 'Insumos',
   tipoCambio: Number(localStorage.getItem('tipo_cambio_v1')) || 3.75,
   movClasificacionMap: null,
@@ -236,69 +241,74 @@ function setEstadoCarga(on, mensaje) {
 }
 
 // ---------------- CÁLCULO ----------------
-function calcularTodo() {
+async function calcularTodo() {
   setEstadoCarga(true, 'Calculando estacionalidad y SS/ROP/EOQ…');
-  // pequeño timeout para que el navegador pinte el overlay antes de bloquear el hilo
-  setTimeout(() => {
-    try {
-      const dataRows = state.archivos.DATA.filas;
-      const mrpRows = state.archivos.MRP.filas;
-      const mb52Rows = state.archivos.MB52.filas;
+  // pequeño respiro para que el navegador pinte el overlay antes de bloquear el hilo
+  await new Promise((r) => setTimeout(r, 50));
+  try {
+    const dataRows = state.archivos.DATA.filas;
+    const mrpRows = state.archivos.MRP.filas;
+    const mb52Rows = state.archivos.MB52.filas;
 
-      const materialesConConsumoPI01 = SupplyEngine.materialesConConsumoEnAlmacen(dataRows, ALMACEN_PLANTA);
-      const materialesCombustible = SupplyEngine.materialesPorCategoria(mrpRows, 'Combustibles', materialesConConsumoPI01);
+    await cargarClasificacionesGuardadas();
 
-      state.consumoReal = SupplyEngine.filtrarConsumoReal(dataRows, ALMACEN, {
-        almacenExtra: ALMACEN_PLANTA,
-        materialesCombustible,
-      });
-      const fechas = state.consumoReal.map((r) => r.fechaISO).sort();
-      state.fechaMin = fechas[0];
-      state.fechaMax = fechas[fechas.length - 1];
+    const materialesConConsumoPI01 = SupplyEngine.materialesConConsumoEnAlmacen(dataRows, ALMACEN_PLANTA);
+    const materialesCombustible = SupplyEngine.materialesPorCategoria(mrpRows, 'Combustibles', materialesConConsumoPI01);
 
-      state.indiceEstacional = SupplyEngine.calcularIndiceEstacional(state.consumoReal);
-      state.mesATemporada = SupplyEngine.clasificarTemporadas(state.indiceEstacional, state.umbralAlta, state.umbralBaja);
-      const diasTemp = SupplyEngine.diasPorTemporada(state.fechaMin, state.fechaMax, state.mesATemporada);
-      state.statsPorTemporada = SupplyEngine.calcularStatsPorTemporada(state.consumoReal, state.mesATemporada, diasTemp);
-      state.mb52Map = SupplyEngine.agregarMB52(mb52Rows, ALMACEN);
+    state.consumoReal = SupplyEngine.filtrarConsumoReal(dataRows, ALMACEN, {
+      almacenExtra: ALMACEN_PLANTA,
+      materialesCombustible,
+    });
+    const fechas = state.consumoReal.map((r) => r.fechaISO).sort();
+    state.fechaMin = fechas[0];
+    state.fechaMax = fechas[fechas.length - 1];
 
-      const movClasificacionMap = SupplyEngine.calcularClasificacionMovimiento(state.consumoReal, state.fechaMin, state.fechaMax);
-      state.movClasificacionMap = movClasificacionMap;
-      state.materialesConConsumoPI01 = materialesConConsumoPI01;
-      state.mrpRowsCache = mrpRows;
+    state.indiceEstacional = SupplyEngine.calcularIndiceEstacional(state.consumoReal);
+    state.mesATemporada = SupplyEngine.clasificarTemporadas(state.indiceEstacional, state.umbralAlta, state.umbralBaja);
+    const diasTemp = SupplyEngine.diasPorTemporada(state.fechaMin, state.fechaMax, state.mesATemporada);
+    state.statsPorTemporada = SupplyEngine.calcularStatsPorTemporada(state.consumoReal, state.mesATemporada, diasTemp);
+    state.mb52Map = SupplyEngine.agregarMB52(mb52Rows, ALMACEN);
 
-      state.calculados = SupplyEngine.calcularMateriales(
-        mrpRows,
-        state.statsPorTemporada,
-        state.mesATemporada,
-        state.mb52Map,
-        state.params,
-        hoyISO(),
-        movClasificacionMap,
-        materialesConConsumoPI01
-      );
+    const movClasificacionMap = SupplyEngine.calcularClasificacionMovimiento(state.consumoReal, state.fechaMin, state.fechaMax);
+    state.movClasificacionMap = movClasificacionMap;
+    state.materialesConConsumoPI01 = materialesConConsumoPI01;
+    state.mrpRowsCache = mrpRows;
 
-      const stockTodosAlmacenes = SupplyEngine.agregarStockPorAlmacenTodos(mb52Rows);
-      const transitoMap = SupplyEngine.extraerTransitoPorMaterial(mb52Rows);
-      state.calculados = SupplyEngine.enriquecerConCobertura(
-        state.calculados, stockTodosAlmacenes, transitoMap, ALMACEN, ALMACEN_PLANTA, state.coberturaIdealDias
-      );
+    state.calculados = SupplyEngine.calcularMateriales(
+      mrpRows,
+      state.statsPorTemporada,
+      state.mesATemporada,
+      state.mb52Map,
+      state.params,
+      hoyISO(),
+      movClasificacionMap,
+      materialesConConsumoPI01,
+      null,
+      state.clasificacionesManuales
+    );
 
-      state.planificados = state.calculados.filter((m) => m.incluidoEnPlanificacion);
+    const stockTodosAlmacenes = SupplyEngine.agregarStockPorAlmacenTodos(mb52Rows);
+    const transitoMap = SupplyEngine.extraerTransitoPorMaterial(mb52Rows);
+    state.calculados = SupplyEngine.enriquecerConCobertura(
+      state.calculados, stockTodosAlmacenes, transitoMap, ALMACEN, ALMACEN_PLANTA, state.coberturaIdealDias
+    );
 
-      const statsMensuales = SupplyEngine.calcularStatsMensualesGenerales(state.consumoReal, state.fechaMin, state.fechaMax);
-      state.planificados = SupplyEngine.calcularABCXYZ(state.planificados, statsMensuales);
-      state.planificados = SupplyEngine.enriquecerConTraslados(state.planificados, stockTodosAlmacenes, ALMACEN);
+    state.planificados = state.calculados.filter((m) => m.incluidoEnPlanificacion);
 
-      mostrarDashboard();
-      renderTodo();
-    } catch (err) {
-      console.error(err);
-      alert('Error calculando: ' + err.message);
-    } finally {
-      setEstadoCarga(false);
-    }
-  }, 50);
+    const statsMensuales = SupplyEngine.calcularStatsMensualesGenerales(state.consumoReal, state.fechaMin, state.fechaMax);
+    state.planificados = SupplyEngine.calcularABCXYZ(state.planificados, statsMensuales);
+    state.planificados = SupplyEngine.enriquecerConTraslados(state.planificados, stockTodosAlmacenes, ALMACEN);
+
+    calcularAlertasClasificacion();
+
+    mostrarDashboard();
+    renderTodo();
+  } catch (err) {
+    console.error(err);
+    alert('Error calculando: ' + err.message);
+  } finally {
+    setEstadoCarga(false);
+  }
 }
 
 function recalcularConParametrosActuales() {
@@ -309,6 +319,7 @@ function recalcularConParametrosActuales() {
 function mostrarDashboard() {
   document.getElementById('pantalla-carga').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
+  window.scrollTo(0, 0);
 }
 
 function renderTodo() {
@@ -317,6 +328,7 @@ function renderTodo() {
   renderMonitorUsuario();
   renderMonitorDetalle();
   renderResumen();
+  renderInactivosConStock();
   renderMaterialesPlanificados();
   renderEstacionalidad();
   renderParametros();
@@ -328,9 +340,229 @@ function renderTodo() {
   renderSimulacion();
   poblarListaTendencia();
   renderBSU();
+  renderMRP();
 }
 
-// ---------------- ACEITE / HARINA / MONITOR (Detalle PPTT) ----------------
+// ---------------- CLASIFICACIÓN MANUAL DE MATERIALES (pestaña MRP) ----------------
+const RUTA_CLASIFICACIONES_MANUALES = 'clasificacion/overrides.json';
+const RUTA_ULTIMA_PROPUESTA = 'clasificacion/ultima_propuesta.json';
+
+async function cargarClasificacionesGuardadas() {
+  try {
+    const guardado = await GitHubSync.leerJSONPublico(RUTA_CLASIFICACIONES_MANUALES);
+    state.clasificacionesManuales = new Map(
+      guardado && guardado.overrides ? Object.entries(guardado.overrides) : []
+    );
+  } catch (err) {
+    state.clasificacionesManuales = new Map();
+  }
+}
+
+/**
+ * Compara la propuesta fresca de este cálculo contra: (a) tu clasificación
+ * manual, si la tienes y ya no coincide con lo que el sistema propondría
+ * ahora, y (b) la última propuesta que quedó guardada como referencia (la
+ * vez pasada que cargaste consumos) — para detectar reclasificaciones
+ * automáticas que quizás quieras revisar y convertir en manuales.
+ */
+async function calcularAlertasClasificacion() {
+  const alertas = [];
+
+  state.calculados.forEach((m) => {
+    if (m.clasificacionEsManual && m.clasificacionPropuesta !== m.clasificacionFinal) {
+      alertas.push({
+        material: m.material,
+        descripcion: m.descripcion,
+        tipo: 'manual_desactualizada',
+        actual: m.clasificacionFinal,
+        propuestaNueva: m.clasificacionPropuesta,
+      });
+    }
+  });
+
+  try {
+    const referencia = await GitHubSync.leerJSONPublico(RUTA_ULTIMA_PROPUESTA);
+    if (referencia && referencia.propuestas) {
+      state.calculados.forEach((m) => {
+        if (m.clasificacionEsManual) return; // ya cubierto arriba
+        const anterior = referencia.propuestas[m.material];
+        if (anterior && anterior !== m.clasificacionPropuesta) {
+          alertas.push({
+            material: m.material,
+            descripcion: m.descripcion,
+            tipo: 'propuesta_cambio',
+            actual: anterior,
+            propuestaNueva: m.clasificacionPropuesta,
+          });
+        }
+      });
+    }
+  } catch (err) {
+    // sin referencia guardada todavía — no pasa nada, no hay con qué comparar
+  }
+
+  state.alertasClasificacion = alertas;
+  renderAlertasClasificacion();
+}
+
+function renderAlertasClasificacion() {
+  const cont = document.getElementById('mrp-alertas-lista');
+  const badge = document.getElementById('mrp-alertas-badge');
+  if (!cont) return;
+  badge.textContent = state.alertasClasificacion.length;
+  badge.style.display = state.alertasClasificacion.length > 0 ? 'inline-block' : 'none';
+
+  if (state.alertasClasificacion.length === 0) {
+    cont.innerHTML = '<p class="muted centrado" style="padding:16px;">Sin cambios que revisar por ahora.</p>';
+    return;
+  }
+  cont.innerHTML = state.alertasClasificacion
+    .map((a) => {
+      const texto =
+        a.tipo === 'manual_desactualizada'
+          ? `Tu clasificación manual es <strong>"${a.actual}"</strong>, pero con los datos nuevos el sistema ahora propondría <strong>"${a.propuestaNueva}"</strong>.`
+          : `El sistema proponía <strong>"${a.actual}"</strong> la última vez; con los datos nuevos ahora propone <strong>"${a.propuestaNueva}"</strong>.`;
+      return `<div class="alerta-clasificacion-fila">
+        <div>
+          <button type="button" class="sku-link" data-material="${a.material}">${a.material}</button>
+          <span class="desc-inline"> — ${a.descripcion}</span>
+          <p class="alerta-clasificacion-texto">${texto}</p>
+        </div>
+        <button type="button" class="btn-secundario btn-aplicar-propuesta" data-material="${a.material}" data-valor="${a.propuestaNueva}">Usar "${a.propuestaNueva}"</button>
+      </div>`;
+    })
+    .join('');
+
+  cont.querySelectorAll('.btn-aplicar-propuesta').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      editarClasificacionManual(btn.dataset.material, btn.dataset.valor);
+      guardarClasificacionesManuales();
+    });
+  });
+}
+
+async function guardarReferenciaPropuestaActual() {
+  const estado = document.getElementById('mrp-estado-referencia');
+  const boton = document.getElementById('btn-guardar-referencia-mrp');
+  boton.disabled = true;
+  estado.textContent = 'Guardando…';
+  try {
+    const propuestas = {};
+    state.calculados.forEach((m) => {
+      propuestas[m.material] = m.clasificacionPropuesta;
+    });
+    await GitHubSync.escribirJSON(
+      RUTA_ULTIMA_PROPUESTA,
+      { fecha: hoyISO(), propuestas },
+      `Referencia de clasificación propuesta — ${hoyISO()}`
+    );
+    estado.textContent = '✓ Guardado — la próxima vez que subas consumos, se comparará contra esta.';
+  } catch (err) {
+    console.error(err);
+    estado.textContent = 'Error: ' + err.message;
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+function editarClasificacionManual(material, valor) {
+  if (valor === '') {
+    state.edicionesPendientesClasificacion.set(material, '');
+  } else {
+    state.edicionesPendientesClasificacion.set(material, valor);
+  }
+  const m = state.calculados.find((x) => x.material === material);
+  if (m) {
+    if (valor === '') {
+      m.clasificacionFinal = m.clasificacionPropuesta;
+      m.clasificacionEsManual = false;
+    } else {
+      m.clasificacionFinal = valor;
+      m.clasificacionEsManual = true;
+    }
+  }
+  document.getElementById('mrp-pendientes-aviso').textContent =
+    `${state.edicionesPendientesClasificacion.size} cambio(s) sin guardar.`;
+}
+
+async function guardarClasificacionesManuales() {
+  if (state.edicionesPendientesClasificacion.size === 0) return;
+  const estado = document.getElementById('mrp-estado-guardar');
+  const boton = document.getElementById('btn-guardar-clasificaciones');
+  boton.disabled = true;
+  estado.textContent = 'Guardando…';
+  try {
+    for (const [material, valor] of state.edicionesPendientesClasificacion.entries()) {
+      if (valor === '') state.clasificacionesManuales.delete(material);
+      else state.clasificacionesManuales.set(material, valor);
+    }
+    const overrides = Object.fromEntries(state.clasificacionesManuales);
+    await GitHubSync.escribirJSON(
+      RUTA_CLASIFICACIONES_MANUALES,
+      { actualizadoEn: new Date().toISOString(), overrides },
+      `Actualizar clasificaciones manuales (${state.edicionesPendientesClasificacion.size} cambio(s))`
+    );
+    state.edicionesPendientesClasificacion.clear();
+    document.getElementById('mrp-pendientes-aviso').textContent = '';
+    estado.textContent = '✓ Guardado — esto ya manda en todos los cálculos de la app.';
+    calcularAlertasClasificacion();
+  } catch (err) {
+    console.error(err);
+    estado.textContent = 'Error: ' + err.message;
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+function renderMRP() {
+  const filtro = (document.getElementById('mrp-buscar').value || '').toLowerCase();
+  const filtroClase = document.getElementById('mrp-filtro-clase').value;
+
+  let filas = state.calculados;
+  if (filtro) {
+    filas = filas.filter((m) => m.material.toLowerCase().includes(filtro) || (m.descripcion || '').toLowerCase().includes(filtro));
+  }
+  if (filtroClase === 'MANUALES') filas = filas.filter((m) => m.clasificacionEsManual);
+  else if (filtroClase === 'DIFERENTES') filas = filas.filter((m) => m.clasificacion !== m.clasificacionPropuesta);
+  else if (filtroClase !== 'TODAS') filas = filas.filter((m) => m.clasificacionFinal === filtroClase);
+
+  document.getElementById('mrp-conteo').textContent = `${filas.length} de ${state.calculados.length} materiales`;
+
+  const MAX_FILAS = 400;
+  const tbody = document.getElementById('tabla-mrp-body');
+  tbody.innerHTML = filas
+    .slice(0, MAX_FILAS)
+    .map((m) => {
+      const opciones = ['', ...SupplyEngine.CLASIFICACIONES_MANUALES_VALIDAS]
+        .map((op) => `<option value="${op}" ${(state.edicionesPendientesClasificacion.get(m.material) ?? (m.clasificacionEsManual ? m.clasificacionFinal : '')) === op ? 'selected' : ''}>${op || '— usar propuesta —'}</option>`)
+        .join('');
+      return `<tr>
+      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
+      <td class="desc">${m.descripcion || ''}</td>
+      <td>${m.clasificacion}</td>
+      <td>${m.clasificacionPropuesta}</td>
+      <td><select class="input-clasificacion-manual" data-material="${m.material}">${opciones}</select></td>
+    </tr>`;
+    })
+    .join('');
+
+  if (filas.length > MAX_FILAS) {
+    tbody.innerHTML += `<tr><td colspan="5" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — afina la búsqueda para ver más.</td></tr>`;
+  }
+
+  tbody.querySelectorAll('.input-clasificacion-manual').forEach((sel) => {
+    sel.addEventListener('change', (e) => editarClasificacionManual(e.target.dataset.material, e.target.value));
+  });
+}
+
+function bindMRP() {
+  document.getElementById('mrp-buscar').addEventListener('input', renderMRP);
+  document.getElementById('mrp-filtro-clase').addEventListener('change', renderMRP);
+  document.getElementById('btn-guardar-clasificaciones').addEventListener('click', guardarClasificacionesManuales);
+  document.getElementById('btn-guardar-referencia-mrp').addEventListener('click', guardarReferenciaPropuestaActual);
+}
+
+
 const ALMACENES_ACEITE = ['TK01', 'TK02', 'TK03', 'DK01', 'DK02', 'DK03', 'CL01'];
 const ALMACENES_HARINA = ['C001'];
 
@@ -682,6 +914,33 @@ function bindTabs() {
 }
 
 // ---------------- RESUMEN ----------------
+function renderInactivosConStock() {
+  const inactivos = state.calculados
+    .filter((m) => m.clasificacionFinal === 'Inactivo' && m.stockFisico > 0)
+    .map((m) => ({ ...m, valor: m.costoUnitario ? m.costoUnitario * m.stockFisico : null }))
+    .sort((a, b) => (b.valor || 0) - (a.valor || 0));
+
+  const tbody = document.getElementById('tabla-inactivos-stock-body');
+  if (inactivos.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="muted centrado">Ningún material inactivo tiene stock físico en L001 ahora mismo.</td></tr>';
+    return;
+  }
+  const totalValor = inactivos.reduce((a, m) => a + (m.valor || 0), 0);
+  tbody.innerHTML =
+    inactivos
+      .map(
+        (m) => `<tr>
+      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
+      <td class="desc">${m.descripcion || ''}</td>
+      <td class="num">${fmtNum(m.stockFisico, 0)}</td>
+      <td class="num">${m.costoUnitario ? fmtSoles(m.costoUnitario) : '<span class="muted">—</span>'}</td>
+      <td class="num">${m.valor !== null ? fmtSoles(m.valor) : '<span class="muted">—</span>'}</td>
+      <td>${m.ultimaFechaConsumo || '<span class="muted">sin consumo registrado</span>'}</td>
+    </tr>`
+      )
+      .join('') + `<tr class="fila-total"><td colspan="4">Total</td><td class="num">${fmtSoles(totalValor)}</td><td></td></tr>`;
+}
+
 function renderResumen() {
   const total = state.planificados.length;
   const critico = state.planificados.filter((m) => m.estadoSalud === 'STOCKOUT_CRITICAL').length;
@@ -1094,7 +1353,7 @@ function renderCobertura() {
   state.coberturaIdealDias = coberturaIdeal;
   state.filtroCategoriaCobertura = document.getElementById('filtro-categoria-cobertura').value;
 
-  let base = state.calculados;
+  let base = state.calculados.filter((m) => m.clasificacionFinal !== 'Inactivo');
   if (state.filtroCategoriaCobertura !== 'TODAS') {
     base = base.filter((m) => m.categoria === state.filtroCategoriaCobertura);
   }
@@ -1793,6 +2052,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindEventosDelegados();
   bindTooltipTendencia();
   bindInventarioCiclico();
+  bindMRP();
   document.getElementById('btn-guardar-snapshot-bsu').addEventListener('click', guardarSnapshotBSU);
   await cargarCacheAlIniciar();
 });
