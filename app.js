@@ -241,64 +241,87 @@ function setEstadoCarga(on, mensaje) {
 }
 
 // ---------------- CÁLCULO ----------------
+/**
+ * Combina tus clasificaciones ya guardadas con las que estás editando en
+ * este momento (sin guardar todavía) — esto es lo que manda en el cálculo
+ * en vivo, para que no tengas que guardar en GitHub para ver el efecto.
+ */
+function overridesClasificacionEfectivos() {
+  const combinado = new Map(state.clasificacionesManuales);
+  state.edicionesPendientesClasificacion.forEach((valor, material) => {
+    if (valor === '') combinado.delete(material);
+    else combinado.set(material, valor);
+  });
+  return combinado;
+}
+
+/**
+ * Recalcula TODO (SS/ROP/riesgo/ABC-XYZ/cobertura/etc.) a partir de los
+ * archivos ya cargados, usando las clasificaciones manuales vigentes
+ * (guardadas + las que estés editando ahora mismo). No toca GitHub — es
+ * puro cálculo en memoria, así que corre instantáneo cada vez que cambias
+ * una clasificación en la pestaña MRP.
+ */
+function recalcularConClasificacionesActuales() {
+  const dataRows = state.archivos.DATA.filas;
+  const mrpRows = state.archivos.MRP.filas;
+  const mb52Rows = state.archivos.MB52.filas;
+
+  const materialesConConsumoPI01 = SupplyEngine.materialesConConsumoEnAlmacen(dataRows, ALMACEN_PLANTA);
+  const materialesCombustible = SupplyEngine.materialesPorCategoria(mrpRows, 'Energéticos', materialesConConsumoPI01);
+
+  state.consumoReal = SupplyEngine.filtrarConsumoReal(dataRows, ALMACEN, {
+    almacenExtra: ALMACEN_PLANTA,
+    materialesCombustible,
+  });
+  const fechas = state.consumoReal.map((r) => r.fechaISO).sort();
+  state.fechaMin = fechas[0];
+  state.fechaMax = fechas[fechas.length - 1];
+
+  state.indiceEstacional = SupplyEngine.calcularIndiceEstacional(state.consumoReal);
+  state.mesATemporada = SupplyEngine.clasificarTemporadas(state.indiceEstacional, state.umbralAlta, state.umbralBaja);
+  const diasTemp = SupplyEngine.diasPorTemporada(state.fechaMin, state.fechaMax, state.mesATemporada);
+  state.statsPorTemporada = SupplyEngine.calcularStatsPorTemporada(state.consumoReal, state.mesATemporada, diasTemp);
+  state.mb52Map = SupplyEngine.agregarMB52(mb52Rows, ALMACEN);
+
+  const movClasificacionMap = SupplyEngine.calcularClasificacionMovimiento(state.consumoReal, state.fechaMin, state.fechaMax);
+  state.movClasificacionMap = movClasificacionMap;
+  state.materialesConConsumoPI01 = materialesConConsumoPI01;
+  state.mrpRowsCache = mrpRows;
+
+  state.calculados = SupplyEngine.calcularMateriales(
+    mrpRows,
+    state.statsPorTemporada,
+    state.mesATemporada,
+    state.mb52Map,
+    state.params,
+    hoyISO(),
+    movClasificacionMap,
+    materialesConConsumoPI01,
+    null,
+    overridesClasificacionEfectivos()
+  );
+
+  const stockTodosAlmacenes = SupplyEngine.agregarStockPorAlmacenTodos(mb52Rows);
+  const transitoMap = SupplyEngine.extraerTransitoPorMaterial(mb52Rows);
+  state.calculados = SupplyEngine.enriquecerConCobertura(
+    state.calculados, stockTodosAlmacenes, transitoMap, ALMACEN, ALMACEN_PLANTA, state.coberturaIdealDias
+  );
+
+  state.planificados = state.calculados.filter((m) => m.incluidoEnPlanificacion);
+
+  const statsMensuales = SupplyEngine.calcularStatsMensualesGenerales(state.consumoReal, state.fechaMin, state.fechaMax);
+  state.planificados = SupplyEngine.calcularABCXYZ(state.planificados, statsMensuales);
+  state.planificados = SupplyEngine.enriquecerConTraslados(state.planificados, stockTodosAlmacenes, ALMACEN);
+}
+
 async function calcularTodo() {
   setEstadoCarga(true, 'Calculando estacionalidad y SS/ROP/EOQ…');
   // pequeño respiro para que el navegador pinte el overlay antes de bloquear el hilo
   await new Promise((r) => setTimeout(r, 50));
   try {
-    const dataRows = state.archivos.DATA.filas;
-    const mrpRows = state.archivos.MRP.filas;
-    const mb52Rows = state.archivos.MB52.filas;
-
     await cargarClasificacionesGuardadas();
-
-    const materialesConConsumoPI01 = SupplyEngine.materialesConConsumoEnAlmacen(dataRows, ALMACEN_PLANTA);
-    const materialesCombustible = SupplyEngine.materialesPorCategoria(mrpRows, 'Energéticos', materialesConConsumoPI01);
-
-    state.consumoReal = SupplyEngine.filtrarConsumoReal(dataRows, ALMACEN, {
-      almacenExtra: ALMACEN_PLANTA,
-      materialesCombustible,
-    });
-    const fechas = state.consumoReal.map((r) => r.fechaISO).sort();
-    state.fechaMin = fechas[0];
-    state.fechaMax = fechas[fechas.length - 1];
-
-    state.indiceEstacional = SupplyEngine.calcularIndiceEstacional(state.consumoReal);
-    state.mesATemporada = SupplyEngine.clasificarTemporadas(state.indiceEstacional, state.umbralAlta, state.umbralBaja);
-    const diasTemp = SupplyEngine.diasPorTemporada(state.fechaMin, state.fechaMax, state.mesATemporada);
-    state.statsPorTemporada = SupplyEngine.calcularStatsPorTemporada(state.consumoReal, state.mesATemporada, diasTemp);
-    state.mb52Map = SupplyEngine.agregarMB52(mb52Rows, ALMACEN);
-
-    const movClasificacionMap = SupplyEngine.calcularClasificacionMovimiento(state.consumoReal, state.fechaMin, state.fechaMax);
-    state.movClasificacionMap = movClasificacionMap;
-    state.materialesConConsumoPI01 = materialesConConsumoPI01;
-    state.mrpRowsCache = mrpRows;
-
-    state.calculados = SupplyEngine.calcularMateriales(
-      mrpRows,
-      state.statsPorTemporada,
-      state.mesATemporada,
-      state.mb52Map,
-      state.params,
-      hoyISO(),
-      movClasificacionMap,
-      materialesConConsumoPI01,
-      null,
-      state.clasificacionesManuales
-    );
-
-    const stockTodosAlmacenes = SupplyEngine.agregarStockPorAlmacenTodos(mb52Rows);
-    const transitoMap = SupplyEngine.extraerTransitoPorMaterial(mb52Rows);
-    state.calculados = SupplyEngine.enriquecerConCobertura(
-      state.calculados, stockTodosAlmacenes, transitoMap, ALMACEN, ALMACEN_PLANTA, state.coberturaIdealDias
-    );
-
-    state.planificados = state.calculados.filter((m) => m.incluidoEnPlanificacion);
-
-    const statsMensuales = SupplyEngine.calcularStatsMensualesGenerales(state.consumoReal, state.fechaMin, state.fechaMax);
-    state.planificados = SupplyEngine.calcularABCXYZ(state.planificados, statsMensuales);
-    state.planificados = SupplyEngine.enriquecerConTraslados(state.planificados, stockTodosAlmacenes, ALMACEN);
-
+    recalcularConClasificacionesActuales();
     calcularAlertasClasificacion();
 
     mostrarDashboard();
@@ -365,9 +388,9 @@ async function cargarClasificacionesGuardadas() {
  * vez pasada que cargaste consumos) — para detectar reclasificaciones
  * automáticas que quizás quieras revisar y convertir en manuales.
  */
-async function calcularAlertasClasificacion() {
+/** Alertas de "tu clasificación manual ya no coincide con la propuesta" — puro cálculo local, sin red, corre en cada edición. */
+function calcularAlertasManualDesactualizada() {
   const alertas = [];
-
   state.calculados.forEach((m) => {
     if (m.clasificacionEsManual && m.clasificacionPropuesta !== m.clasificacionFinal) {
       alertas.push({
@@ -379,15 +402,19 @@ async function calcularAlertasClasificacion() {
       });
     }
   });
+  return alertas;
+}
 
+async function calcularAlertasClasificacion() {
+  state.alertasReferencia = [];
   try {
     const referencia = await GitHubSync.leerJSONPublico(RUTA_ULTIMA_PROPUESTA);
     if (referencia && referencia.propuestas) {
       state.calculados.forEach((m) => {
-        if (m.clasificacionEsManual) return; // ya cubierto arriba
+        if (m.clasificacionEsManual) return; // ya lo cubre calcularAlertasManualDesactualizada
         const anterior = referencia.propuestas[m.material];
         if (anterior && anterior !== m.clasificacionPropuesta) {
-          alertas.push({
+          state.alertasReferencia.push({
             material: m.material,
             descripcion: m.descripcion,
             tipo: 'propuesta_cambio',
@@ -400,8 +427,12 @@ async function calcularAlertasClasificacion() {
   } catch (err) {
     // sin referencia guardada todavía — no pasa nada, no hay con qué comparar
   }
+  actualizarAlertasClasificacion();
+}
 
-  state.alertasClasificacion = alertas;
+/** Recombina las alertas locales (instantáneas) con las de referencia (de GitHub, cacheadas) y redibuja. */
+function actualizarAlertasClasificacion() {
+  state.alertasClasificacion = [...calcularAlertasManualDesactualizada(), ...(state.alertasReferencia || [])];
   renderAlertasClasificacion();
 }
 
@@ -466,23 +497,15 @@ async function guardarReferenciaPropuestaActual() {
 }
 
 function editarClasificacionManual(material, valor) {
-  if (valor === '') {
-    state.edicionesPendientesClasificacion.set(material, '');
-  } else {
-    state.edicionesPendientesClasificacion.set(material, valor);
-  }
-  const m = state.calculados.find((x) => x.material === material);
-  if (m) {
-    if (valor === '') {
-      m.clasificacionFinal = m.clasificacionPropuesta;
-      m.clasificacionEsManual = false;
-    } else {
-      m.clasificacionFinal = valor;
-      m.clasificacionEsManual = true;
-    }
-  }
+  state.edicionesPendientesClasificacion.set(material, valor);
+
   document.getElementById('mrp-pendientes-aviso').textContent =
-    `${state.edicionesPendientesClasificacion.size} cambio(s) sin guardar.`;
+    `${state.edicionesPendientesClasificacion.size} cambio(s) sin guardar en GitHub (pero YA están aplicados en todos los cálculos).`;
+
+  // Recalcular todo en memoria al instante — no depende de guardar en GitHub.
+  recalcularConClasificacionesActuales();
+  actualizarAlertasClasificacion();
+  renderTodo();
 }
 
 async function guardarClasificacionesManuales() {
@@ -504,7 +527,7 @@ async function guardarClasificacionesManuales() {
     );
     state.edicionesPendientesClasificacion.clear();
     document.getElementById('mrp-pendientes-aviso').textContent = '';
-    estado.textContent = '✓ Guardado — esto ya manda en todos los cálculos de la app.';
+    estado.textContent = '✓ Guardado en GitHub — ahora persiste entre sesiones y dispositivos.';
     calcularAlertasClasificacion();
   } catch (err) {
     console.error(err);
@@ -512,6 +535,13 @@ async function guardarClasificacionesManuales() {
   } finally {
     boton.disabled = false;
   }
+}
+
+function esCambioRealDeClase(m) {
+  const sapNorm = m.clasificacion === 'Produción' ? 'Producción' : m.clasificacion || 'Sin Clasificar';
+  // "Uso Inmediato" -> "Uso Inmediato (confirmado)" es solo una confirmación, no una reclasificación real.
+  if (sapNorm === 'Uso Inmediato' && m.clasificacionPropuesta === 'Uso Inmediato (confirmado)') return false;
+  return sapNorm !== m.clasificacionPropuesta;
 }
 
 function renderMRP() {
@@ -523,7 +553,7 @@ function renderMRP() {
     filas = filas.filter((m) => m.material.toLowerCase().includes(filtro) || (m.descripcion || '').toLowerCase().includes(filtro));
   }
   if (filtroClase === 'MANUALES') filas = filas.filter((m) => m.clasificacionEsManual);
-  else if (filtroClase === 'DIFERENTES') filas = filas.filter((m) => m.clasificacion !== m.clasificacionPropuesta);
+  else if (filtroClase === 'DIFERENTES') filas = filas.filter(esCambioRealDeClase);
   else if (filtroClase !== 'TODAS') filas = filas.filter((m) => m.clasificacionFinal === filtroClase);
 
   document.getElementById('mrp-conteo').textContent = `${filas.length} de ${state.calculados.length} materiales`;
