@@ -1383,7 +1383,7 @@ function renderCobertura() {
   state.coberturaIdealDias = coberturaIdeal;
   state.filtroCategoriaCobertura = document.getElementById('filtro-categoria-cobertura').value;
 
-  const FILTROS_POR_CLASIFICACION = new Set(['Producción', 'EPPS', 'Estratégico']);
+  const FILTROS_POR_CLASIFICACION = new Set(['Producción', 'EPPS', 'Estratégico', 'Energéticos']);
   let base = state.calculados.filter((m) => m.clasificacionFinal !== 'Inactivo');
   if (state.filtroCategoriaCobertura !== 'TODAS') {
     if (FILTROS_POR_CLASIFICACION.has(state.filtroCategoriaCobertura)) {
@@ -1670,9 +1670,15 @@ function bindEventosDelegados() {
   });
 }
 
+let materialDetalleActualCodigo = null;
+
 function abrirDetalleMaterial(codigo) {
   const m = state.calculados.find((x) => x.material === codigo);
   if (!m) return;
+  materialDetalleActualCodigo = codigo;
+  const cajaIA = document.getElementById('detalle-ia-respuesta');
+  cajaIA.style.display = 'none';
+  cajaIA.textContent = '';
 
   document.getElementById('detalle-codigo').textContent = m.material;
   document.getElementById('detalle-descripcion').textContent = m.descripcion || '';
@@ -1811,13 +1817,13 @@ function construirGraficoLinea(serie) {
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible;">
     <defs>
       <linearGradient id="gradTendencia" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.35" />
-        <stop offset="100%" stop-color="#22d3ee" stop-opacity="0" />
+        <stop offset="0%" stop-color="#00d9f5" stop-opacity="0.35" />
+        <stop offset="100%" stop-color="#00d9f5" stop-opacity="0" />
       </linearGradient>
     </defs>
     ${lineasGuia}
     <polygon points="${area}" fill="url(#gradTendencia)" />
-    <polyline points="${linea}" fill="none" stroke="#22d3ee" stroke-width="2.5" />
+    <polyline points="${linea}" fill="none" stroke="#00d9f5" stroke-width="2.5" />
     ${circulos}
     ${etiquetasX}
   </svg>`;
@@ -2078,6 +2084,114 @@ function bindInventarioCiclico() {
   cargarZonasGuardadas();
 }
 
+// ---------------- IA ----------------
+function construirContextoResumenIA() {
+  const porRiesgo = { ROJO: 0, AMARILLO: 0, VERDE: 0 };
+  state.planificados.forEach((m) => {
+    porRiesgo[m.riesgo] = (porRiesgo[m.riesgo] || 0) + 1;
+  });
+
+  const top10 = [...state.planificados]
+    .filter((m) => m.riesgo === 'ROJO')
+    .sort((a, b) => (a.coberturaDias ?? 999) - (b.coberturaDias ?? 999))
+    .slice(0, 10)
+    .map((m) => ({
+      material: m.material,
+      descripcion: m.descripcion,
+      stock: m.stockFisico,
+      ropCalculado: Math.round(m.ropCalculado || 0),
+      coberturaDias: m.coberturaDias,
+    }));
+
+  let valorizacion = null;
+  if (state.archivos.MB52) {
+    const monitorRows = obtenerMonitorFilas();
+    const kpi = SupplyEngine.calcularValorizacionReal(state.archivos.MB52.filas, monitorRows || [], state.tipoCambio);
+    valorizacion = {
+      valorizadoAlmacenUSD: Math.round(kpi.valorizadoAlmacen),
+      valorizadoPPTTUSD: Math.round(kpi.valorizadoPPTT),
+      valorizadoMonitorUSD: Math.round(kpi.valorizadoMonitor),
+      pctVencido: Number(kpi.pctVencido.toFixed(2)),
+    };
+  }
+
+  const inactivosConStock = state.calculados.filter((m) => m.clasificacionFinal === 'Inactivo' && m.stockFisico > 0).length;
+
+  return {
+    fecha: hoyISO(),
+    totalMaterialesPlanificados: state.planificados.length,
+    conteoPorRiesgo: porRiesgo,
+    top10MaterialesEnRiesgoRojo: top10,
+    valorizacion,
+    materialesInactivosConStockFisico: inactivosConStock,
+    alertasDeClasificacionPendientesDeRevisar: state.alertasClasificacion ? state.alertasClasificacion.length : 0,
+  };
+}
+
+async function preguntarDatosIA() {
+  const pregunta = document.getElementById('ia-pregunta').value.trim();
+  if (!pregunta) return;
+  const caja = document.getElementById('ia-respuesta');
+  const boton = document.getElementById('btn-ia-preguntar');
+  boton.disabled = true;
+  caja.style.display = 'block';
+  caja.className = 'ia-respuesta ia-cargando';
+  caja.textContent = 'Pensando…';
+  try {
+    const contexto = construirContextoResumenIA();
+    const respuesta = await IAClient.preguntarIA(pregunta, contexto);
+    caja.className = 'ia-respuesta';
+    caja.textContent = respuesta;
+  } catch (err) {
+    console.error(err);
+    caja.className = 'ia-respuesta ia-error';
+    caja.textContent = 'Error: ' + err.message;
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+async function explicarMaterialConIA() {
+  if (!materialDetalleActualCodigo) return;
+  const m = state.calculados.find((x) => x.material === materialDetalleActualCodigo);
+  if (!m) return;
+  const caja = document.getElementById('detalle-ia-respuesta');
+  const boton = document.getElementById('btn-explicar-ia');
+  boton.disabled = true;
+  caja.style.display = 'block';
+  caja.className = 'ia-respuesta ia-cargando';
+  caja.textContent = 'Pensando…';
+  try {
+    const contexto = {
+      material: m.material,
+      descripcion: m.descripcion,
+      clasificacion: m.clasificacionFinal,
+      categoria: m.categoria,
+      stockFisico: m.stockFisico,
+      ssActualSAP: m.ssActual,
+      ssCalculado: m.ssCalculado,
+      ropActualSAP: m.ropActual,
+      ropCalculado: m.ropCalculado,
+      maxStockRecomendado: m.maxStock,
+      eoq: m.eoq,
+      leadTimeDias: m.leadTime,
+      coberturaDias: m.coberturaDias,
+      riesgo: m.riesgo,
+      estadoSalud: m.estadoSalud,
+      ultimaFechaConsumo: m.ultimaFechaConsumo,
+    };
+    const respuesta = await IAClient.explicarConIA(contexto);
+    caja.className = 'ia-respuesta';
+    caja.textContent = respuesta;
+  } catch (err) {
+    console.error(err);
+    caja.className = 'ia-respuesta ia-error';
+    caja.textContent = 'Error: ' + err.message;
+  } finally {
+    boton.disabled = false;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   cargarParametrosGuardados();
   cargarMarcados();
@@ -2089,5 +2203,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindInventarioCiclico();
   bindMRP();
   document.getElementById('btn-guardar-snapshot-bsu').addEventListener('click', guardarSnapshotBSU);
+  document.getElementById('btn-ia-preguntar').addEventListener('click', preguntarDatosIA);
+  document.getElementById('ia-pregunta').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') preguntarDatosIA();
+  });
+  document.getElementById('btn-explicar-ia').addEventListener('click', explicarMaterialConIA);
   await cargarCacheAlIniciar();
 });
