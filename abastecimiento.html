@@ -5,7 +5,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Abastecimiento L001 · Matarani</title>
+<title>Abastecimiento · SupplyMind</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
@@ -14,6 +14,7 @@
 <script src="file-parser.js" defer></script>
 <script src="storage.js" defer></script>
 <script src="inventario-ciclico/github-sync.js" defer></script>
+<script src="ia-client.js" defer></script>
 <script src="reportes.js" defer></script>
 <script src="app.js" defer></script>
 </head>
@@ -29,6 +30,7 @@
 <header class="topbar">
   <div class="topbar-inner">
     <div class="brand">
+      <img src="assets/logo-supplymind.png" alt="SupplyMind" class="brand-logo" />
       <span class="brand-mark">L001</span>
       <div>
         <h1>ABASTECIMIENTO <span class="accent">MATARANI</span></h1>
@@ -225,6 +227,18 @@
         </div>
       </div>
     
+      <div class="panel panel-ia">
+        <div class="panel-header">
+          <h2>Pregúntale a tus datos</h2>
+          <p class="panel-sub">Basado en lo que ya está calculado en esta pantalla — riesgos, cobertura, valorización, alertas.</p>
+        </div>
+        <div class="filtros" style="padding: 0 20px 18px; margin-bottom: 0;">
+          <input type="text" id="ia-pregunta" placeholder="Ej. ¿Qué materiales están en riesgo esta semana?" />
+          <button type="button" id="btn-ia-preguntar" class="btn-continuar">Preguntar</button>
+        </div>
+        <div id="ia-respuesta" class="ia-respuesta" style="display:none;"></div>
+      </div>
+
       <p class="linea-temporada">Temporada vigente este mes: <span class="chip" id="temporada-actual">—</span></p>
 
       <div class="resumen-top">
@@ -1055,6 +1069,9 @@
     </div>
 
     <p class="detalle-diagnostico" id="detalle-diagnostico"></p>
+
+    <button type="button" id="btn-explicar-ia" class="btn-explicar-ia">✨ Explicar con IA</button>
+    <div id="detalle-ia-respuesta" class="ia-respuesta" style="display:none; margin: 12px 0 0;"></div>
 
     <div class="detalle-metricas-grid" id="detalle-metricas"></div>
 
