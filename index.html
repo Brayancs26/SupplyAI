@@ -3,7 +3,7 @@
 <html lang="es">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Supply AI — TASA</title>
+<title>SupplyMind — TASA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -11,24 +11,24 @@
   :root{
     --bg:#0a0e17; --panel:#111826; --panel-2:#0e141f;
     --line:#1e293b; --line-soft:#172032;
-    --cyan:#22d3ee; --cyan-deep:#0e7490;
-    --violet:#818cf8; --amber:#f59e0b;
+    --cyan:#00d9f5; --cyan-deep:#0e7490;
+    --violet:#818cf8; --amber:#f59e0b; --slate:#374854; --steel:#7dacc2;
     --text:#e2e8f0; --muted:#8496ad; --dim:#5b6b81;
     --head:"Poppins",-apple-system,system-ui,sans-serif;
     --body:"Inter",-apple-system,system-ui,sans-serif;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.5;
-    background-image:radial-gradient(900px 480px at 12% -10%,rgba(34,211,238,.10),transparent 60%),
+    background-image:radial-gradient(900px 480px at 12% -10%,rgba(0,217,245,.10),transparent 60%),
                      radial-gradient(760px 420px at 100% 0%,rgba(129,140,248,.09),transparent 60%);}
   a{color:inherit;text-decoration:none}
   .wrap{max-width:1080px;margin:0 auto;padding:38px 20px 70px}
 
   /* marca */
   .brand{display:flex;align-items:center;gap:13px}
-  .mark{width:40px;height:40px;border-radius:11px;background:linear-gradient(145deg,var(--cyan),var(--cyan-deep));
-    display:grid;place-items:center;box-shadow:0 0 26px rgba(34,211,238,.35)}
-  .mark svg{width:22px;height:22px}
+  .mark{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;
+    filter:drop-shadow(0 0 14px rgba(0,217,245,.45))}
+  .mark img{width:100%;height:100%;object-fit:contain}
   .brand .n{font-family:var(--head);font-weight:700;font-size:21px;letter-spacing:-.01em}
   .brand .n span{color:var(--cyan)}
   .brand .s{font-size:11.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.2em;margin-top:1px}
@@ -61,7 +61,7 @@
   .mod:hover .go .arrow{transform:translateX(4px)}
 
   .mod-plan{--accent:var(--cyan)}
-  .mod-abas{--accent:var(--violet)}
+  .mod-abas{--accent:var(--steel)}
   .mod-inv{--accent:var(--amber)}
 
   /* pie */
@@ -76,12 +76,10 @@
 <div class="wrap">
   <div class="brand">
     <div class="mark" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#04121a" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 17l5-6 4 3 5-7 4 4"/><circle cx="8" cy="11" r="1.4" fill="#04121a"/>
-      </svg>
+      <img src="assets/logo-supplymind.png" alt="SupplyMind" />
     </div>
     <div>
-      <div class="n">Supply<span>AI</span></div>
+      <div class="n">Supply<span>Mind</span></div>
       <div class="s">Almacén Matarani · TASA</div>
     </div>
   </div>
