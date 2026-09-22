@@ -57,43 +57,31 @@ async function leerJSONPublico(ruta) {
 }
 
 /**
- * Escribe (crea o actualiza) un archivo JSON en el repo — necesita token
- * con permiso de escritura sobre ese repo.
+ * URL del Worker de Cloudflare que guarda de forma segura — reemplázala por
+ * la tuya después de desplegarlo (ver instrucciones). Mientras esté vacía,
+ * la app avisa que falta configurar el Worker en vez de fallar en silencio.
+ */
+const WORKER_URL = 'https://billowing-union-4c0dsupplymind.bryancardenassilva.workers.dev';
+
+/**
+ * Escribe (crea o actualiza) un archivo JSON en el repo — pasa por el
+ * Worker, que es quien realmente tiene el token de GitHub. Ningún
+ * navegador necesita configurar nada.
  */
 async function escribirJSON(ruta, objeto, mensaje) {
-  const cfg = configEfectiva();
-  if (!cfg.owner || !cfg.repo || !cfg.token) {
-    throw new Error('Falta configurar usuario, repositorio y token en la pestaña Configuración.');
+  if (!WORKER_URL || WORKER_URL.includes('TU-SUBDOMINIO')) {
+    throw new Error('Falta configurar la URL del Worker en github-sync.js (WORKER_URL).');
   }
-  const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${ruta}`;
-  const headers = { Authorization: `Bearer ${cfg.token}`, Accept: 'application/vnd.github+json' };
-
-  let sha = null;
-  const getRes = await fetch(`${apiUrl}?ref=${cfg.branch}`, { headers });
-  if (getRes.status === 200) {
-    sha = (await getRes.json()).sha;
-  } else if (getRes.status !== 404) {
-    const err = await getRes.json().catch(() => ({}));
-    throw new Error(`No se pudo verificar el archivo existente (${getRes.status}): ${err.message || ''}`);
-  }
-
-  const body = {
-    message: mensaje || `Actualizar ${ruta}`,
-    content: utf8ToBase64(JSON.stringify(objeto, null, 2)),
-    branch: cfg.branch,
-  };
-  if (sha) body.sha = sha;
-
-  const putRes = await fetch(apiUrl, {
-    method: 'PUT',
-    headers: { ...headers, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+  const res = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: ruta, content: objeto, message: mensaje }),
   });
-  if (!putRes.ok) {
-    const err = await putRes.json().catch(() => ({}));
-    throw new Error(`Error guardando (${putRes.status}): ${err.message || ''}`);
+  if (!res.ok) {
+    const texto = await res.text().catch(() => '');
+    throw new Error(`Error guardando (${res.status}): ${texto}`);
   }
-  return putRes.json();
+  return res.json();
 }
 
 /**
@@ -130,6 +118,7 @@ async function leerVariosJSON(archivos) {
 }
 
 window.GitHubSync = {
+  WORKER_URL,
   RUTA_PROGRAMA,
   RUTA_RESULTADOS,
   obtenerConfigGitHub,
