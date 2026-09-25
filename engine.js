@@ -684,10 +684,12 @@ function enriquecerConCobertura(calculados, stockPorAlmacenTodos, transitoMap, a
 /**
  * Clasificación de rotación basada en la frecuencia real de consumo
  * (no en el histórico completo agregado, sino en CUÁNTOS MESES DISTINTOS
- * tuvo consumo dentro del período observado):
- *   - Alta Rotación: consumió en ≥80% de los meses del período (consume casi todos los meses)
- *   - Baja Rotación: consumió en algunos meses, pero menos del 80%
- *   - Sin Movimiento: cero consumo en todo el período
+ * tuvo consumo dentro del período observado, sobre una ventana de referencia
+ * de 12 meses):
+ *   - Uso Inmediato: 0-1 meses con consumo — sin movimiento real
+ *   - Baja Rotación: 2-5 meses — movimiento bajo/intermitente
+ *   - Mediana Rotación: 6-9 meses — movimiento regular, pero no constante
+ *   - Alta Rotación: 10-12 meses — se mueve casi todos los meses
  */
 function calcularClasificacionMovimiento(consumoReal, fechaMinISO, fechaMaxISO) {
   const min = new Date(fechaMinISO + 'T00:00:00');
@@ -705,10 +707,26 @@ function calcularClasificacionMovimiento(consumoReal, fechaMinISO, fechaMaxISO) 
   for (const [material, meses] of mesesPorMaterial.entries()) {
     const n = meses.size;
     const pctMeses = n / mesesTotales;
-    const clasificacionMovimiento = pctMeses >= 0.8 ? 'Alta Rotación' : 'Baja Rotación';
+    const clasificacionMovimiento = clasificarPorMesesConMovimiento(n, mesesTotales);
     resultado.set(material, { mesesConConsumo: n, mesesTotales, pctMeses, clasificacionMovimiento });
   }
   return resultado; // los materiales sin ninguna fila aquí = Sin Movimiento (se resuelve al consultar el mapa)
+}
+
+/**
+ * Clasificación por meses con movimiento (4 niveles, sobre una ventana de
+ * referencia de 12 meses — se escala si el período analizado es distinto):
+ *   - UIN (Uso Inmediato): 0-1 meses — sin movimiento real
+ *   - BRT (Baja Rotación): 2-5 meses — movimiento bajo/intermitente
+ *   - MRT (Mediana Rotación): 6-9 meses — movimiento regular, pero no constante
+ *   - ART (Alta Rotación): 10-12 meses — se mueve casi todos los meses
+ */
+function clasificarPorMesesConMovimiento(mesesConConsumo, mesesTotales) {
+  const factor = mesesTotales / 12;
+  if (mesesConConsumo <= 1 * factor) return 'Uso Inmediato';
+  if (mesesConConsumo <= 5 * factor) return 'Baja Rotación';
+  if (mesesConConsumo <= 9 * factor) return 'Mediana Rotación';
+  return 'Alta Rotación';
 }
 
 /**
@@ -740,20 +758,36 @@ function proponerClasificacion(material, clasificacionSAP, movInfo) {
   if (sap === 'Estratégico') {
     return { clasificacionFinal: 'Estratégico', incluido: false, reclasificado: false, motivo: 'Estratégico — se cubre aparte, en su propia tabla de Cobertura (no el semáforo SS/ROP estándar)' };
   }
-  if (sap === 'Uso Inmediato') {
-    const clase = movInfo ? movInfo.clasificacionMovimiento : 'Sin Movimiento';
-    if (clase === 'Alta Rotación' || clase === 'Baja Rotación') {
-      return { clasificacionFinal: clase, incluido: true, reclasificado: true, motivo: `Reclasificado desde Uso Inmediato — el histórico muestra consumo en ${movInfo.mesesConConsumo} de ${movInfo.mesesTotales} meses` };
-    }
-    return { clasificacionFinal: 'Uso Inmediato (confirmado)', incluido: false, reclasificado: false, motivo: 'Sin consumo regular en el período — se confirma compra solo por reserva, no requiere stock' };
+
+  // Para todo lo demás (SAP decía Uso Inmediato, Alta/Baja Rotación, o venía en blanco): la
+  // propuesta se calcula SIEMPRE con el consumo real de este material, sin importar qué decía
+  // SAP — SAP solo queda como referencia en la columna "Clasificación SAP". Así, un material
+  // que SAP marcaba "Alta Rotación" pero que en los datos reales casi no se mueve, se propone
+  // correctamente como Baja Rotación (o Uso Inmediato) en vez de heredar la etiqueta vieja.
+  const clase = movInfo ? movInfo.clasificacionMovimiento : 'Uso Inmediato';
+  if (clase === 'Alta Rotación' || clase === 'Mediana Rotación' || clase === 'Baja Rotación') {
+    const coincideConSAP = sap === clase;
+    return {
+      clasificacionFinal: clase,
+      incluido: true,
+      reclasificado: !coincideConSAP,
+      motivo: movInfo
+        ? `Consumo en ${movInfo.mesesConConsumo} de ${movInfo.mesesTotales} meses` + (coincideConSAP ? '' : ` (SAP decía "${sap || 'sin clasificar'}")`)
+        : null,
+    };
   }
-  // Alta Rotación / Baja Rotación ya etiquetados por SAP, o sin clasificar -> tratamiento normal (SÍ planificados)
-  return { clasificacionFinal: sap || 'Sin Clasificar', incluido: true, reclasificado: false, motivo: null };
+  return {
+    clasificacionFinal: 'Uso Inmediato (confirmado)',
+    incluido: false,
+    reclasificado: sap !== 'Uso Inmediato' && !!sap,
+    motivo: 'Sin consumo regular en el período — se confirma compra solo por reserva, no requiere stock',
+  };
 }
 
 /** Clasificaciones válidas que el usuario puede asignar a mano. */
 const CLASIFICACIONES_MANUALES_VALIDAS = [
   'Alta Rotación',
+  'Mediana Rotación',
   'Baja Rotación',
   'Estratégico',
   'Inactivo',
@@ -772,7 +806,7 @@ function determinarTratamiento(material, clasificacionSAP, movInfo, clasificacio
   const propuesta = proponerClasificacion(material, clasificacionSAP, movInfo);
 
   if (clasificacionManual && CLASIFICACIONES_MANUALES_VALIDAS.includes(clasificacionManual)) {
-    const incluido = clasificacionManual === 'Alta Rotación' || clasificacionManual === 'Baja Rotación';
+    const incluido = clasificacionManual === 'Alta Rotación' || clasificacionManual === 'Mediana Rotación' || clasificacionManual === 'Baja Rotación';
     return {
       clasificacionFinal: clasificacionManual,
       incluido,
