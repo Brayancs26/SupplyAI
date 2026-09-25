@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -37,7 +36,10 @@
         <p class="brand-sub">Estacional · SS · ROP · EOQ · Inmovilizados</p>
       </div>
     </div>
-    <a href="index.html" class="btn-volver-inicio">← Inicio</a>
+    <div style="display:flex; gap:10px;">
+      <button type="button" id="btn-actualizar-datos" class="btn-volver-inicio">↻ Actualizar datos</button>
+      <a href="index.html" class="btn-volver-inicio">← Inicio</a>
+    </div>
   </div>
 </header>
 
@@ -343,7 +345,7 @@
           </div>
           <div class="kpi-inline-card">
             <span class="kpi-value" id="kpi-plan-reclasificados">—</span>
-            <span class="kpi-label">Reclasificados desde Uso Inmediato</span>
+            <span class="kpi-label">Reclasificados vs. la clasificación de SAP</span>
           </div>
           <div class="kpi-inline-card">
             <span class="kpi-value" id="kpi-plan-stock">—</span>
@@ -365,7 +367,7 @@
           </div>
           <div class="kpi-inline-card">
             <span class="kpi-value" id="kpi-sintrat-altabaja">—</span>
-            <span class="kpi-label">De ellos, Alta o Baja Rotación</span>
+            <span class="kpi-label">De ellos, Alta, Media o Baja Rotación</span>
           </div>
           <div class="kpi-inline-card">
             <span class="kpi-value kpi-value-alerta" id="kpi-sintrat-pct">—</span>
@@ -389,8 +391,8 @@
 
       <div class="panel">
         <div class="panel-header">
-          <h2>Reclasificación de materiales "Uso Inmediato"</h2>
-          <p class="panel-sub">Materiales que SAP marcó como Uso Inmediato (compra solo por reserva), pero que su histórico de movimientos muestra un patrón de consumo regular — se reclasificaron y ya llevan SS/ROP calculado.</p>
+          <h2>Reclasificación por consumo real</h2>
+          <p class="panel-sub">La rotación de cada material se calcula siempre con su histórico de movimientos, sin importar qué decía SAP — estos son los casos donde el resultado no coincide con la clasificación de SAP, y ya llevan SS/ROP calculado.</p>
         </div>
         <div class="table-wrap tall">
           <table>
@@ -424,6 +426,7 @@
             <option value="MANUALES">Solo con mi clasificación manual</option>
             <option value="DIFERENTES">Donde SAP y la propuesta difieren</option>
             <option value="Alta Rotación">Final: Alta Rotación</option>
+            <option value="Mediana Rotación">Final: Mediana Rotación</option>
             <option value="Baja Rotación">Final: Baja Rotación</option>
             <option value="Estratégico">Final: Estratégico</option>
             <option value="Inactivo">Final: Inactivo</option>
