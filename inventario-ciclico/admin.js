@@ -91,14 +91,13 @@ function bindConfig() {
   document.getElementById('input-gh-owner').value = cfg.owner;
   document.getElementById('input-gh-repo').value = cfg.repo;
   document.getElementById('input-gh-branch').value = cfg.branch;
-  document.getElementById('input-gh-token').value = cfg.token;
 
   document.getElementById('form-github').addEventListener('submit', (e) => {
     e.preventDefault();
     GitHubSync.guardarConfigGitHub(
       document.getElementById('input-gh-owner').value.trim(),
       document.getElementById('input-gh-repo').value.trim(),
-      document.getElementById('input-gh-token').value.trim(),
+      '', // el token ya no se guarda en el navegador — vive en el Worker
       document.getElementById('input-gh-branch').value.trim() || 'main'
     );
     const msg = document.getElementById('guardado-gh-msg');
