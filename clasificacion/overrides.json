@@ -1,8 +1,16 @@
 {
-  "actualizadoEn": "2026-09-25T20:25:19.128Z",
+  "actualizadoEn": "2026-09-25T20:27:55.097Z",
   "overrides": {
-    "31003986": "Energéticos",
+    "20000628": "Alta Rotación",
+    "30000383": "Baja Rotación",
+    "31008512": "Mediana Rotación",
     "31010771": "Energéticos",
-    "31010777": "Energéticos"
+    "31010777": "Energéticos",
+    "31012337": "Mediana Rotación",
+    "31012507": "Mediana Rotación",
+    "31012626": "Mediana Rotación",
+    "31013874": "Mediana Rotación",
+    "31027175": "Mediana Rotación",
+    "32004359": "Mediana Rotación"
   }
 }
