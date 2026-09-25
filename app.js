@@ -79,6 +79,19 @@ async function cargarCacheAlIniciar() {
   });
   actualizarEstadoArchivos();
   actualizarBotonContinuar();
+
+  // Si ya tenemos los 3 archivos necesarios guardados de una vez anterior, no hace falta
+  // pasar por la pantalla de carga — vamos directo a Resumen con esos datos.
+  if (state.archivos.MRP && state.archivos.DATA && state.archivos.MB52) {
+    calcularTodo();
+  }
+}
+
+/** Vuelve a mostrar la pantalla de carga (para actualizar archivos) sin perder el dashboard ya calculado. */
+function mostrarPantallaCarga() {
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('pantalla-carga').style.display = 'block';
+  window.scrollTo(0, 0);
 }
 
 // ---------------- CARGA DE PARÁMETROS GUARDADOS ----------------
@@ -1603,7 +1616,7 @@ function renderMaterialesPlanificados() {
   document.getElementById('kpi-plan-estrategicos').textContent = total > 0 ? `${Math.round((estrategicos / total) * 100)}%` : '0%';
 
   const sinTratamiento = planificados.filter((m) => m.ssActual === 0 && m.ropActual === 0);
-  const sinTratAltaBaja = sinTratamiento.filter((m) => m.clasificacionFinal === 'Alta Rotación' || m.clasificacionFinal === 'Baja Rotación');
+  const sinTratAltaBaja = sinTratamiento.filter((m) => m.clasificacionFinal === 'Alta Rotación' || m.clasificacionFinal === 'Mediana Rotación' || m.clasificacionFinal === 'Baja Rotación');
   document.getElementById('kpi-sintrat-total').textContent = sinTratamiento.length;
   document.getElementById('kpi-sintrat-altabaja').textContent = sinTratAltaBaja.length;
   document.getElementById('kpi-sintrat-pct').textContent = total > 0 ? `${Math.round((sinTratamiento.length / total) * 100)}%` : '0%';
@@ -1626,13 +1639,13 @@ function renderMaterialesPlanificados() {
       (m) => `<tr>
       <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
       <td class="desc">${m.descripcion || ''}</td>
-      <td><span class="chip ${m.clasificacionFinal === 'Alta Rotación' ? 'chip-verde' : 'chip-amarilla'}">${m.clasificacionFinal}</span></td>
+      <td><span class="chip ${m.clasificacionFinal === 'Alta Rotación' ? 'chip-verde' : m.clasificacionFinal === 'Mediana Rotación' ? 'chip-cyan' : 'chip-amarilla'}">${m.clasificacionFinal}</span></td>
       <td class="num">${m.motivoExclusion ? (m.motivoExclusion.match(/(\d+) de (\d+)/) || [])[0] || '' : ''}</td>
       <td class="num">${fmtNum(m.stockFisico, 0)}</td>
       <td>${estadoSaludChip(m.estadoSalud)}</td>
     </tr>`
     )
-    .join('') || '<tr><td colspan="6" class="muted centrado">No hubo materiales Uso Inmediato con consumo suficiente para reclasificar.</td></tr>';
+    .join('') || '<tr><td colspan="6" class="muted centrado">Ningún material tiene una clasificación calculada distinta a la de SAP.</td></tr>';
 }
 
 // ---------------- EVENTOS DELEGADOS (evita rebindear en cada render) ----------------
@@ -2249,6 +2262,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   cargarParametrosGuardados();
   cargarMarcados();
   bindDropzone();
+  document.getElementById('btn-actualizar-datos').addEventListener('click', mostrarPantallaCarga);
   bindTabs();
   bindFormularios();
   bindEventosDelegados();
