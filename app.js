@@ -326,6 +326,7 @@ async function calcularTodo() {
 
     mostrarDashboard();
     renderTodo();
+    publicarSnapshotParaWhatsApp(); // en segundo plano, no bloquea — si falla, no interrumpe nada
   } catch (err) {
     console.error(err);
     alert('Error calculando: ' + err.message);
@@ -2082,6 +2083,58 @@ function bindInventarioCiclico() {
   document.getElementById('btn-generar-programa-ciclico').addEventListener('click', generarProgramaCiclico);
   document.getElementById('btn-publicar-programa-ciclico').addEventListener('click', publicarProgramaCiclico);
   cargarZonasGuardadas();
+}
+
+// ---------------- SNAPSHOT PARA WHATSAPP ----------------
+const RUTA_SNAPSHOT_WHATSAPP = 'snapshot/resumen.json';
+
+async function publicarSnapshotParaWhatsApp() {
+  try {
+    const materialesParaReordenar = state.planificados
+      .filter((m) => m.riesgo === 'ROJO' || m.riesgo === 'AMARILLO')
+      .map((m) => ({
+        material: m.material,
+        descripcion: m.descripcion,
+        clasificacion: m.clasificacionFinal,
+        stock: m.stockFisico,
+        rop: Math.round(m.ropCalculado || 0),
+        riesgo: m.riesgo,
+        coberturaDias: m.coberturaDias,
+      }));
+
+    const mb52Rows = state.archivos.MB52.filas;
+    const stockAceite = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_ACEITE).map((a) => ({
+      material: a.material,
+      descripcion: a.descripcion,
+      stock: a.stock,
+    }));
+    const stockHarina = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_HARINA).map((h) => ({
+      material: h.material,
+      descripcion: h.descripcion,
+      stock: h.stock,
+    }));
+
+    const monitorRows = obtenerMonitorFilas();
+    const kpi = SupplyEngine.calcularValorizacionReal(mb52Rows, monitorRows || [], state.tipoCambio);
+
+    const snapshot = {
+      publicadoEn: new Date().toISOString(),
+      totalMaterialesParaReordenar: materialesParaReordenar.length,
+      materialesParaReordenar,
+      stockAceitePescado: stockAceite,
+      stockHarinaPescado: stockHarina,
+      valorizacion: {
+        almacenUSD: Math.round(kpi.valorizadoAlmacen),
+        ppttUSD: Math.round(kpi.valorizadoPPTT),
+        pctVencido: Number(kpi.pctVencido.toFixed(2)),
+      },
+    };
+
+    await GitHubSync.escribirJSON(RUTA_SNAPSHOT_WHATSAPP, snapshot, 'Actualizar snapshot para WhatsApp');
+  } catch (err) {
+    // No interrumpe al usuario — si el Worker/token de WhatsApp no está configurado todavía, es normal.
+    console.warn('No se pudo publicar el snapshot para WhatsApp:', err.message);
+  }
 }
 
 // ---------------- IA ----------------
