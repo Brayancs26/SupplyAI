@@ -1,9 +1,11 @@
 {
-  "actualizadoEn": "2026-09-25T20:27:55.097Z",
+  "actualizadoEn": "2026-09-25T20:31:19.575Z",
   "overrides": {
     "20000628": "Alta Rotación",
     "30000383": "Baja Rotación",
+    "31008471": "Baja Rotación",
     "31008512": "Mediana Rotación",
+    "31009327": "Baja Rotación",
     "31010771": "Energéticos",
     "31010777": "Energéticos",
     "31012337": "Mediana Rotación",
@@ -11,6 +13,9 @@
     "31012626": "Mediana Rotación",
     "31013874": "Mediana Rotación",
     "31027175": "Mediana Rotación",
-    "32004359": "Mediana Rotación"
+    "32004359": "Mediana Rotación",
+    "32004360": "Mediana Rotación",
+    "32004469": "Alta Rotación",
+    "32004575": "Mediana Rotación"
   }
 }
