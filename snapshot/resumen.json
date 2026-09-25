@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-09-25T18:28:08.611Z",
-  "totalMaterialesParaReordenar": 1018,
+  "publicadoEn": "2026-09-25T20:16:38.173Z",
+  "totalMaterialesParaReordenar": 1019,
   "materialesParaReordenar": [
     {
       "material": "32004359",
@@ -964,6 +964,15 @@
       "rop": 0,
       "riesgo": "AMARILLO",
       "coberturaDias": 2979
+    },
+    {
+      "material": "34002845",
+      "descripcion": "LINING #529607 02",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 0,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
     },
     {
       "material": "32003898",
