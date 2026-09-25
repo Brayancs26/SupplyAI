@@ -1,5 +1,5 @@
 {
-  "actualizadoEn": "2026-09-25T20:40:39.297Z",
+  "actualizadoEn": "2026-09-25T20:41:47.069Z",
   "overrides": {
     "20000628": "Alta Rotación",
     "30000383": "Baja Rotación",
@@ -17,6 +17,7 @@
     "32004359": "Mediana Rotación",
     "32004360": "Mediana Rotación",
     "32004469": "Alta Rotación",
-    "32004575": "Mediana Rotación"
+    "32004575": "Mediana Rotación",
+    "32007195": "Uso Inmediato (confirmado)"
   }
 }
