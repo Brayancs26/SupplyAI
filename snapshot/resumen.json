@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-09-25T20:26:00.351Z",
+  "publicadoEn": "2026-09-26T20:36:49.254Z",
   "totalMaterialesParaReordenar": 252,
   "materialesParaReordenar": [
     {
@@ -37,6 +37,15 @@
       "rop": 8,
       "riesgo": "ROJO",
       "coberturaDias": 147.11111111111111
+    },
+    {
+      "material": "30000383",
+      "descripcion": "ACEITE M-MOBILGARD 412 MOBIL 55GL",
+      "clasificacion": "Baja Rotación",
+      "stock": 70,
+      "rop": 5,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 2317
     },
     {
       "material": "30000506",
@@ -199,6 +208,15 @@
       "rop": 79,
       "riesgo": "ROJO",
       "coberturaDias": 7.625629949604031
+    },
+    {
+      "material": "31008471",
+      "descripcion": "ANILLO PLANO FEN.1\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 114,
+      "rop": 3,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 4716.75
     },
     {
       "material": "31014743",
@@ -849,15 +867,6 @@
       "coberturaDias": 0
     },
     {
-      "material": "32003832",
-      "descripcion": "CANASTA NAVIDEÑA",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 1,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
       "material": "31008491",
       "descripcion": "ANILLO PLANO G5 7/8\"",
       "clasificacion": "Baja Rotación",
@@ -1007,15 +1016,6 @@
       "clasificacion": "Baja Rotación",
       "stock": 0,
       "rop": 1,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32007195",
-      "descripcion": "PACK DIA DEL TRABAJO TASA",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 29,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
