@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-09-30T13:34:36.043Z",
-  "totalMaterialesParaReordenar": 252,
+  "publicadoEn": "2026-09-30T13:34:58.801Z",
+  "totalMaterialesParaReordenar": 253,
   "materialesParaReordenar": [
     {
       "material": "32004359",
@@ -75,15 +75,6 @@
       "coberturaDias": 331
     },
     {
-      "material": "31009341",
-      "descripcion": "CINTA MASKING TAPE 3/4\"X20MT",
-      "clasificacion": "Mediana Rotación",
-      "stock": 0,
-      "rop": 8,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
       "material": "31009821",
       "descripcion": "DISCO CORTE INOX.1/8\"X7/8\"X4 1/2\"",
       "clasificacion": "Alta Rotación",
@@ -105,10 +96,10 @@
       "material": "31010293",
       "descripcion": "ESPATULA C/MANGO PVC 3\"",
       "clasificacion": "Mediana Rotación",
-      "stock": 10,
+      "stock": 9,
       "rop": 11,
       "riesgo": "ROJO",
-      "coberturaDias": 55.63025210084034
+      "coberturaDias": 83.4453781512605
     },
     {
       "material": "31015363",
@@ -186,10 +177,10 @@
       "material": "33032008",
       "descripcion": "ELEM.FILTRO PETR./SEP.AGUA RACOR 2020SM",
       "clasificacion": "Baja Rotación",
-      "stock": 98,
+      "stock": 86,
       "rop": 22,
       "riesgo": "AMARILLO",
-      "coberturaDias": 393.1878787878788
+      "coberturaDias": 345.04242424242426
     },
     {
       "material": "31012485",
@@ -204,10 +195,10 @@
       "material": "32003790",
       "descripcion": "CAJA AGUA ENV.DESCARTABLE 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 16,
+      "stock": 35,
       "rop": 79,
       "riesgo": "ROJO",
-      "coberturaDias": 7.625629949604031
+      "coberturaDias": 16.681065514758817
     },
     {
       "material": "31008471",
@@ -279,16 +270,16 @@
       "stock": 29,
       "rop": 38,
       "riesgo": "ROJO",
-      "coberturaDias": 35.951310861423224
+      "coberturaDias": 97.93632958801498
     },
     {
       "material": "31012348",
       "descripcion": "PERNO HEX.INOX.1/2\"X2\"",
       "clasificacion": "Mediana Rotación",
-      "stock": 0,
+      "stock": 50,
       "rop": 320,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 16.249386352479135
     },
     {
       "material": "31012390",
@@ -447,10 +438,10 @@
       "material": "31009826",
       "descripcion": "DISCO CORTE INOX.3/64\"X7/8\"X4 1/2\"",
       "clasificacion": "Alta Rotación",
-      "stock": 272,
+      "stock": 242,
       "rop": 33,
       "riesgo": "AMARILLO",
-      "coberturaDias": 197.65532381997804
+      "coberturaDias": 175.8551042810099
     },
     {
       "material": "31012127",
@@ -498,31 +489,22 @@
       "coberturaDias": 551.6666666666666
     },
     {
-      "material": "31015602",
-      "descripcion": "RODILLO P/PINTAR 4\"",
-      "clasificacion": "Mediana Rotación",
-      "stock": 0,
-      "rop": 15,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
       "material": "31032188",
       "descripcion": "CINTA AISLANTE NEGRA 600V-33+ 3M",
       "clasificacion": "Baja Rotación",
-      "stock": 1,
+      "stock": 21,
       "rop": 4,
-      "riesgo": "ROJO",
-      "coberturaDias": 17.89189189189189
+      "riesgo": "AMARILLO",
+      "coberturaDias": 375.72972972972974
     },
     {
       "material": "32003555",
       "descripcion": "BIDON AGUA 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 14,
+      "stock": 12,
       "rop": 19,
       "riesgo": "ROJO",
-      "coberturaDias": 18.46215139442231
+      "coberturaDias": 15.824701195219124
     },
     {
       "material": "32003965",
@@ -555,10 +537,10 @@
       "material": "32004361",
       "descripcion": "GUANTE CUERO CROMO REF.P/MANIO.T/L(10.5)",
       "clasificacion": "Mediana Rotación",
-      "stock": 92,
+      "stock": 91,
       "rop": 17,
       "riesgo": "AMARILLO",
-      "coberturaDias": 580.0380952380953
+      "coberturaDias": 573.7333333333332
     },
     {
       "material": "32005034",
@@ -582,10 +564,10 @@
       "material": "32005804",
       "descripcion": "PAPEL HIGIENICO HJ.SIMPLE 550M PQTE.12UN",
       "clasificacion": "Alta Rotación",
-      "stock": 23.03,
+      "stock": 22.78,
       "rop": 4,
       "riesgo": "AMARILLO",
-      "coberturaDias": 283.765332142126
+      "coberturaDias": 280.68494425521624
     },
     {
       "material": "32007837",
@@ -645,10 +627,19 @@
       "material": "32004575",
       "descripcion": "LIMPIADOR DESINFECTANTE LIQUIDO GL",
       "clasificacion": "Mediana Rotación",
-      "stock": 2,
+      "stock": 0,
       "rop": 6,
       "riesgo": "ROJO",
-      "coberturaDias": 24.9811320754717
+      "coberturaDias": 0
+    },
+    {
+      "material": "32005491",
+      "descripcion": "BOLSA P/BASURA NEGRO 140L PQTE.100UN",
+      "clasificacion": "Mediana Rotación",
+      "stock": 6,
+      "rop": 6,
+      "riesgo": "ROJO",
+      "coberturaDias": 63.04761904761905
     },
     {
       "material": "33034469",
@@ -963,7 +954,16 @@
       "stock": 0,
       "rop": 8,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 100.3030303030303
+    },
+    {
+      "material": "32003569",
+      "descripcion": "BLOCK FORMATO PTS BLOCK 100HJ",
+      "clasificacion": "Mediana Rotación",
+      "stock": 3,
+      "rop": 4,
+      "riesgo": "ROJO",
+      "coberturaDias": 48.4390243902439
     },
     {
       "material": "32003602",
@@ -1359,7 +1359,7 @@
       "stock": 0,
       "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 441.3333333333333
     },
     {
       "material": "32004358",
@@ -1395,7 +1395,7 @@
       "stock": 0,
       "rop": 19,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 493.78688524590166
     },
     {
       "material": "32004098",
@@ -1929,6 +1929,15 @@
       "coberturaDias": 0
     },
     {
+      "material": "32005531",
+      "descripcion": "CINTA MASKING TAPE 1\"X55YDS",
+      "clasificacion": "Baja Rotación",
+      "stock": 32,
+      "rop": 41,
+      "riesgo": "ROJO",
+      "coberturaDias": 67.25079365079365
+    },
+    {
       "material": "32005537",
       "descripcion": "ENGRAPADOR ALICATE AC.26/6-8",
       "clasificacion": "Baja Rotación",
@@ -2022,10 +2031,10 @@
       "material": "31009839",
       "descripcion": "DISCO DESBASTE 1/4\"X7/8\"X7\"",
       "clasificacion": "Baja Rotación",
-      "stock": 1,
+      "stock": 22,
       "rop": 1,
-      "riesgo": "ROJO",
-      "coberturaDias": 55.166666666666664
+      "riesgo": "AMARILLO",
+      "coberturaDias": 1213.6666666666665
     },
     {
       "material": "31012360",
@@ -2295,6 +2304,11 @@
       "stock": 159.2
     },
     {
+      "material": "50003969",
+      "descripcion": "HARINA B PRIME",
+      "stock": 57.85
+    },
+    {
       "material": "50003907",
       "descripcion": "HARINA NC. CONTAMINACION FISICA",
       "stock": 25.8
@@ -2305,14 +2319,14 @@
       "stock": 16.45
     },
     {
-      "material": "50003969",
-      "descripcion": "HARINA B PRIME",
-      "stock": 7.85
-    },
-    {
       "material": "50003935",
       "descripcion": "HARINA SCRAP",
       "stock": 1.79
+    },
+    {
+      "material": "50003971",
+      "descripcion": "HARINA D STANDARD",
+      "stock": 1.7
     },
     {
       "material": "50006015",
@@ -2336,8 +2350,8 @@
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1066343,
-    "ppttUSD": 334617,
-    "pctVencido": 0.46
+    "almacenUSD": 1036552,
+    "ppttUSD": 430677,
+    "pctVencido": 0.71
   }
 }
