@@ -1,8 +1,9 @@
 {
-  "actualizadoEn": "2026-09-25T20:41:47.069Z",
+  "actualizadoEn": "2026-09-30T13:58:27.331Z",
   "overrides": {
     "20000628": "Alta Rotación",
     "30000383": "Baja Rotación",
+    "31003986": "Energéticos",
     "31008471": "Baja Rotación",
     "31008512": "Mediana Rotación",
     "31009327": "Baja Rotación",
@@ -18,6 +19,11 @@
     "32004360": "Mediana Rotación",
     "32004469": "Alta Rotación",
     "32004575": "Mediana Rotación",
-    "32007195": "Uso Inmediato (confirmado)"
+    "32004762": "Uso Inmediato (confirmado)",
+    "32004763": "Uso Inmediato (confirmado)",
+    "32004764": "Uso Inmediato (confirmado)",
+    "32004765": "Uso Inmediato (confirmado)",
+    "32007195": "Uso Inmediato (confirmado)",
+    "33034500": "Uso Inmediato (confirmado)"
   }
 }
