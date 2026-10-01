@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-09-30T13:34:58.801Z",
-  "totalMaterialesParaReordenar": 253,
+  "publicadoEn": "2026-10-01T02:20:45.848Z",
+  "totalMaterialesParaReordenar": 247,
   "materialesParaReordenar": [
     {
       "material": "32004359",
@@ -415,15 +415,6 @@
       "rop": 80,
       "riesgo": "AMARILLO",
       "coberturaDias": 805.5309734513274
-    },
-    {
-      "material": "31003986",
-      "descripcion": "OXIGENO IND.",
-      "clasificacion": "Alta Rotación",
-      "stock": 50,
-      "rop": 58,
-      "riesgo": "ROJO",
-      "coberturaDias": 39.5933014354067
     },
     {
       "material": "31009822",
@@ -1533,42 +1524,6 @@
       "coberturaDias": 0
     },
     {
-      "material": "32004762",
-      "descripcion": "PACKS ESCOLAR 3 A 05 AÑOS",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 2,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32004763",
-      "descripcion": "PACKS ESCOLAR 06 A 12 AÑOS",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 2,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32004764",
-      "descripcion": "PACKS ESCOLAR 13 A 17 AÑOS",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 3,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32004765",
-      "descripcion": "PACKS ESCOLAR 18 A 24 AÑOS",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 1,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
       "material": "32005223",
       "descripcion": "TAPER RECT.C/TA. 2KG",
       "clasificacion": "Baja Rotación",
@@ -2125,15 +2080,6 @@
       "rop": 36,
       "riesgo": "ROJO",
       "coberturaDias": 42.80172413793103
-    },
-    {
-      "material": "33034500",
-      "descripcion": "LLANTA A/T 265/65R17",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 3,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
     },
     {
       "material": "33041869",
