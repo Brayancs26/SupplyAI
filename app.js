@@ -702,6 +702,9 @@ function renderMonitorDetalle() {
 }
 
 // ---------------- BIENES DE SEGUNDO USO (BSU) ----------------
+let bsuDatosActuales = [];
+let bsuAnioFiltrado = null;
+
 function renderBSU() {
   const sinDatos = document.getElementById('bsu-sin-datos');
   const contenido = document.getElementById('bsu-contenido');
@@ -714,6 +717,8 @@ function renderBSU() {
   contenido.style.display = 'block';
 
   const bsu = SupplyEngine.procesarBSU(state.archivos.BSU.filas);
+  bsuDatosActuales = bsu;
+  bsuAnioFiltrado = null; // cada vez que hay datos frescos, arrancamos sin filtro
   const anioActual = new Date().getFullYear();
 
   renderBSUGraficoAnio(bsu, anioActual);
@@ -810,7 +815,9 @@ function renderBSUGraficoAnio(bsu, anioActual) {
     .map((s) => {
       const alturaPct = s.cuenta === 0 ? 3 : Math.max(6, (s.cuenta / maxCuenta) * 100);
       const clase = BSU_NIVEL_INFO[s.nivel].clase;
-      return `<div class="bsu-barra-col">
+      const clicable = s.cuenta > 0;
+      const activa = bsuAnioFiltrado === s.anio ? ' bsu-barra-activa' : '';
+      return `<div class="bsu-barra-col${clicable ? ' bsu-barra-clicable' + activa : ''}" ${clicable ? `data-anio="${s.anio}"` : ''}>
         <span class="bsu-barra-valor">${s.cuenta}</span>
         <div class="bsu-barra-track"><div class="bsu-barra-fill ${clase}" style="height:${alturaPct}%"></div></div>
         <span class="bsu-barra-anio">${s.anio}</span>
@@ -818,6 +825,15 @@ function renderBSUGraficoAnio(bsu, anioActual) {
       </div>`;
     })
     .join('');
+
+  cont.querySelectorAll('.bsu-barra-clicable').forEach((el) => {
+    el.addEventListener('click', () => {
+      const anio = Number(el.dataset.anio);
+      bsuAnioFiltrado = bsuAnioFiltrado === anio ? null : anio;
+      renderBSUGraficoAnio(bsuDatosActuales, anioActual);
+      renderBSUConcentracion(bsuDatosActuales);
+    });
+  });
 
   // Leyenda: solo los niveles que realmente aparecen en la serie, con su totales.
   const totalesPorNivel = {};
@@ -855,7 +871,19 @@ function renderBSUGraficoAnio(bsu, anioActual) {
     : '';
 }
 
-function renderBSUConcentracion(bsu) {
+function renderBSUConcentracion(bsuCompleto) {
+  const bsu = bsuAnioFiltrado
+    ? bsuCompleto.filter((b) => b.fechaEntrada && b.fechaEntrada.getFullYear() === bsuAnioFiltrado)
+    : bsuCompleto;
+
+  const indicador = document.getElementById('bsu-filtro-anio-indicador');
+  if (bsuAnioFiltrado) {
+    indicador.style.display = 'inline-flex';
+    indicador.querySelector('span').textContent = `Filtrado: ${bsuAnioFiltrado}`;
+  } else {
+    indicador.style.display = 'none';
+  }
+
   const items = SupplyEngine.bsuPorCantidadLibre(bsu);
   const totalUnidades = items.reduce((a, it) => a + it.cantidad, 0);
 
@@ -2263,6 +2291,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   cargarMarcados();
   bindDropzone();
   document.getElementById('btn-actualizar-datos').addEventListener('click', mostrarPantallaCarga);
+  document.getElementById('bsu-filtro-anio-indicador').addEventListener('click', () => {
+    bsuAnioFiltrado = null;
+    renderBSUGraficoAnio(bsuDatosActuales, new Date().getFullYear());
+    renderBSUConcentracion(bsuDatosActuales);
+  });
   bindTabs();
   bindFormularios();
   bindEventosDelegados();
