@@ -1,16 +1,7 @@
 {
-  "publicadoEn": "2026-10-02T19:08:04.038Z",
-  "totalMaterialesParaReordenar": 247,
+  "publicadoEn": "2026-10-02T19:16:39.807Z",
+  "totalMaterialesParaReordenar": 245,
   "materialesParaReordenar": [
-    {
-      "material": "32004359",
-      "descripcion": "GUANTE CUERO CR.FUEGO T/14\"",
-      "clasificacion": "Mediana Rotación",
-      "stock": 2,
-      "rop": 2,
-      "riesgo": "ROJO",
-      "coberturaDias": 82.75
-    },
     {
       "material": "31012396",
       "descripcion": "PERNO HEX.INOX.1/4\"X1 1/2\"",
@@ -19,6 +10,15 @@
       "rop": 46,
       "riesgo": "ROJO",
       "coberturaDias": 38.14915254237288
+    },
+    {
+      "material": "31012626",
+      "descripcion": "PERNO HEX.INOX.5/8\"X3\"",
+      "clasificacion": "Mediana Rotación",
+      "stock": 10,
+      "rop": 11,
+      "riesgo": "ROJO",
+      "coberturaDias": 43.26797385620915
     },
     {
       "material": "32008169",
@@ -51,10 +51,10 @@
       "material": "30000506",
       "descripcion": "LUBRICANTE MULTIUSO WD40",
       "clasificacion": "Mediana Rotación",
-      "stock": 64,
+      "stock": 58,
       "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1513.142857142857
+      "coberturaDias": 1371.2857142857142
     },
     {
       "material": "31008595",
@@ -91,15 +91,6 @@
       "rop": 6,
       "riesgo": "ROJO",
       "coberturaDias": 40.53061224489796
-    },
-    {
-      "material": "31010293",
-      "descripcion": "ESPATULA C/MANGO PVC 3\"",
-      "clasificacion": "Mediana Rotación",
-      "stock": 9,
-      "rop": 11,
-      "riesgo": "ROJO",
-      "coberturaDias": 83.4453781512605
     },
     {
       "material": "31015363",
@@ -195,10 +186,10 @@
       "material": "32003790",
       "descripcion": "CAJA AGUA ENV.DESCARTABLE 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 35,
+      "stock": 60,
       "rop": 79,
       "riesgo": "ROJO",
-      "coberturaDias": 16.681065514758817
+      "coberturaDias": 28.596112311015116
     },
     {
       "material": "31008471",
@@ -226,6 +217,15 @@
       "rop": 9,
       "riesgo": "AMARILLO",
       "coberturaDias": null
+    },
+    {
+      "material": "33032141",
+      "descripcion": "ELEM.FLEX.P/ACOPLE OMEGA E5",
+      "clasificacion": "Baja Rotación",
+      "stock": 5,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 300.9090909090909
     },
     {
       "material": "30000659",
@@ -262,15 +262,6 @@
       "rop": 213,
       "riesgo": "ROJO",
       "coberturaDias": 19.721056194989846
-    },
-    {
-      "material": "31008514",
-      "descripcion": "ANILLO PLANO INOX.5/8\"",
-      "clasificacion": "Alta Rotación",
-      "stock": 29,
-      "rop": 38,
-      "riesgo": "ROJO",
-      "coberturaDias": 97.93632958801498
     },
     {
       "material": "31012348",
@@ -348,10 +339,10 @@
       "material": "32022255",
       "descripcion": "RESPIRADOR P/VAP.ORG.-HUMOS R95",
       "clasificacion": "Baja Rotación",
-      "stock": 99,
+      "stock": 95,
       "rop": 14,
       "riesgo": "AMARILLO",
-      "coberturaDias": 579.9823008849557
+      "coberturaDias": 556.5486725663717
     },
     {
       "material": "32022265",
@@ -483,19 +474,19 @@
       "material": "31032188",
       "descripcion": "CINTA AISLANTE NEGRA 600V-33+ 3M",
       "clasificacion": "Baja Rotación",
-      "stock": 21,
+      "stock": 19,
       "rop": 4,
       "riesgo": "AMARILLO",
-      "coberturaDias": 375.72972972972974
+      "coberturaDias": 339.94594594594594
     },
     {
       "material": "32003555",
       "descripcion": "BIDON AGUA 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 12,
+      "stock": 11,
       "rop": 19,
       "riesgo": "ROJO",
-      "coberturaDias": 15.824701195219124
+      "coberturaDias": 14.50597609561753
     },
     {
       "material": "32003965",
@@ -555,10 +546,10 @@
       "material": "32005804",
       "descripcion": "PAPEL HIGIENICO HJ.SIMPLE 550M PQTE.12UN",
       "clasificacion": "Alta Rotación",
-      "stock": 22.78,
+      "stock": 22.447,
       "rop": 4,
       "riesgo": "AMARILLO",
-      "coberturaDias": 280.68494425521624
+      "coberturaDias": 276.58186758985244
     },
     {
       "material": "32007837",
@@ -582,10 +573,10 @@
       "material": "32022269",
       "descripcion": "GUANTE QUIRURGICO NITRI.4MM T/M",
       "clasificacion": "Baja Rotación",
-      "stock": 2200,
+      "stock": 2100,
       "rop": 142,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1456.3999999999999
+      "coberturaDias": 1390.1999999999998
     },
     {
       "material": "32022278",
@@ -615,6 +606,15 @@
       "coberturaDias": 1463.3684210526314
     },
     {
+      "material": "32004469",
+      "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
+      "clasificacion": "Alta Rotación",
+      "stock": 907,
+      "rop": 169,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 310.78364389233957
+    },
+    {
       "material": "32004575",
       "descripcion": "LIMPIADOR DESINFECTANTE LIQUIDO GL",
       "clasificacion": "Mediana Rotación",
@@ -627,10 +627,10 @@
       "material": "32005491",
       "descripcion": "BOLSA P/BASURA NEGRO 140L PQTE.100UN",
       "clasificacion": "Mediana Rotación",
-      "stock": 6,
+      "stock": 5,
       "rop": 6,
       "riesgo": "ROJO",
-      "coberturaDias": 63.04761904761905
+      "coberturaDias": 52.53968253968254
     },
     {
       "material": "33034469",
@@ -942,7 +942,7 @@
       "material": "31013183",
       "descripcion": "PINT.ZINC PRIMER 910 GRIS 3COM+CAT 1GL",
       "clasificacion": "Baja Rotación",
-      "stock": 0,
+      "stock": 5,
       "rop": 8,
       "riesgo": "ROJO",
       "coberturaDias": 100.3030303030303
@@ -1344,15 +1344,6 @@
       "coberturaDias": 0
     },
     {
-      "material": "31013880",
-      "descripcion": "SOLDIMIX 10 MINUTOS",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 0,
-      "riesgo": "ROJO",
-      "coberturaDias": 441.3333333333333
-    },
-    {
       "material": "32004358",
       "descripcion": "GUANTE CROMO REF.EXT.AMARILLO T/L(10.5)",
       "clasificacion": "Baja Rotación",
@@ -1378,15 +1369,6 @@
       "rop": 13,
       "riesgo": "ROJO",
       "coberturaDias": 150.45454545454544
-    },
-    {
-      "material": "32003553",
-      "descripcion": "BETUN P/CALZADO NEGRO 80ML",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 19,
-      "riesgo": "ROJO",
-      "coberturaDias": 493.78688524590166
     },
     {
       "material": "32004098",
@@ -1887,10 +1869,10 @@
       "material": "32005531",
       "descripcion": "CINTA MASKING TAPE 1\"X55YDS",
       "clasificacion": "Baja Rotación",
-      "stock": 32,
+      "stock": 17,
       "rop": 41,
       "riesgo": "ROJO",
-      "coberturaDias": 67.25079365079365
+      "coberturaDias": 35.72698412698413
     },
     {
       "material": "32005537",
@@ -2296,8 +2278,8 @@
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1036552,
+    "almacenUSD": 1036882,
     "ppttUSD": 430677,
-    "pctVencido": 0.71
+    "pctVencido": 0.72
   }
 }
