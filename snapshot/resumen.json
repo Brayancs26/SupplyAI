@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-10-01T02:33:24.502Z",
+  "publicadoEn": "2026-10-02T19:08:04.038Z",
   "totalMaterialesParaReordenar": 247,
   "materialesParaReordenar": [
     {
@@ -1195,9 +1195,9 @@
       "descripcion": "BOTIN AMARILLO P/AC KEVL T-40 A:32009306",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "32003648",
