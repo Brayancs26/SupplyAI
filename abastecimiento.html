@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Abastecimiento · SupplyMind</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
 <script src="vendor/xlsx.full.min.js"></script>
 <script src="engine.js" defer></script>
@@ -33,7 +33,7 @@
       <span class="brand-mark">L001</span>
       <div>
         <h1>ABASTECIMIENTO <span class="accent">MATARANI</span></h1>
-        <p class="brand-sub">Estacional · SS · ROP · EOQ · Inmovilizados</p>
+        <p class="brand-sub">Estacional · <abbr class="term" data-tooltip="Stock de Seguridad — colchón mínimo ante variación de demanda">SS</abbr> · <abbr class="term" data-tooltip="Punto de Reorden — nivel de stock que dispara una nueva compra">ROP</abbr> · <abbr class="term" data-tooltip="Cantidad Económica de Pedido — tamaño de lote óptimo por compra">EOQ</abbr> · Inmovilizados</p>
       </div>
     </div>
     <div style="display:flex; gap:10px;">
@@ -47,7 +47,7 @@
 <div id="pantalla-carga">
   <div class="carga-inner">
     <h2>Suelta tus archivos de SAP</h2>
-    <p class="carga-sub">MRP, DATA (movimientos históricos), MB52 (stock actual) y, si lo tienes, el Monitor (ZMMR0105, opcional). Los detecto automáticamente, no importa el orden ni el nombre exacto del archivo.</p>
+    <p class="carga-sub">MRP, DATA (movimientos históricos), <abbr class="term" data-tooltip="Reporte SAP de stock actual por material y almacén">MB52</abbr> (stock actual) y, si lo tienes, el Monitor (ZMMR0105, opcional). Los detecto automáticamente, no importa el orden ni el nombre exacto del archivo.</p>
 
     <div id="dropzone" class="dropzone">
       <input type="file" id="file-input" multiple accept=".xlsx,.xls" hidden />
@@ -506,9 +506,9 @@
                 <th>Pedir</th><th class="num">Cantidad</th>
                 <th>Material</th><th>Descripción</th><th>Clasif. SAP</th><th>Clasif. Final</th><th>Temp.</th>
                 <th class="num">LT (días)</th><th class="num">Stock Real</th>
-                <th class="num">SS SAP</th><th class="num">SS Calc.</th>
-                <th class="num">ROP SAP</th><th class="num">ROP Calc.</th>
-                <th>Confianza</th><th>Últ. Movimiento</th><th class="num">Costo Unit.</th><th class="num">EOQ</th><th>Riesgo</th>
+                <th class="num"><abbr class="term" data-tooltip="Stock de Seguridad definido en SAP">SS SAP</abbr></th><th class="num"><abbr class="term" data-tooltip="Stock de Seguridad calculado por SupplyMind">SS Calc.</abbr></th>
+                <th class="num"><abbr class="term" data-tooltip="Punto de Reorden definido en SAP">ROP SAP</abbr></th><th class="num"><abbr class="term" data-tooltip="Punto de Reorden calculado por SupplyMind">ROP Calc.</abbr></th>
+                <th>Confianza</th><th>Últ. Movimiento</th><th class="num">Costo Unit.</th><th class="num"><abbr class="term" data-tooltip="Cantidad Económica de Pedido — tamaño de lote óptimo">EOQ</abbr></th><th>Riesgo</th>
               </tr>
             </thead>
             <tbody id="tabla-materiales-body"></tbody>
