@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-10-06T22:38:48.740Z",
-  "totalMaterialesParaReordenar": 244,
+  "publicadoEn": "2026-10-07T15:54:13.051Z",
+  "totalMaterialesParaReordenar": 247,
   "materialesParaReordenar": [
     {
       "material": "31012396",
@@ -106,9 +106,9 @@
       "descripcion": "CAMISA OXFORD M/LARG.CELESTE T/L",
       "clasificacion": "Baja Rotación",
       "stock": 13,
-      "rop": 3,
+      "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 662
+      "coberturaDias": 1410.5
     },
     {
       "material": "32005051",
@@ -124,9 +124,9 @@
       "descripcion": "ROPA AGUA CASAC.JEBE DOBLE FAZ T/XL",
       "clasificacion": "Baja Rotación",
       "stock": 9,
-      "rop": 2,
+      "rop": 3,
       "riesgo": "AMARILLO",
-      "coberturaDias": 662
+      "coberturaDias": 488.25
     },
     {
       "material": "32005402",
@@ -349,9 +349,9 @@
       "descripcion": "ROPA AGUA CASAC.JEBE DOBLE FAZ FLO T/L",
       "clasificacion": "Baja Rotación",
       "stock": 57,
-      "rop": 5,
+      "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 2695.285714285714
+      "coberturaDias": 12369
     },
     {
       "material": "32022274",
@@ -493,18 +493,27 @@
       "descripcion": "CHOMPA DRALON CUELLO ALTO AZUL T/L",
       "clasificacion": "Mediana Rotación",
       "stock": 110,
-      "rop": 18,
+      "rop": 10,
       "riesgo": "AMARILLO",
-      "coberturaDias": 713.921568627451
+      "coberturaDias": 1136.6666666666667
+    },
+    {
+      "material": "32003967",
+      "descripcion": "CHOMPA DRALON CUELLO ALTO AZUL T/S",
+      "clasificacion": "Baja Rotación",
+      "stock": 7,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 1519
     },
     {
       "material": "32003968",
       "descripcion": "CHOMPA DRALON CUELLO ALTO AZUL T/XL",
       "clasificacion": "Mediana Rotación",
       "stock": 7,
-      "rop": 13,
+      "rop": 8,
       "riesgo": "ROJO",
-      "coberturaDias": 56.51219512195122
+      "coberturaDias": 116.84615384615385
     },
     {
       "material": "32003969",
@@ -513,7 +522,7 @@
       "stock": 20,
       "rop": 4,
       "riesgo": "AMARILLO",
-      "coberturaDias": 630.4761904761905
+      "coberturaDias": 723.3333333333333
     },
     {
       "material": "32004361",
@@ -777,6 +786,15 @@
       "coberturaDias": 0
     },
     {
+      "material": "32003814",
+      "descripcion": "CAMISA OXFORD M/LARG.CELESTE T/XL",
+      "clasificacion": "Baja Rotación",
+      "stock": 3,
+      "rop": 3,
+      "riesgo": "ROJO",
+      "coberturaDias": 162.75
+    },
+    {
       "material": "32003902",
       "descripcion": "CASACA TASLAN FO.POLAR VERDE VARON T/L",
       "clasificacion": "Baja Rotación",
@@ -784,6 +802,15 @@
       "rop": 1,
       "riesgo": "AMARILLO",
       "coberturaDias": 1085
+    },
+    {
+      "material": "32004804",
+      "descripcion": "PANTALON DRILL C/LOG.CAQUI T/34",
+      "clasificacion": "Baja Rotación",
+      "stock": 2,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "30000384",
@@ -817,18 +844,18 @@
       "descripcion": "BLUSA OXFORD M/LARG.C/LOG.CELESTE T/M",
       "clasificacion": "Baja Rotación",
       "stock": 1,
-      "rop": 2,
-      "riesgo": "ROJO",
-      "coberturaDias": 132.4
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
-      "material": "32004805",
-      "descripcion": "PANTALON DRILL C/LOG.CAQUI T/36",
+      "material": "32003812",
+      "descripcion": "CAMISA OXFORD M/LARG.CELESTE T/M",
       "clasificacion": "Baja Rotación",
-      "stock": 6,
-      "rop": 1,
+      "stock": 7,
+      "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1986
+      "coberturaDias": null
     },
     {
       "material": "33030804",
