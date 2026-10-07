@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-10-07T15:54:13.051Z",
+  "publicadoEn": "2026-10-07T17:11:44.523Z",
   "totalMaterialesParaReordenar": 247,
   "materialesParaReordenar": [
     {
@@ -91,6 +91,15 @@
       "rop": 6,
       "riesgo": "ROJO",
       "coberturaDias": 40.53061224489796
+    },
+    {
+      "material": "31013761",
+      "descripcion": "RODILLO P/PINTAR 3\"",
+      "clasificacion": "Mediana Rotación",
+      "stock": 7,
+      "rop": 13,
+      "riesgo": "ROJO",
+      "coberturaDias": 25.744444444444444
     },
     {
       "material": "31015363",
@@ -339,28 +348,28 @@
       "material": "32022255",
       "descripcion": "RESPIRADOR P/VAP.ORG.-HUMOS R95",
       "clasificacion": "Baja Rotación",
-      "stock": 95,
+      "stock": 94,
       "rop": 14,
       "riesgo": "AMARILLO",
-      "coberturaDias": 556.5486725663717
+      "coberturaDias": 550.6902654867257
     },
     {
       "material": "32022265",
       "descripcion": "ROPA AGUA CASAC.JEBE DOBLE FAZ FLO T/L",
       "clasificacion": "Baja Rotación",
-      "stock": 57,
+      "stock": 67,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 12369
+      "coberturaDias": 14539
     },
     {
       "material": "32022274",
       "descripcion": "ROPA AGUA PANT.JEBE DOBLE FAZ T/M",
       "clasificacion": "Baja Rotación",
-      "stock": 34,
+      "stock": 81,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 7502.666666666666
+      "coberturaDias": 17874
     },
     {
       "material": "32022256",
@@ -438,10 +447,10 @@
       "material": "31013843",
       "descripcion": "SILICONA CARTUCHO TRANSP.",
       "clasificacion": "Alta Rotación",
-      "stock": 9,
+      "stock": 7,
       "rop": 10,
       "riesgo": "ROJO",
-      "coberturaDias": 44.796992481203006
+      "coberturaDias": 34.8421052631579
     },
     {
       "material": "31014281",
@@ -471,6 +480,15 @@
       "coberturaDias": 551.6666666666666
     },
     {
+      "material": "31015602",
+      "descripcion": "RODILLO P/PINTAR 4\"",
+      "clasificacion": "Mediana Rotación",
+      "stock": 15,
+      "rop": 15,
+      "riesgo": "ROJO",
+      "coberturaDias": 44.93212669683258
+    },
+    {
       "material": "31032188",
       "descripcion": "CINTA AISLANTE NEGRA 600V-33+ 3M",
       "clasificacion": "Baja Rotación",
@@ -478,15 +496,6 @@
       "rop": 4,
       "riesgo": "AMARILLO",
       "coberturaDias": 339.94594594594594
-    },
-    {
-      "material": "32003555",
-      "descripcion": "BIDON AGUA 20L",
-      "clasificacion": "Alta Rotación",
-      "stock": 11,
-      "rop": 19,
-      "riesgo": "ROJO",
-      "coberturaDias": 14.50597609561753
     },
     {
       "material": "32003965",
@@ -582,19 +591,19 @@
       "material": "32022269",
       "descripcion": "GUANTE QUIRURGICO NITRI.4MM T/M",
       "clasificacion": "Baja Rotación",
-      "stock": 2100,
+      "stock": 2050,
       "rop": 142,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1390.1999999999998
+      "coberturaDias": 1357.1
     },
     {
       "material": "32022278",
       "descripcion": "ROPA AGUA PANT.JEBE DOBLE FAZ T/XL",
       "clasificacion": "Baja Rotación",
-      "stock": 23,
+      "stock": 303,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 543.7857142857142
+      "coberturaDias": 7163.785714285714
     },
     {
       "material": "32024575",
@@ -618,10 +627,10 @@
       "material": "32004469",
       "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
       "clasificacion": "Alta Rotación",
-      "stock": 907,
+      "stock": 895,
       "rop": 169,
       "riesgo": "AMARILLO",
-      "coberturaDias": 310.78364389233957
+      "coberturaDias": 306.67184265010354
     },
     {
       "material": "32004575",
@@ -793,15 +802,6 @@
       "rop": 3,
       "riesgo": "ROJO",
       "coberturaDias": 162.75
-    },
-    {
-      "material": "32003902",
-      "descripcion": "CASACA TASLAN FO.POLAR VERDE VARON T/L",
-      "clasificacion": "Baja Rotación",
-      "stock": 5,
-      "rop": 1,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 1085
     },
     {
       "material": "32004804",
@@ -1383,10 +1383,10 @@
       "material": "32005055",
       "descripcion": "ROPA AGUA CASAC.JEBE DOBL FAZ A:32022265",
       "clasificacion": "Baja Rotación",
-      "stock": 10,
+      "stock": 0,
       "rop": 13,
       "riesgo": "ROJO",
-      "coberturaDias": 150.45454545454544
+      "coberturaDias": 0
     },
     {
       "material": "32004098",
@@ -1887,10 +1887,10 @@
       "material": "32005531",
       "descripcion": "CINTA MASKING TAPE 1\"X55YDS",
       "clasificacion": "Baja Rotación",
-      "stock": 17,
+      "stock": 7,
       "rop": 41,
       "riesgo": "ROJO",
-      "coberturaDias": 35.72698412698413
+      "coberturaDias": 14.711111111111112
     },
     {
       "material": "32005537",
@@ -2148,10 +2148,10 @@
       "material": "32005082",
       "descripcion": "ROPA AGUA PANT.JEBE DOBLE FAZ A:32022282",
       "clasificacion": "Baja Rotación",
-      "stock": 9,
+      "stock": 0,
       "rop": 1,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 5958
+      "riesgo": "ROJO",
+      "coberturaDias": 0
     },
     {
       "material": "34002846",
@@ -2296,8 +2296,8 @@
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1036882,
+    "almacenUSD": 1039927,
     "ppttUSD": 430677,
-    "pctVencido": 0.72
+    "pctVencido": 0.75
   }
 }
