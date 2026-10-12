@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-10-12T21:57:13.140Z",
-  "totalMaterialesParaReordenar": 247,
+  "publicadoEn": "2026-10-12T21:57:22.164Z",
+  "totalMaterialesParaReordenar": 249,
   "materialesParaReordenar": [
     {
       "material": "31012396",
@@ -195,10 +195,19 @@
       "material": "32003790",
       "descripcion": "CAJA AGUA ENV.DESCARTABLE 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 60,
+      "stock": 46,
       "rop": 79,
       "riesgo": "ROJO",
-      "coberturaDias": 28.596112311015116
+      "coberturaDias": 21.92368610511159
+    },
+    {
+      "material": "32005434",
+      "descripcion": "DESINCRUSTANTE LIQUIDO ACIDO GL",
+      "clasificacion": "Baja Rotación",
+      "stock": 2,
+      "rop": 5,
+      "riesgo": "ROJO",
+      "coberturaDias": 31.523809523809526
     },
     {
       "material": "31008471",
@@ -318,6 +327,15 @@
       "coberturaDias": 34.71227042853341
     },
     {
+      "material": "31013867",
+      "descripcion": "SOLDADURA INOX.AW E308L-16 2.50MM",
+      "clasificacion": "Alta Rotación",
+      "stock": 5.5,
+      "rop": 6,
+      "riesgo": "ROJO",
+      "coberturaDias": 27.82043935052531
+    },
+    {
       "material": "32005020",
       "descripcion": "REMOVEDOR SARRO DUKTO",
       "clasificacion": "Baja Rotación",
@@ -424,15 +442,6 @@
       "rop": 3,
       "riesgo": "AMARILLO",
       "coberturaDias": 2100.5769230769233
-    },
-    {
-      "material": "31009826",
-      "descripcion": "DISCO CORTE INOX.3/64\"X7/8\"X4 1/2\"",
-      "clasificacion": "Alta Rotación",
-      "stock": 242,
-      "rop": 33,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 175.8551042810099
     },
     {
       "material": "31012127",
@@ -552,6 +561,15 @@
       "coberturaDias": 945.7142857142858
     },
     {
+      "material": "32005548",
+      "descripcion": "PLUMON INDELEBLE PTA.GRUESA NEGRO",
+      "clasificacion": "Alta Rotación",
+      "stock": 7,
+      "rop": 8,
+      "riesgo": "ROJO",
+      "coberturaDias": 58.65822784810126
+    },
+    {
       "material": "32005599",
       "descripcion": "MASCARA CARA COMPL.T/M 6800 3M",
       "clasificacion": "Baja Rotación",
@@ -627,10 +645,10 @@
       "material": "32004469",
       "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
       "clasificacion": "Alta Rotación",
-      "stock": 895,
+      "stock": 889,
       "rop": 169,
       "riesgo": "AMARILLO",
-      "coberturaDias": 306.67184265010354
+      "coberturaDias": 304.6159420289855
     },
     {
       "material": "32004575",
@@ -690,10 +708,10 @@
       "material": "33039665",
       "descripcion": "VALV.BOLA INOX.NPT 150PSI 1\"",
       "clasificacion": "Mediana Rotación",
-      "stock": 1,
+      "stock": 0,
       "rop": 2,
       "riesgo": "ROJO",
-      "coberturaDias": 41.375
+      "coberturaDias": 0
     },
     {
       "material": "34002480",
@@ -2257,7 +2275,7 @@
     {
       "material": "50003907",
       "descripcion": "HARINA NC. CONTAMINACION FISICA",
-      "stock": 25.8
+      "stock": 19.8
     },
     {
       "material": "50003967",
@@ -2296,8 +2314,8 @@
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1039927,
-    "ppttUSD": 430677,
-    "pctVencido": 0.75
+    "almacenUSD": 1091766,
+    "ppttUSD": 423889,
+    "pctVencido": 0.71
   }
 }
