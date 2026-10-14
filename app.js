@@ -41,16 +41,24 @@ const state = {
   sim: { leadTimeMult: 1.0, demandMult: 1.0, serviceLevelZ: 1.645 },
 };
 
+// Los Intl.NumberFormat se crean una sola vez y se reutilizan: toLocaleString con
+// opciones arma un formateador nuevo en cada llamada, y las tablas formatean miles de celdas.
+const formateadoresNum = new Map();
+function formateadorNum(dec) {
+  let f = formateadoresNum.get(dec);
+  if (!f) {
+    f = new Intl.NumberFormat('es-PE', { maximumFractionDigits: dec, minimumFractionDigits: dec });
+    formateadoresNum.set(dec, f);
+  }
+  return f;
+}
+const fmtSolesIntl = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 0 });
+
 const fmtNum = (n, dec = 1) =>
-  n === null || n === undefined || Number.isNaN(n)
-    ? '—'
-    : Number(n).toLocaleString('es-PE', { maximumFractionDigits: dec, minimumFractionDigits: dec });
-const fmtSoles = (n) =>
-  n === null || n === undefined ? '—' : 'S/. ' + Number(n).toLocaleString('es-PE', { maximumFractionDigits: 0 });
-const fmtUSD = (n) =>
-  n === null || n === undefined ? '—' : 'US$ ' + Number(n).toLocaleString('es-PE', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
-const fmtPct = (n) =>
-  n === null || n === undefined ? '—' : Number(n).toLocaleString('es-PE', { maximumFractionDigits: 2, minimumFractionDigits: 2 }) + '%';
+  n === null || n === undefined || Number.isNaN(n) ? '—' : formateadorNum(dec).format(Number(n));
+const fmtSoles = (n) => (n === null || n === undefined ? '—' : 'S/. ' + fmtSolesIntl.format(Number(n)));
+const fmtUSD = (n) => (n === null || n === undefined ? '—' : 'US$ ' + formateadorNum(2).format(Number(n)));
+const fmtPct = (n) => (n === null || n === undefined ? '—' : formateadorNum(2).format(Number(n)) + '%');
 
 function hoyISO() {
   const d = new Date();
@@ -122,7 +130,7 @@ function guardarMarcados() {
 function marcarMaterial(material, marcado) {
   if (marcado) {
     if (!(material in state.marcados)) {
-      const m = state.calculados.find((x) => x.material === material);
+      const m = buscarCalculado(material);
       const sugerida = m && m.ropCalculado !== null ? Math.max(0, Math.round(m.ropCalculado - m.stockFisico)) : 0;
       state.marcados[material] = sugerida;
     }
@@ -276,6 +284,17 @@ function overridesClasificacionEfectivos() {
  * una clasificación en la pestaña MRP.
  */
 function recalcularConClasificacionesActuales() {
+  recalcularBase();
+  recalcularMateriales();
+}
+
+/**
+ * Parte pesada del cálculo: filtra los movimientos de DATA, arma la
+ * estacionalidad y las estadísticas por material. Solo depende de los
+ * archivos y de los umbrales de temporada — NO de las clasificaciones
+ * manuales —, así que editar una clasificación no necesita repetirla.
+ */
+function recalcularBase() {
   const dataRows = state.archivos.DATA.filas;
   const mrpRows = state.archivos.MRP.filas;
   const mb52Rows = state.archivos.MB52.filas;
@@ -287,45 +306,58 @@ function recalcularConClasificacionesActuales() {
     almacenExtra: ALMACEN_PLANTA,
     materialesCombustible,
   });
-  const fechas = state.consumoReal.map((r) => r.fechaISO).sort();
-  state.fechaMin = fechas[0];
-  state.fechaMax = fechas[fechas.length - 1];
+  let fechaMin = null;
+  let fechaMax = null;
+  for (const r of state.consumoReal) {
+    if (fechaMin === null || r.fechaISO < fechaMin) fechaMin = r.fechaISO;
+    if (fechaMax === null || r.fechaISO > fechaMax) fechaMax = r.fechaISO;
+  }
+  state.fechaMin = fechaMin;
+  state.fechaMax = fechaMax;
 
   state.indiceEstacional = SupplyEngine.calcularIndiceEstacional(state.consumoReal);
   state.mesATemporada = SupplyEngine.clasificarTemporadas(state.indiceEstacional, state.umbralAlta, state.umbralBaja);
   const diasTemp = SupplyEngine.diasPorTemporada(state.fechaMin, state.fechaMax, state.mesATemporada);
+  state.totalDiasObservados = diasTemp.Alta + diasTemp.Media + diasTemp.Baja;
   state.statsPorTemporada = SupplyEngine.calcularStatsPorTemporada(state.consumoReal, state.mesATemporada, diasTemp);
   state.mb52Map = SupplyEngine.agregarMB52(mb52Rows, ALMACEN);
 
-  const movClasificacionMap = SupplyEngine.calcularClasificacionMovimiento(state.consumoReal, state.fechaMin, state.fechaMax);
-  state.movClasificacionMap = movClasificacionMap;
+  state.movClasificacionMap = SupplyEngine.calcularClasificacionMovimiento(state.consumoReal, state.fechaMin, state.fechaMax);
   state.materialesConConsumoPI01 = materialesConConsumoPI01;
   state.mrpRowsCache = mrpRows;
+  state.stockTodosAlmacenes = SupplyEngine.agregarStockPorAlmacenTodos(mb52Rows);
+  state.transitoMap = SupplyEngine.extraerTransitoPorMaterial(mb52Rows);
+  state.statsMensuales = SupplyEngine.calcularStatsMensualesGenerales(state.consumoReal, state.fechaMin, state.fechaMax);
+}
 
+/** Parte liviana: SS/ROP/EOQ, clasificación final, ABC-XYZ y traslados. Usa lo ya calculado en recalcularBase. */
+function recalcularMateriales() {
   state.calculados = SupplyEngine.calcularMateriales(
-    mrpRows,
+    state.mrpRowsCache,
     state.statsPorTemporada,
     state.mesATemporada,
     state.mb52Map,
     state.params,
     hoyISO(),
-    movClasificacionMap,
-    materialesConConsumoPI01,
+    state.movClasificacionMap,
+    state.materialesConConsumoPI01,
     null,
     overridesClasificacionEfectivos()
   );
 
-  const stockTodosAlmacenes = SupplyEngine.agregarStockPorAlmacenTodos(mb52Rows);
-  const transitoMap = SupplyEngine.extraerTransitoPorMaterial(mb52Rows);
   state.calculados = SupplyEngine.enriquecerConCobertura(
-    state.calculados, stockTodosAlmacenes, transitoMap, ALMACEN, ALMACEN_PLANTA, state.coberturaIdealDias
+    state.calculados, state.stockTodosAlmacenes, state.transitoMap, ALMACEN, ALMACEN_PLANTA, state.coberturaIdealDias
   );
+  state.calculadosPorMaterial = new Map(state.calculados.map((m) => [m.material, m]));
 
   state.planificados = state.calculados.filter((m) => m.incluidoEnPlanificacion);
+  state.planificados = SupplyEngine.calcularABCXYZ(state.planificados, state.statsMensuales);
+  state.planificados = SupplyEngine.enriquecerConTraslados(state.planificados, state.stockTodosAlmacenes, ALMACEN);
+}
 
-  const statsMensuales = SupplyEngine.calcularStatsMensualesGenerales(state.consumoReal, state.fechaMin, state.fechaMax);
-  state.planificados = SupplyEngine.calcularABCXYZ(state.planificados, statsMensuales);
-  state.planificados = SupplyEngine.enriquecerConTraslados(state.planificados, stockTodosAlmacenes, ALMACEN);
+/** Búsqueda O(1) de un material ya calculado (en vez de recorrer state.calculados con find). */
+function buscarCalculado(material) {
+  return state.calculadosPorMaterial ? state.calculadosPorMaterial.get(material) : undefined;
 }
 
 async function calcularTodo() {
@@ -364,19 +396,29 @@ function renderTodo() {
   renderAceiteHarina();
   renderMonitorUsuario();
   renderMonitorDetalle();
+  renderEstacionalidad();
+  renderParametros();
+  poblarListaTendencia();
+  renderBSU();
+  renderVistasDeMateriales();
+}
+
+/**
+ * Solo las vistas que dependen de los materiales calculados (y por lo
+ * tanto de las clasificaciones). Valorización, Aceite/Harina, Monitor,
+ * BSU y estacionalidad salen directo de los archivos y no cambian al
+ * editar una clasificación.
+ */
+function renderVistasDeMateriales() {
   renderResumen();
   renderInactivosConStock();
   renderMaterialesPlanificados();
-  renderEstacionalidad();
-  renderParametros();
   renderTablaMateriales();
   renderInmovilizados();
   renderABCXYZ();
   renderCobertura();
   renderListaPedido();
   renderSimulacion();
-  poblarListaTendencia();
-  renderBSU();
   renderMRP();
 }
 
@@ -516,10 +558,11 @@ function editarClasificacionManual(material, valor) {
   document.getElementById('mrp-pendientes-aviso').textContent =
     `${state.edicionesPendientesClasificacion.size} cambio(s) sin guardar en GitHub (pero YA están aplicados en todos los cálculos).`;
 
-  // Recalcular todo en memoria al instante — no depende de guardar en GitHub.
-  recalcularConClasificacionesActuales();
+  // Recalcular en memoria al instante — no depende de guardar en GitHub. La parte
+  // pesada (movimientos de DATA, estacionalidad) no cambia con una clasificación.
+  recalcularMateriales();
   actualizarAlertasClasificacion();
-  renderTodo();
+  renderVistasDeMateriales();
 }
 
 async function guardarClasificacionesManuales() {
@@ -574,7 +617,7 @@ function renderMRP() {
 
   const MAX_FILAS = 400;
   const tbody = document.getElementById('tabla-mrp-body');
-  tbody.innerHTML = filas
+  let html = filas
     .slice(0, MAX_FILAS)
     .map((m) => {
       const opciones = ['', ...SupplyEngine.CLASIFICACIONES_MANUALES_VALIDAS]
@@ -591,8 +634,9 @@ function renderMRP() {
     .join('');
 
   if (filas.length > MAX_FILAS) {
-    tbody.innerHTML += `<tr><td colspan="5" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — afina la búsqueda para ver más.</td></tr>`;
+    html += `<tr><td colspan="5" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — afina la búsqueda para ver más.</td></tr>`;
   }
+  tbody.innerHTML = html;
 
   tbody.querySelectorAll('.input-clasificacion-manual').forEach((sel) => {
     sel.addEventListener('change', (e) => editarClasificacionManual(e.target.dataset.material, e.target.value));
@@ -1015,16 +1059,20 @@ function renderInactivosConStock() {
 
 function renderResumen() {
   const total = state.planificados.length;
-  const critico = state.planificados.filter((m) => m.estadoSalud === 'STOCKOUT_CRITICAL').length;
-  const urgente = state.planificados.filter((m) => m.estadoSalud === 'REORDER_URGENT').length;
-  const rojo = critico + urgente;
-  const optimo = state.planificados.filter((m) => m.estadoSalud === 'OPTIMAL').length;
-  const sobrestock = state.planificados.filter((m) => m.estadoSalud === 'OVERSTOCK').length;
-  const sinMovimiento = state.planificados.filter((m) => m.estadoSalud === 'DEAD_STOCK').length;
-  const alta = state.planificados.filter((m) => m.confianza === 'Alta').length;
-  const media = state.planificados.filter((m) => m.confianza === 'Media').length;
-  const baja = state.planificados.filter((m) => m.confianza === 'Baja').length;
-  const sinDatos = state.planificados.filter((m) => m.confianza === 'Sin datos').length;
+  const porEstado = {};
+  const porConfianza = {};
+  for (const m of state.planificados) {
+    porEstado[m.estadoSalud] = (porEstado[m.estadoSalud] || 0) + 1;
+    porConfianza[m.confianza] = (porConfianza[m.confianza] || 0) + 1;
+  }
+  const rojo = (porEstado.STOCKOUT_CRITICAL || 0) + (porEstado.REORDER_URGENT || 0);
+  const optimo = porEstado.OPTIMAL || 0;
+  const sobrestock = porEstado.OVERSTOCK || 0;
+  const sinMovimiento = porEstado.DEAD_STOCK || 0;
+  const alta = porConfianza.Alta || 0;
+  const media = porConfianza.Media || 0;
+  const baja = porConfianza.Baja || 0;
+  const sinDatos = porConfianza['Sin datos'] || 0;
 
   document.getElementById('kpi-total').textContent = total;
   document.getElementById('kpi-rojo').textContent = rojo;
@@ -1178,13 +1226,24 @@ function bindFormularios() {
   document.getElementById('filtro-categoria-cobertura').addEventListener('change', renderCobertura);
   document.getElementById('input-cobertura-ideal').addEventListener('change', renderCobertura);
 
+  // Los sliders disparan 'input' muchas veces por segundo y cada simulación recalcula
+  // todos los materiales: se agrupan en una sola corrida por cuadro de animación.
+  let simulacionPendiente = false;
+  const programarSimulacion = () => {
+    if (simulacionPendiente) return;
+    simulacionPendiente = true;
+    requestAnimationFrame(() => {
+      simulacionPendiente = false;
+      renderSimulacion();
+    });
+  };
   document.getElementById('sim-leadtime-slider').addEventListener('input', (e) => {
     state.sim.leadTimeMult = Number(e.target.value);
-    renderSimulacion();
+    programarSimulacion();
   });
   document.getElementById('sim-demanda-slider').addEventListener('input', (e) => {
     state.sim.demandMult = Number(e.target.value);
-    renderSimulacion();
+    programarSimulacion();
   });
   document.querySelectorAll('.btn-nivel-servicio').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -1252,7 +1311,7 @@ function renderTablaMateriales() {
 
   const tbody = document.getElementById('tabla-materiales-body');
   const MAX_FILAS = 400;
-  tbody.innerHTML = rows
+  let html = rows
     .slice(0, MAX_FILAS)
     .map(
       (m) => `<tr>
@@ -1279,8 +1338,9 @@ function renderTablaMateriales() {
     .join('');
 
   if (rows.length > MAX_FILAS) {
-    tbody.innerHTML += `<tr><td colspan="18" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — afina el filtro para ver más.</td></tr>`;
+    html += `<tr><td colspan="18" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — afina el filtro para ver más.</td></tr>`;
   }
+  tbody.innerHTML = html;
 }
 
 // ---------------- INMOVILIZADOS ----------------
@@ -1289,10 +1349,7 @@ function renderInmovilizados() {
   const umbralCrit = Number(document.getElementById('umbral-critico').value || 365);
   const antiguedadMin = Number(document.getElementById('filtro-antiguedad-inmov').value || 0);
   const valorMin = Number(document.getElementById('filtro-valor-inmov').value || 0);
-  const totalDiasObs = SupplyEngine.diasPorTemporada
-    ? Object.values(SupplyEngine.diasPorTemporada(state.fechaMin, state.fechaMax, state.mesATemporada)).reduce((a, b) => a + b, 0)
-    : 0;
-  let inmov = SupplyEngine.calcularInmovilizados(state.calculados, umbralMod, umbralCrit, totalDiasObs);
+  let inmov = SupplyEngine.calcularInmovilizados(state.calculados, umbralMod, umbralCrit, state.totalDiasObservados || 0);
 
   const totalSinFiltrar = inmov.length;
   if (antiguedadMin > 0) inmov = inmov.filter((m) => m.diasSinMovimientoEfectivo >= antiguedadMin);
@@ -1397,7 +1454,7 @@ function renderABCXYZ() {
 
   const tbody = document.getElementById('tabla-abcxyz-body');
   const MAX_FILAS = 300;
-  tbody.innerHTML = rows
+  let htmlFilas = rows
     .slice(0, MAX_FILAS)
     .map(
       (m) => `<tr>
@@ -1415,8 +1472,9 @@ function renderABCXYZ() {
     .join('');
 
   if (rows.length > MAX_FILAS) {
-    tbody.innerHTML += `<tr><td colspan="9" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — filtra por celda o categoría para ver un grupo más chico.</td></tr>`;
+    htmlFilas += `<tr><td colspan="9" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — filtra por celda o categoría para ver un grupo más chico.</td></tr>`;
   }
+  tbody.innerHTML = htmlFilas;
 }
 
 // ---------------- COBERTURA (Insumos y Materia Prima) ----------------
@@ -1451,7 +1509,7 @@ function renderCobertura() {
 
   const tbody = document.getElementById('tabla-cobertura-body');
   const MAX_FILAS = 300;
-  tbody.innerHTML = filas
+  let html = filas
     .slice(0, MAX_FILAS)
     .map((m) => {
       const claseColor = m.coberturaDiasVivo === null ? 'nd' : m.coberturaDiasVivo < coberturaIdeal ? 'roja' : 'verde';
@@ -1475,8 +1533,9 @@ function renderCobertura() {
     .join('');
 
   if (filas.length > MAX_FILAS) {
-    tbody.innerHTML += `<tr><td colspan="14" class="muted centrado">… mostrando los primeros ${MAX_FILAS}.</td></tr>`;
+    html += `<tr><td colspan="14" class="muted centrado">… mostrando los primeros ${MAX_FILAS}.</td></tr>`;
   }
+  tbody.innerHTML = html;
 }
 
 // ---------------- SIMULADOR DE ESCENARIOS ----------------
@@ -1491,7 +1550,8 @@ function ejecutarSimulacion() {
     hoyISO(),
     state.movClasificacionMap,
     state.materialesConConsumoPI01,
-    { leadTimeMult: state.sim.leadTimeMult, demandMult: state.sim.demandMult }
+    { leadTimeMult: state.sim.leadTimeMult, demandMult: state.sim.demandMult },
+    overridesClasificacionEfectivos() // mismas clasificaciones que la base, si no la comparación no es justa
   );
   simulados = simulados.filter((m) => m.incluidoEnPlanificacion);
   return simulados;
@@ -1557,7 +1617,7 @@ function zAporcentaje(z) {
 function renderListaPedido() {
   const materialesMarcados = Object.keys(state.marcados);
   const items = materialesMarcados
-    .map((material) => state.calculados.find((m) => m.material === material))
+    .map(buscarCalculado)
     .filter(Boolean);
 
   const total = items.length;
@@ -1609,7 +1669,7 @@ function renderListaPedido() {
 
 function exportarListaPedido() {
   const items = Object.keys(state.marcados)
-    .map((material) => state.calculados.find((m) => m.material === material))
+    .map(buscarCalculado)
     .filter(Boolean);
   if (items.length === 0) {
     alert('No hay materiales marcados para exportar.');
@@ -1715,7 +1775,7 @@ function bindEventosDelegados() {
 let materialDetalleActualCodigo = null;
 
 function abrirDetalleMaterial(codigo) {
-  const m = state.calculados.find((x) => x.material === codigo);
+  const m = buscarCalculado(codigo);
   if (!m) return;
   materialDetalleActualCodigo = codigo;
   const cajaIA = document.getElementById('detalle-ia-respuesta');
@@ -1777,7 +1837,7 @@ function poblarListaTendencia() {
 
 function mostrarTendenciaMaterial(valorInput) {
   const codigo = (valorInput || '').split('—')[0].trim();
-  const material = state.calculados.find((m) => m.material === codigo);
+  const material = buscarCalculado(codigo);
 
   if (!material) {
     document.getElementById('tendencia-vacio').style.display = 'block';
@@ -2128,6 +2188,7 @@ function bindInventarioCiclico() {
 
 // ---------------- SNAPSHOT PARA WHATSAPP ----------------
 const RUTA_SNAPSHOT_WHATSAPP = 'snapshot/resumen.json';
+const CLAVE_ULTIMO_SNAPSHOT_WHATSAPP = 'snapshot_whatsapp_huella_v1';
 
 async function publicarSnapshotParaWhatsApp() {
   try {
@@ -2158,8 +2219,7 @@ async function publicarSnapshotParaWhatsApp() {
     const monitorRows = obtenerMonitorFilas();
     const kpi = SupplyEngine.calcularValorizacionReal(mb52Rows, monitorRows || [], state.tipoCambio);
 
-    const snapshot = {
-      publicadoEn: new Date().toISOString(),
+    const contenido = {
       totalMaterialesParaReordenar: materialesParaReordenar.length,
       materialesParaReordenar,
       stockAceitePescado: stockAceite,
@@ -2171,7 +2231,24 @@ async function publicarSnapshotParaWhatsApp() {
       },
     };
 
+    // Cada publicación es un commit en el repo: si los datos no cambiaron desde
+    // la última vez (ej. solo se recargó la página con los mismos archivos), no se sube.
+    const huella = JSON.stringify(contenido);
+    let ultimaHuella = null;
+    try {
+      ultimaHuella = localStorage.getItem(CLAVE_ULTIMO_SNAPSHOT_WHATSAPP);
+    } catch (err) {
+      // sin localStorage — se publica igual
+    }
+    if (huella === ultimaHuella) return;
+
+    const snapshot = { publicadoEn: new Date().toISOString(), ...contenido };
     await GitHubSync.escribirJSON(RUTA_SNAPSHOT_WHATSAPP, snapshot, 'Actualizar snapshot para WhatsApp');
+    try {
+      localStorage.setItem(CLAVE_ULTIMO_SNAPSHOT_WHATSAPP, huella);
+    } catch (err) {
+      // la huella es solo para evitar commits repetidos; si no se puede guardar, no pasa nada
+    }
   } catch (err) {
     // No interrumpe al usuario — si el Worker/token de WhatsApp no está configurado todavía, es normal.
     console.warn('No se pudo publicar el snapshot para WhatsApp:', err.message);
@@ -2247,7 +2324,7 @@ async function preguntarDatosIA() {
 
 async function explicarMaterialConIA() {
   if (!materialDetalleActualCodigo) return;
-  const m = state.calculados.find((x) => x.material === materialDetalleActualCodigo);
+  const m = buscarCalculado(materialDetalleActualCodigo);
   if (!m) return;
   const caja = document.getElementById('detalle-ia-respuesta');
   const boton = document.getElementById('btn-explicar-ia');

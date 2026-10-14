@@ -8,7 +8,20 @@ const DB_NAME = 'abastecimiento_l001_db';
 const DB_VERSION = 1;
 const STORE = 'archivos';
 
+// Una sola conexión para toda la página (antes se abría una por operación).
+let dbPromesa = null;
+
 function abrirDB() {
+  if (!dbPromesa) {
+    dbPromesa = abrirDBNueva().catch((err) => {
+      dbPromesa = null; // permite reintentar si falló
+      throw err;
+    });
+  }
+  return dbPromesa;
+}
+
+function abrirDBNueva() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {

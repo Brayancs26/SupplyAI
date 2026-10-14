@@ -248,23 +248,25 @@ function agregarMB52(mb52Rows, almacen) {
     const material = String(row['Material']).trim();
     const stock = Number(row['Libre utilización']) || 0;
     const valor = Number(row['Valor libre util.']) || 0;
-    if (!acc.has(material)) acc.set(material, { stock: 0, valor: 0, fechasVenc: [] });
-    const a = acc.get(material);
+    let a = acc.get(material);
+    if (!a) {
+      a = { stock: 0, valor: 0, fechaVenc: null };
+      acc.set(material, a);
+    }
     a.stock += stock;
     a.valor += valor;
     const fv = row['Cad./FPC'];
     if (fv) {
       const iso = toISODate(fv instanceof Date ? fv : new Date(fv));
-      if (iso) a.fechasVenc.push(iso);
+      if (iso && (!a.fechaVenc || iso < a.fechaVenc)) a.fechaVenc = iso;
     }
   }
   const resultado = new Map();
-  for (const [material, { stock, valor, fechasVenc }] of acc.entries()) {
-    fechasVenc.sort();
+  for (const [material, { stock, valor, fechaVenc }] of acc.entries()) {
     resultado.set(material, {
       stockFisico: stock,
       costoUnitario: stock > 0 ? valor / stock : null,
-      fechaVencimiento: fechasVenc.length > 0 ? fechasVenc[0] : null,
+      fechaVencimiento: fechaVenc,
     });
   }
   return resultado;
@@ -282,10 +284,23 @@ function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, 
   const leadTimeMult = simParams && simParams.leadTimeMult ? simParams.leadTimeMult : 1;
   const demandMult = simParams && simParams.demandMult ? simParams.demandMult : 1;
 
+  // Muchos materiales comparten el mismo lead time: la temporada objetivo solo
+  // depende de los días redondeados, así que se calcula una vez por valor.
+  const cacheTemporada = new Map();
+  const temporadaPara = (lt) => {
+    const dias = Math.round(lt);
+    let t = cacheTemporada.get(dias);
+    if (t === undefined) {
+      t = temporadaObjetivo(dias, hoyISO, mesATemporada);
+      cacheTemporada.set(dias, t);
+    }
+    return t;
+  };
+
   return mrpRows.map((m) => {
     const material = String(m['Material']).trim();
     const lt = (Number(m['Plazo entrega prev.']) || 0) * leadTimeMult;
-    const tempObjetivo = temporadaObjetivo(lt, hoyISO, mesATemporada);
+    const tempObjetivo = temporadaPara(lt);
 
     const clasificacionSAP = m['Den.Clasificación'] || 'Sin Clasificar';
     const movInfo = movClasificacionMap ? movClasificacionMap.get(material) : null;
@@ -507,10 +522,10 @@ function calcularStatsMensualesGenerales(consumoReal, fechaMinISO, fechaMaxISO) 
  *   práctica se consume casi todo en L001.
  */
 /** Diesel, Petróleo R500, y los 4 materiales de balones de gas/oxígeno. */
-const MATERIALES_ENERGETICOS = ['30000527', '30000528', '20000669', '20000670', '20000671', '20000699'];
+const MATERIALES_ENERGETICOS = new Set(['30000527', '30000528', '20000669', '20000670', '20000671', '20000699']);
 
 function categorizarMaterial(material, denomGrupoArticulo, materialesConConsumoPI01) {
-  if (MATERIALES_ENERGETICOS.includes(material)) return 'Energéticos';
+  if (MATERIALES_ENERGETICOS.has(material)) return 'Energéticos';
   if (materialesConConsumoPI01 && materialesConConsumoPI01.has(material)) return 'Insumos';
   return 'Otros';
 }
@@ -746,7 +761,7 @@ function proponerClasificacion(material, clasificacionSAP, movInfo) {
   // Energéticos (Diesel, R500, balones de gas y oxígeno) se gestionan aparte,
   // con su propia tabla de cobertura — no entran a la planificación SS/ROP
   // estándar, sin importar qué diga SAP.
-  if (MATERIALES_ENERGETICOS.includes(material)) {
+  if (MATERIALES_ENERGETICOS.has(material)) {
     return { clasificacionFinal: 'Energéticos', incluido: false, reclasificado: false, motivo: 'Energético (combustible o gas) — se cubre aparte, en su propia tabla de Cobertura' };
   }
   if (sap === 'Inactivo') {
@@ -880,13 +895,14 @@ function generarDiagnostico(m) {
 // ============================================================
 
 const ALMACENES_PPTT = ['C001', 'TK01', 'TK02', 'TK03', 'DK01', 'DK02', 'DK03', 'CL01'];
-const ALMACENES_VENCIDO_SCOPE = ['L001', 'L002', 'L003', 'L004', 'L005', 'L006', 'L007', 'L008', 'L010'];
+const ALMACENES_VENCIDO_SCOPE = new Set(['L001', 'L002', 'L003', 'L004', 'L005', 'L006', 'L007', 'L008', 'L010']);
 
 function sumValorPorAlmacenes(mb52Rows, almacenes) {
+  const set = new Set(almacenes);
   let total = 0;
   for (const row of mb52Rows) {
     const alm = String(row['Almacén'] || '').trim();
-    if (!almacenes.includes(alm)) continue;
+    if (!set.has(alm)) continue;
     total += Number(row['Valor libre util.']) || 0;
   }
   return total;
@@ -897,7 +913,7 @@ function sumValorVencido(mb52Rows) {
   for (const row of mb52Rows) {
     const alm = String(row['Almacén'] || '').trim();
     const dias = Number(row['Días Res.']);
-    if (!ALMACENES_VENCIDO_SCOPE.includes(alm)) continue;
+    if (!ALMACENES_VENCIDO_SCOPE.has(alm)) continue;
     if (!(dias < 0)) continue;
     total += Number(row['Valor libre util.']) || 0;
   }
@@ -947,9 +963,10 @@ function calcularValorizacionReal(mb52Rows, monitorRows, tipoCambio) {
  */
 function stockPorAlmacenes(mb52Rows, almacenes) {
   const acc = new Map(); // material -> {descripcion, almacen, stock, lotes: Map(lote->stock)}
+  const set = new Set(almacenes);
   for (const row of mb52Rows) {
     const almacen = String(row['Almacén'] || '').trim();
-    if (!almacenes.includes(almacen)) continue;
+    if (!set.has(almacen)) continue;
     const material = String(row['Material'] || '').trim();
     const clave = material + '|' + almacen;
     const stock = Number(row['Libre utilización']) || 0;
