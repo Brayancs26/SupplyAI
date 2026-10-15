@@ -227,13 +227,12 @@
       <div class="panel" id="panel-combustible">
         <div class="panel-header">
           <h2>Combustible — Tanques Matarani</h2>
-          <p class="panel-sub">Stock del almacén L001 (MB52) frente a la capacidad de cada tanque. La cobertura usa el consumo diario promedio de la ventana elegida.</p>
         </div>
         <div class="comb-params">
-          <label><span class="term" data-tooltip="Capacidad total de tanques de Diesel, en galones">Capacidad Diesel (GLN)</span><input type="number" id="comb-cap-diesel" min="0" step="1000" /></label>
-          <label><span class="term" data-tooltip="Capacidad total de tanques de Residual (Petróleo Industrial N°500), en galones">Capacidad Residual (GLN)</span><input type="number" id="comb-cap-residual" min="0" step="1000" /></label>
-          <label><span class="term" data-tooltip="Galones ya pedidos y aún no recibidos. No viene en los archivos SAP cargados: ingrésalo a mano">En curso Diesel (GLN)</span><input type="number" id="comb-curso-diesel" min="0" step="1000" /></label>
-          <label><span class="term" data-tooltip="Galones ya pedidos y aún no recibidos. No viene en los archivos SAP cargados: ingrésalo a mano">En curso Residual (GLN)</span><input type="number" id="comb-curso-residual" min="0" step="1000" /></label>
+          <label><span title="Capacidad total de tanques de Diesel, en galones">Capacidad Diesel (GLN)</span><input type="number" id="comb-cap-diesel" min="0" step="1000" /></label>
+          <label><span title="Capacidad total de tanques de Residual (Petróleo Industrial N°500), en galones">Capacidad Residual (GLN)</span><input type="number" id="comb-cap-residual" min="0" step="1000" /></label>
+          <label><span title="Galones ya pedidos y aún no recibidos. No viene en los archivos SAP cargados: ingrésalo a mano">En curso Diesel (GLN)</span><input type="number" id="comb-curso-diesel" min="0" step="1000" /></label>
+          <label><span title="Galones ya pedidos y aún no recibidos. No viene en los archivos SAP cargados: ingrésalo a mano">En curso Residual (GLN)</span><input type="number" id="comb-curso-residual" min="0" step="1000" /></label>
           <label><span>Ventana de consumo</span>
             <select id="comb-ventana">
               <option value="7">Últimos 7 días</option>
