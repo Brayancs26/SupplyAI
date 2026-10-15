@@ -644,6 +644,50 @@ function renderAceiteHarina() {
   const harina = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_HARINA);
   document.getElementById('tabla-aceite-body').innerHTML = tablaAceiteHarinaHTML(aceite, 'Sin stock de Aceite de Pescado en estos almacenes.', 'aceite');
   document.getElementById('tabla-harina-body').innerHTML = tablaAceiteHarinaHTML(harina, 'Sin stock de Harina de Pescado en C001.', 'harina');
+  renderHarinaConsolidada();
+}
+
+// Consolidado de harina por calidad. Orden de reglas: Scrap -> NC (NC/BLOQUEO/CALIDAD) -> Calidad E -> Comercial (A/B/C/D)
+const GRUPOS_HARINA = ['HARINA SCRAP', 'HARINA COMERCIAL', 'HARINA CALIDAD E', 'HARINA NC', 'OTROS'];
+function grupoDeHarina(descripcion) {
+  const d = String(descripcion || '').toUpperCase();
+  if (/\bSCRAP\b/.test(d)) return 'HARINA SCRAP';
+  if (/\bNC\b|BLOQUEO|CALIDAD/.test(d)) return 'HARINA NC';
+  if (/\bHARINA\s+E\b/.test(d)) return 'HARINA CALIDAD E';
+  if (/\bHARINA\s+[A-D]\b/.test(d)) return 'HARINA COMERCIAL';
+  return 'OTROS';
+}
+
+function renderHarinaConsolidada() {
+  const tbody = document.getElementById('tabla-harina-consolidada-body');
+  if (!tbody || !state.archivos.MB52) return;
+  const harina = SupplyEngine.stockPorAlmacenes(state.archivos.MB52.filas, ALMACENES_HARINA);
+  const grupos = {};
+  GRUPOS_HARINA.forEach((g) => (grupos[g] = []));
+  harina.forEach((r) => grupos[grupoDeHarina(r.descripcion)].push(r));
+  let html = '';
+  let totalGeneral = 0;
+  GRUPOS_HARINA.forEach((g, i) => {
+    const items = grupos[g];
+    if (g === 'OTROS' && items.length === 0) return;
+    const total = items.reduce((a, r) => a + r.stock, 0);
+    totalGeneral += total;
+    const id = `detalle-harina-grupo-${i}`;
+    const detalle = items.length
+      ? items.slice().sort((x, y) => y.stock - x.stock)
+          .map((r) => `<div class="fila-lote fila-lote-ancha"><span>${r.material} · ${r.descripcion}</span><span>${fmtNum(r.stock, 2)}</span></div>`).join('')
+      : '<div class="fila-lote"><span class="muted">Sin stock</span></div>';
+    html += `<tr class="fila-material-expandible" data-target="${id}">
+      <td><span class="chevron">▸</span> ${g}</td>
+      <td class="num">${items.length}</td>
+      <td class="num">${fmtNum(total, 2)}</td>
+    </tr>
+    <tr class="fila-detalle-lotes" id="${id}" style="display:none">
+      <td colspan="3"><div class="lotes-lista">${detalle}</div></td>
+    </tr>`;
+  });
+  html += `<tr class="fila-total"><td colspan="2">Total</td><td class="num">${fmtNum(totalGeneral, 2)}</td></tr>`;
+  tbody.innerHTML = html;
 }
 
 function renderAvisoSinMonitor() {
