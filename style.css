@@ -757,3 +757,25 @@ footer {
 .comb-chip-stock { color: var(--cyan); }
 .fila-total-suave td { font-weight: 700; }
 @media (max-width: 1100px) { .comb-kpis { grid-template-columns: repeat(2, 1fr); } .comb-grid, .comb-grid-2 { grid-template-columns: 1fr; } }
+
+/* Tanques (reemplaza barras planas) */
+.comb-kpis .kpi-card { margin: 0; }
+.comb-barra-wrap { height: 260px; }
+.tank-col { display: flex; flex-direction: column; align-items: center; height: 100%; width: 120px; }
+.tank-area { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; min-height: 0; }
+.tank { position: relative; width: 96px; padding-top: 11px; }
+.tank-body {
+  position: relative; height: 100%; overflow: hidden;
+  border: 2px solid rgba(255,255,255,.18); border-top: none;
+  border-radius: 0 0 16px 16px / 0 0 12px 12px; background: rgba(255,255,255,.03);
+}
+.tank-body::after { content: ''; position: absolute; top: 0; bottom: 0; left: 12%; width: 9%; background: rgba(255,255,255,.10); border-radius: 6px; pointer-events: none; }
+.tank-lid { position: absolute; top: 0; left: 0; right: 0; height: 22px; border: 2px solid rgba(255,255,255,.24); border-radius: 50%; background: rgba(255,255,255,.07); }
+.tank-liquid { position: absolute; left: 0; right: 0; bottom: 0; height: 100%; transition: height .4s var(--ease); }
+.tank-liquid::before { content: ''; position: absolute; top: -9px; left: 0; right: 0; height: 18px; border-radius: 50%; }
+.tank-cyan { background: linear-gradient(90deg, #2a95a8, #3fc1d6 45%, #2a95a8); }
+.tank-cyan::before { background: #7bdcea; }
+.tank-green { background: linear-gradient(90deg, #2c7f53, #3dbd77 45%, #2c7f53); opacity: .75; }
+.tank-green::before { background: #6fd9a0; }
+.tank-texto { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; z-index: 2; font-family: var(--font-display); font-weight: 700; font-size: 16px; color: #fff; font-variant-numeric: tabular-nums; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+.comb-dual { display: flex; gap: 26px; justify-content: center; height: 100%; }
