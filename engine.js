@@ -1,2464 +1,1251 @@
 // ============================================================
-// APP — Abastecimiento L001 (arrastra y suelta, todo en el navegador)
+// MOTOR DE CÁLCULO ESTACIONAL — Abastecimiento (TASA)
+// Puerto del notebook Python. Corre 100% en el navegador.
 // ============================================================
 
-if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+const CODIGOS_CONSUMO = new Set([201, 202, 261, 262, 281, 282, 601, 602]);
+const NOMBRES_MES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-const ALMACEN = 'L001';
-const ALMACEN_PLANTA = 'PI01';
-
-const state = {
-  archivos: { MRP: null, DATA: null, MB52: null, MONITOR: null, BSU: null },
-  consumoReal: [],
-  fechaMin: null,
-  fechaMax: null,
-  indiceEstacional: null,
-  mesATemporada: null,
-  statsPorTemporada: null,
-  mb52Map: null,
-  calculados: [],
-  planificados: [],
-  params: { Z: 1.645, S: 50, H: 0.2, diasAnio: 365 },
-  umbralAlta: 1.3,
-  umbralBaja: 0.5,
-  filtroTexto: '',
-  filtroRiesgo: 'TODOS',
-  filtroConfianza: 'TODAS',
-  filtroABC: 'TODAS',
-  filtroXYZ: 'TODAS',
-  filtroCategoria: 'TODAS',
-  filtroTratamiento: 'TODOS',
-  marcados: {},
-  coberturaIdealDias: 12,
-  clasificacionesManuales: new Map(), // material -> clasificación manual, cargado de GitHub
-  edicionesPendientesClasificacion: new Map(), // material -> valor editado sin guardar aún
-  alertasClasificacion: [],
-  filtroCategoriaCobertura: 'Insumos',
-  tipoCambio: Number(localStorage.getItem('tipo_cambio_v1')) || 3.75,
-  movClasificacionMap: null,
-  materialesConConsumoPI01: null,
-  mrpRowsCache: null,
-  sim: { leadTimeMult: 1.0, demandMult: 1.0, serviceLevelZ: 1.645 },
-};
-
-const fmtNum = (n, dec = 1) =>
-  n === null || n === undefined || Number.isNaN(n)
-    ? '—'
-    : Number(n).toLocaleString('es-PE', { maximumFractionDigits: dec, minimumFractionDigits: dec });
-const fmtSoles = (n) =>
-  n === null || n === undefined ? '—' : 'S/. ' + Number(n).toLocaleString('es-PE', { maximumFractionDigits: 0 });
-const fmtUSD = (n) =>
-  n === null || n === undefined ? '—' : 'US$ ' + Number(n).toLocaleString('es-PE', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
-const fmtPct = (n) =>
-  n === null || n === undefined ? '—' : Number(n).toLocaleString('es-PE', { maximumFractionDigits: 2, minimumFractionDigits: 2 }) + '%';
-
-function hoyISO() {
-  const d = new Date();
-  return SupplyEngine.toISODate(d);
+function toISODate(d) {
+  if (!(d instanceof Date) || isNaN(d)) return null;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
-function formatearFecha(iso) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  return d.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }) +
-    ' ' + d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+function diffDiasISO(isoA, isoB) {
+  const a = new Date(isoA + 'T00:00:00');
+  const b = new Date(isoB + 'T00:00:00');
+  return Math.round((b - a) / 86400000);
 }
 
-// ---------------- CACHÉ (IndexedDB) ----------------
-async function cargarCacheAlIniciar() {
-  const cache = await Storage.obtenerTodos();
-  ['MRP', 'DATA', 'MB52', 'MONITOR', 'BSU'].forEach((tipo) => {
-    if (cache[tipo]) {
-      state.archivos[tipo] = {
-        nombreArchivo: cache[tipo].nombreArchivo,
-        filas: cache[tipo].filas,
-        fechaCarga: cache[tipo].fechaCarga,
-        deCache: true,
+/**
+ * Filtra los movimientos crudos de DATA a "consumo real" (demanda que rompe
+ * stock), quedándose solo con el almacén indicado y los códigos relevantes.
+ * Devuelve filas planas {material, fechaISO, demanda}.
+ */
+const CODIGOS_CONSUMO_COMBUSTIBLE_EXTRA = new Set([301, 302]); // despacho a embarcaciones
+
+/**
+ * Filtra los movimientos crudos de DATA a "consumo real":
+ * - Siempre incluye el almacén principal (L001) con los códigos base.
+ * - Para materiales de la categoría Insumos, TAMBIÉN incluye el almacén
+ *   extra (PI01, "Planta") — así su consumo no se queda corto.
+ * - Para materiales de la categoría Combustibles, TAMBIÉN cuenta el código
+ *   301 ("Trasladar ce.a ce") como consumo real, porque en TASA ese código
+ *   se usa para el despacho de combustible a las embarcaciones — es demanda
+ *   real, no un traslado interno. Para el resto de materiales, 301 sigue
+ *   excluido (ahí sí es un traslado normal entre almacenes).
+ */
+function filtrarConsumoReal(dataRows, almacenPrincipal, opciones = {}) {
+  const almacenExtra = opciones.almacenExtra || 'PI01';
+  const materialesCombustible = opciones.materialesCombustible || new Set();
+
+  const out = [];
+  for (const row of dataRows) {
+    const almacenRow = String(row['Almacén']).trim();
+    const material = String(row['Material']).trim();
+
+    // L001 y PI01 SIEMPRE cuentan, para cualquier categoría — PI01 es donde
+    // se registra el consumo operativo real de muchos materiales (no solo
+    // insumos: por ejemplo el petróleo industrial consume casi todo ahí).
+    if (almacenRow !== almacenPrincipal && almacenRow !== almacenExtra) continue;
+
+    const clase = Number(row['Clase de movimiento']);
+    const esConsumoBase = CODIGOS_CONSUMO.has(clase);
+    const esDespachoCombustible = materialesCombustible.has(material) && CODIGOS_CONSUMO_COMBUSTIBLE_EXTRA.has(clase);
+    if (!esConsumoBase && !esDespachoCombustible) continue;
+
+    const fecha = row['Fe.contabilización'];
+    const fechaISO = fecha instanceof Date ? toISODate(fecha) : toISODate(new Date(fecha));
+    if (!fechaISO) continue;
+    const cantidad = Number(row['Ctd.en UM entrada']) || 0;
+    out.push({
+      material,
+      fechaISO,
+      demanda: -cantidad,
+      almacenOrigen: almacenRow,
+      claseMovimiento: clase,
+    });
+  }
+  return out;
+}
+
+/**
+ * Devuelve el set de códigos de material del MRP que caen en una categoría
+ * dada (Combustibles / Insumos / Otros), usando categorizarMaterial.
+ * Se define más abajo, junto a categorizarMaterial — ver esa función para
+ * el detalle de qué grupos de SAP caen en cada categoría.
+ */
+function materialesPorCategoria(mrpRows, categoriaObjetivo, materialesConConsumoPI01) {
+  const set = new Set();
+  for (const m of mrpRows) {
+    const material = String(m['Material']).trim();
+    if (categorizarMaterial(material, m['Denom.gr-artículos'], materialesConConsumoPI01) === categoriaObjetivo) set.add(material);
+  }
+  return set;
+}
+
+/**
+ * Suma la columna "Trans./Trasl." (stock en tránsito) de MB52 por material.
+ * No se filtra por almacén porque en la práctica esa columna no siempre
+ * viene asociada a un almacén específico en el reporte.
+ */
+function extraerTransitoPorMaterial(mb52Rows) {
+  const mapa = new Map();
+  for (const row of mb52Rows) {
+    const material = row['Material'] ? String(row['Material']).trim() : null;
+    if (!material) continue;
+    const transito = Number(row['Trans./Trasl.']) || 0;
+    if (transito === 0) continue;
+    mapa.set(material, (mapa.get(material) || 0) + transito);
+  }
+  return mapa;
+}
+
+/**
+ * Índice de estacionalidad por mes-calendario (1-12): consumo promedio de ese
+ * mes a través de todos los años presentes en los datos, dividido entre el
+ * promedio general. >1 significa por encima del promedio.
+ */
+function calcularIndiceEstacional(consumoReal) {
+  const sumaPorMes = new Array(13).fill(0); // índice 1-12
+  const mesesVistos = new Array(13).fill(null).map(() => new Set());
+
+  for (const r of consumoReal) {
+    const d = new Date(r.fechaISO + 'T00:00:00');
+    const mes = d.getMonth() + 1;
+    const anioMes = `${d.getFullYear()}-${mes}`;
+    sumaPorMes[mes] += r.demanda;
+    mesesVistos[mes].add(anioMes);
+  }
+
+  const promedioPorMes = new Array(13).fill(0);
+  for (let m = 1; m <= 12; m++) {
+    const nOcurrencias = mesesVistos[m].size || 1;
+    promedioPorMes[m] = sumaPorMes[m] / nOcurrencias;
+  }
+  const promedioGeneral = promedioPorMes.slice(1).reduce((a, b) => a + b, 0) / 12;
+
+  const indice = {};
+  for (let m = 1; m <= 12; m++) {
+    indice[m] = promedioGeneral > 0 ? promedioPorMes[m] / promedioGeneral : 0;
+  }
+  return indice;
+}
+
+function clasificarTemporadas(indice, umbralAlta, umbralBaja) {
+  const mesATemporada = {};
+  for (let m = 1; m <= 12; m++) {
+    const v = indice[m];
+    mesATemporada[m] = v >= umbralAlta ? 'Alta' : v < umbralBaja ? 'Baja' : 'Media';
+  }
+  return mesATemporada;
+}
+
+/**
+ * Días calendario totales por temporada, contando cada día del rango
+ * observado (fechaMin..fechaMax) según a qué mes-temporada pertenece.
+ */
+function diasPorTemporada(fechaMinISO, fechaMaxISO, mesATemporada) {
+  const conteo = { Alta: 0, Media: 0, Baja: 0 };
+  const min = new Date(fechaMinISO + 'T00:00:00');
+  const max = new Date(fechaMaxISO + 'T00:00:00');
+  for (let d = new Date(min); d <= max; d.setDate(d.getDate() + 1)) {
+    const temp = mesATemporada[d.getMonth() + 1];
+    conteo[temp] += 1;
+  }
+  return conteo;
+}
+
+/**
+ * Estadísticas de demanda diaria por material, segmentadas por temporada.
+ * Usa la técnica de suma / suma-de-cuadrados para no tener que materializar
+ * un arreglo denso día por día (rápido incluso con miles de materiales).
+ */
+function calcularStatsPorTemporada(consumoReal, mesATemporada, diasTemporada) {
+  // agregamos primero por (material, fechaISO) para netear consumo+reverso del mismo día
+  const porDia = new Map(); // material -> Map(fechaISO -> demandaNeta)
+  for (const r of consumoReal) {
+    if (!porDia.has(r.material)) porDia.set(r.material, new Map());
+    const m = porDia.get(r.material);
+    m.set(r.fechaISO, (m.get(r.fechaISO) || 0) + r.demanda);
+  }
+
+  const resultado = new Map();
+  for (const [material, mapaFechas] of porDia.entries()) {
+    const acumulado = {
+      Alta: { suma: 0, sumaSq: 0, diasConConsumo: 0 },
+      Media: { suma: 0, sumaSq: 0, diasConConsumo: 0 },
+      Baja: { suma: 0, sumaSq: 0, diasConConsumo: 0 },
+    };
+    let ultimaFecha = null;
+
+    for (const [fechaISO, demanda] of mapaFechas.entries()) {
+      const mes = Number(fechaISO.slice(5, 7));
+      const temp = mesATemporada[mes];
+      acumulado[temp].suma += demanda;
+      acumulado[temp].sumaSq += demanda * demanda;
+      if (demanda > 0) {
+        acumulado[temp].diasConConsumo += 1;
+        if (!ultimaFecha || fechaISO > ultimaFecha) ultimaFecha = fechaISO;
+      }
+    }
+
+    const porTemporada = {};
+    for (const temp of ['Alta', 'Media', 'Baja']) {
+      const totalDias = diasTemporada[temp] || 1;
+      const { suma, sumaSq, diasConConsumo } = acumulado[temp];
+      const media = suma / totalDias;
+      let varianza = (sumaSq - totalDias * media * media) / Math.max(totalDias - 1, 1);
+      if (varianza < 0 || !isFinite(varianza)) varianza = 0;
+      porTemporada[temp] = {
+        demandaDiariaPromedio: media,
+        demandaDiariaDesvest: Math.sqrt(varianza),
+        diasConConsumo,
       };
     }
-  });
-  actualizarEstadoArchivos();
-  actualizarBotonContinuar();
-
-  // Si ya tenemos los 3 archivos necesarios guardados de una vez anterior, no hace falta
-  // pasar por la pantalla de carga — vamos directo a Resumen con esos datos.
-  if (state.archivos.MRP && state.archivos.DATA && state.archivos.MB52) {
-    calcularTodo();
+    resultado.set(material, { ...porTemporada, ultimaFechaConsumo: ultimaFecha });
   }
+  return resultado;
 }
 
-/** Vuelve a mostrar la pantalla de carga (para actualizar archivos) sin perder el dashboard ya calculado. */
-function mostrarPantallaCarga() {
-  document.getElementById('dashboard').style.display = 'none';
-  document.getElementById('pantalla-carga').style.display = 'block';
-  window.scrollTo(0, 0);
-}
-
-// ---------------- CARGA DE PARÁMETROS GUARDADOS ----------------
-function cargarParametrosGuardados() {
-  const raw = localStorage.getItem('parametros_abastecimiento_v2');
-  if (raw) {
-    const p = JSON.parse(raw);
-    state.params = { ...state.params, ...p.params };
-    if (p.umbralAlta) state.umbralAlta = p.umbralAlta;
-    if (p.umbralBaja) state.umbralBaja = p.umbralBaja;
-  }
-}
-function guardarParametros() {
-  localStorage.setItem(
-    'parametros_abastecimiento_v2',
-    JSON.stringify({ params: state.params, umbralAlta: state.umbralAlta, umbralBaja: state.umbralBaja })
-  );
-}
-
-// ---------------- LISTA DE PEDIDO (marcados) ----------------
-function cargarMarcados() {
-  const raw = localStorage.getItem('pedido_marcados_v1');
-  state.marcados = raw ? JSON.parse(raw) : {};
-}
-function guardarMarcados() {
-  localStorage.setItem('pedido_marcados_v1', JSON.stringify(state.marcados));
-}
-function marcarMaterial(material, marcado) {
-  if (marcado) {
-    if (!(material in state.marcados)) {
-      const m = state.calculados.find((x) => x.material === material);
-      const sugerida = m && m.ropCalculado !== null ? Math.max(0, Math.round(m.ropCalculado - m.stockFisico)) : 0;
-      state.marcados[material] = sugerida;
-    }
-  } else {
-    delete state.marcados[material];
-  }
-  guardarMarcados();
-}
-function actualizarCantidadPedido(material, cantidad) {
-  state.marcados[material] = Math.max(0, Number(cantidad) || 0);
-  guardarMarcados();
-}
-
-// ---------------- DRAG & DROP ----------------
-function bindDropzone() {
-  const zone = document.getElementById('dropzone');
-  const input = document.getElementById('file-input');
-
-  zone.addEventListener('click', () => input.click());
-  input.addEventListener('change', (e) => manejarArchivos(e.target.files));
-
-  ['dragenter', 'dragover'].forEach((evt) =>
-    zone.addEventListener(evt, (e) => {
-      e.preventDefault();
-      zone.classList.add('dragging');
-    })
-  );
-  ['dragleave', 'drop'].forEach((evt) =>
-    zone.addEventListener(evt, (e) => {
-      e.preventDefault();
-      zone.classList.remove('dragging');
-    })
-  );
-  zone.addEventListener('drop', (e) => manejarArchivos(e.dataTransfer.files));
-
-  // Reemplazo individual por chip
-  document.querySelectorAll('.btn-reemplazar').forEach((btn) => {
-    const tipo = btn.dataset.tipo;
-    const inputIndividual = document.querySelector(`.input-individual[data-tipo="${tipo}"]`);
-    btn.addEventListener('click', () => inputIndividual.click());
-    inputIndividual.addEventListener('change', (e) => manejarArchivos(e.target.files));
-  });
-
-  document.getElementById('btn-continuar').addEventListener('click', () => {
-    if (state.archivos.MRP && state.archivos.DATA && state.archivos.MB52) calcularTodo();
-  });
-
-  document.getElementById('btn-borrar-cache').addEventListener('click', async () => {
-    if (!confirm('¿Borrar los archivos guardados en este navegador? Vas a tener que volver a cargarlos.')) return;
-    await Storage.borrarTodo();
-    state.archivos = { MRP: null, DATA: null, MB52: null, MONITOR: null, BSU: null };
-    actualizarEstadoArchivos();
-    actualizarBotonContinuar();
-  });
-}
-
-function actualizarBotonContinuar() {
-  const listo = state.archivos.MRP && state.archivos.DATA && state.archivos.MB52;
-  document.getElementById('btn-continuar').disabled = !listo;
-}
-
-async function manejarArchivos(fileList) {
-  if (!fileList || fileList.length === 0) return;
-  setEstadoCarga(true, 'Leyendo archivos…');
-  const resultado = await FileParser.procesarArchivos(fileList);
-
-  const persistencias = [];
-  ['MRP', 'DATA', 'MB52', 'MONITOR', 'BSU'].forEach((tipo) => {
-    if (resultado[tipo]) {
-      state.archivos[tipo] = { ...resultado[tipo], deCache: false };
-      persistencias.push(Storage.guardarArchivo(tipo, resultado[tipo].nombreArchivo, resultado[tipo].filas));
-    }
-  });
-  await Promise.all(persistencias);
-
-  actualizarEstadoArchivos();
-  actualizarBotonContinuar();
-
-  if (resultado.desconocidos.length || resultado.errores.length) {
-    mostrarAvisoArchivos(resultado.desconocidos, resultado.errores);
-  } else {
-    document.getElementById('aviso-archivos').style.display = 'none';
-  }
-
-  setEstadoCarga(false);
-
-  if (state.archivos.MRP && state.archivos.DATA && state.archivos.MB52) {
-    calcularTodo();
-  } else if (resultado.MONITOR && state.calculados.length > 0) {
-    // El dashboard ya estaba armado y solo se reemplazó el Monitor — no hace
-    // falta recalcular todo, solo refrescar lo que depende del Monitor.
-    renderValorizacionReal();
-    renderMonitorUsuario();
-    renderMonitorDetalle();
-  } else if (resultado.BSU) {
-    renderBSU();
-  }
-}
-
-function mostrarAvisoArchivos(desconocidos, errores) {
-  const partes = [];
-  if (desconocidos.length) partes.push(`No reconocí el tipo de: ${desconocidos.join(', ')}`);
-  if (errores.length) partes.push(...errores);
-  const el = document.getElementById('aviso-archivos');
-  el.textContent = partes.join(' · ');
-  el.style.display = partes.length ? 'block' : 'none';
-}
-
-function actualizarEstadoArchivos() {
-  ['MRP', 'DATA', 'MB52', 'MONITOR', 'BSU'].forEach((tipo) => {
-    const chip = document.getElementById(`chip-${tipo}`);
-    const info = state.archivos[tipo];
-    if (info) {
-      chip.classList.add('chip-listo');
-      const filas = info.filas.length.toLocaleString('es-PE');
-      const origen = info.deCache ? `guardado el ${formatearFecha(info.fechaCarga)}` : 'recién cargado';
-      chip.querySelector('.chip-status').textContent = `✓ ${info.nombreArchivo} · ${filas} filas · ${origen}`;
-    } else {
-      chip.classList.remove('chip-listo');
-      chip.querySelector('.chip-status').textContent = 'Esperando archivo…';
-    }
-  });
-}
-
-function setEstadoCarga(on, mensaje) {
-  const overlay = document.getElementById('loading-overlay');
-  overlay.style.display = on ? 'flex' : 'none';
-  if (mensaje) document.getElementById('loading-msg').textContent = mensaje;
-}
-
-// ---------------- CÁLCULO ----------------
-/**
- * Combina tus clasificaciones ya guardadas con las que estás editando en
- * este momento (sin guardar todavía) — esto es lo que manda en el cálculo
- * en vivo, para que no tengas que guardar en GitHub para ver el efecto.
- */
-function overridesClasificacionEfectivos() {
-  const combinado = new Map(state.clasificacionesManuales);
-  state.edicionesPendientesClasificacion.forEach((valor, material) => {
-    if (valor === '') combinado.delete(material);
-    else combinado.set(material, valor);
-  });
-  return combinado;
+function confianza(diasConConsumo) {
+  if (!diasConConsumo) return 'Sin datos';
+  if (diasConConsumo < 10) return 'Baja';
+  if (diasConConsumo < 30) return 'Media';
+  return 'Alta';
 }
 
 /**
- * Recalcula TODO (SS/ROP/riesgo/ABC-XYZ/cobertura/etc.) a partir de los
- * archivos ya cargados, usando las clasificaciones manuales vigentes
- * (guardadas + las que estés editando ahora mismo). No toca GitHub — es
- * puro cálculo en memoria, así que corre instantáneo cada vez que cambias
- * una clasificación en la pestaña MRP.
+ * Determina qué temporada debe regir el punto de pedido HOY, mirando hacia
+ * adelante la ventana [hoy, hoy+leadTime]: si en ese rango aparece un día de
+ * Temporada Alta, se usa Alta (hay que llegar con stock antes de que empiece).
  */
-function recalcularConClasificacionesActuales() {
-  const dataRows = state.archivos.DATA.filas;
-  const mrpRows = state.archivos.MRP.filas;
-  const mb52Rows = state.archivos.MB52.filas;
-
-  const materialesConConsumoPI01 = SupplyEngine.materialesConConsumoEnAlmacen(dataRows, ALMACEN_PLANTA);
-  const materialesCombustible = SupplyEngine.materialesPorCategoria(mrpRows, 'Energéticos', materialesConConsumoPI01);
-
-  state.consumoReal = SupplyEngine.filtrarConsumoReal(dataRows, ALMACEN, {
-    almacenExtra: ALMACEN_PLANTA,
-    materialesCombustible,
-  });
-  const fechas = state.consumoReal.map((r) => r.fechaISO).sort();
-  state.fechaMin = fechas[0];
-  state.fechaMax = fechas[fechas.length - 1];
-
-  state.indiceEstacional = SupplyEngine.calcularIndiceEstacional(state.consumoReal);
-  state.mesATemporada = SupplyEngine.clasificarTemporadas(state.indiceEstacional, state.umbralAlta, state.umbralBaja);
-  const diasTemp = SupplyEngine.diasPorTemporada(state.fechaMin, state.fechaMax, state.mesATemporada);
-  state.statsPorTemporada = SupplyEngine.calcularStatsPorTemporada(state.consumoReal, state.mesATemporada, diasTemp);
-  state.mb52Map = SupplyEngine.agregarMB52(mb52Rows, ALMACEN);
-
-  const movClasificacionMap = SupplyEngine.calcularClasificacionMovimiento(state.consumoReal, state.fechaMin, state.fechaMax);
-  state.movClasificacionMap = movClasificacionMap;
-  state.materialesConConsumoPI01 = materialesConConsumoPI01;
-  state.mrpRowsCache = mrpRows;
-
-  state.calculados = SupplyEngine.calcularMateriales(
-    mrpRows,
-    state.statsPorTemporada,
-    state.mesATemporada,
-    state.mb52Map,
-    state.params,
-    hoyISO(),
-    movClasificacionMap,
-    materialesConConsumoPI01,
-    null,
-    overridesClasificacionEfectivos()
-  );
-
-  const stockTodosAlmacenes = SupplyEngine.agregarStockPorAlmacenTodos(mb52Rows);
-  const transitoMap = SupplyEngine.extraerTransitoPorMaterial(mb52Rows);
-  state.calculados = SupplyEngine.enriquecerConCobertura(
-    state.calculados, stockTodosAlmacenes, transitoMap, ALMACEN, ALMACEN_PLANTA, state.coberturaIdealDias
-  );
-
-  state.planificados = state.calculados.filter((m) => m.incluidoEnPlanificacion);
-
-  const statsMensuales = SupplyEngine.calcularStatsMensualesGenerales(state.consumoReal, state.fechaMin, state.fechaMax);
-  state.planificados = SupplyEngine.calcularABCXYZ(state.planificados, statsMensuales);
-  state.planificados = SupplyEngine.enriquecerConTraslados(state.planificados, stockTodosAlmacenes, ALMACEN);
-}
-
-async function calcularTodo() {
-  setEstadoCarga(true, 'Calculando estacionalidad y SS/ROP/EOQ…');
-  // pequeño respiro para que el navegador pinte el overlay antes de bloquear el hilo
-  await new Promise((r) => setTimeout(r, 50));
-  try {
-    await cargarClasificacionesGuardadas();
-    recalcularConClasificacionesActuales();
-    calcularAlertasClasificacion();
-
-    mostrarDashboard();
-    renderTodo();
-    publicarSnapshotParaWhatsApp(); // en segundo plano, no bloquea — si falla, no interrumpe nada
-  } catch (err) {
-    console.error(err);
-    alert('Error calculando: ' + err.message);
-  } finally {
-    setEstadoCarga(false);
+function temporadaObjetivo(leadTimeDias, hoyISO, mesATemporada) {
+  const hoy = new Date(hoyISO + 'T00:00:00');
+  const vistas = new Set();
+  for (let i = 0; i <= Math.round(leadTimeDias); i++) {
+    const d = new Date(hoy);
+    d.setDate(d.getDate() + i);
+    vistas.add(mesATemporada[d.getMonth() + 1]);
   }
-}
-
-function recalcularConParametrosActuales() {
-  if (!state.archivos.MRP || !state.archivos.DATA || !state.archivos.MB52) return;
-  calcularTodo();
-}
-
-function mostrarDashboard() {
-  document.getElementById('pantalla-carga').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-  window.scrollTo(0, 0);
-}
-
-function renderTodo() {
-  renderValorizacionReal();
-  renderAceiteHarina();
-  renderMonitorUsuario();
-  renderMonitorDetalle();
-  renderResumen();
-  renderInactivosConStock();
-  renderMaterialesPlanificados();
-  renderEstacionalidad();
-  renderParametros();
-  renderTablaMateriales();
-  renderInmovilizados();
-  renderABCXYZ();
-  renderCobertura();
-  renderListaPedido();
-  renderSimulacion();
-  poblarListaTendencia();
-  renderBSU();
-  renderMRP();
-}
-
-// ---------------- CLASIFICACIÓN MANUAL DE MATERIALES (pestaña MRP) ----------------
-const RUTA_CLASIFICACIONES_MANUALES = 'clasificacion/overrides.json';
-const RUTA_ULTIMA_PROPUESTA = 'clasificacion/ultima_propuesta.json';
-
-async function cargarClasificacionesGuardadas() {
-  try {
-    const guardado = await GitHubSync.leerJSONPublico(RUTA_CLASIFICACIONES_MANUALES);
-    state.clasificacionesManuales = new Map(
-      guardado && guardado.overrides ? Object.entries(guardado.overrides) : []
-    );
-  } catch (err) {
-    state.clasificacionesManuales = new Map();
-  }
+  if (vistas.has('Alta')) return 'Alta';
+  if (vistas.has('Media')) return 'Media';
+  return 'Baja';
 }
 
 /**
- * Compara la propuesta fresca de este cálculo contra: (a) tu clasificación
- * manual, si la tienes y ya no coincide con lo que el sistema propondría
- * ahora, y (b) la última propuesta que quedó guardada como referencia (la
- * vez pasada que cargaste consumos) — para detectar reclasificaciones
- * automáticas que quizás quieras revisar y convertir en manuales.
+ * Agrega MB52 (multi-lote) por material: stock físico total, costo unitario
+ * ponderado (valor total / stock total), y la fecha de vencimiento más
+ * próxima entre sus lotes (columna "Cad./FPC"), filtrando al almacén indicado.
  */
-/** Alertas de "tu clasificación manual ya no coincide con la propuesta" — puro cálculo local, sin red, corre en cada edición. */
-function calcularAlertasManualDesactualizada() {
-  const alertas = [];
-  state.calculados.forEach((m) => {
-    if (m.clasificacionEsManual && m.clasificacionPropuesta !== m.clasificacionFinal) {
-      alertas.push({
-        material: m.material,
-        descripcion: m.descripcion,
-        tipo: 'manual_desactualizada',
-        actual: m.clasificacionFinal,
-        propuestaNueva: m.clasificacionPropuesta,
-      });
+function agregarMB52(mb52Rows, almacen) {
+  const acc = new Map(); // material -> {stock, valor, fechasVenc: []}
+  for (const row of mb52Rows) {
+    if (String(row['Almacén']).trim() !== almacen) continue;
+    const material = String(row['Material']).trim();
+    const stock = Number(row['Libre utilización']) || 0;
+    const valor = Number(row['Valor libre util.']) || 0;
+    if (!acc.has(material)) acc.set(material, { stock: 0, valor: 0, fechasVenc: [] });
+    const a = acc.get(material);
+    a.stock += stock;
+    a.valor += valor;
+    const fv = row['Cad./FPC'];
+    if (fv) {
+      const iso = toISODate(fv instanceof Date ? fv : new Date(fv));
+      if (iso) a.fechasVenc.push(iso);
     }
-  });
-  return alertas;
-}
-
-async function calcularAlertasClasificacion() {
-  state.alertasReferencia = [];
-  try {
-    const referencia = await GitHubSync.leerJSONPublico(RUTA_ULTIMA_PROPUESTA);
-    if (referencia && referencia.propuestas) {
-      state.calculados.forEach((m) => {
-        if (m.clasificacionEsManual) return; // ya lo cubre calcularAlertasManualDesactualizada
-        const anterior = referencia.propuestas[m.material];
-        if (anterior && anterior !== m.clasificacionPropuesta) {
-          state.alertasReferencia.push({
-            material: m.material,
-            descripcion: m.descripcion,
-            tipo: 'propuesta_cambio',
-            actual: anterior,
-            propuestaNueva: m.clasificacionPropuesta,
-          });
-        }
-      });
-    }
-  } catch (err) {
-    // sin referencia guardada todavía — no pasa nada, no hay con qué comparar
   }
-  actualizarAlertasClasificacion();
-}
-
-/** Recombina las alertas locales (instantáneas) con las de referencia (de GitHub, cacheadas) y redibuja. */
-function actualizarAlertasClasificacion() {
-  state.alertasClasificacion = [...calcularAlertasManualDesactualizada(), ...(state.alertasReferencia || [])];
-  renderAlertasClasificacion();
-}
-
-function renderAlertasClasificacion() {
-  const cont = document.getElementById('mrp-alertas-lista');
-  const badge = document.getElementById('mrp-alertas-badge');
-  if (!cont) return;
-  badge.textContent = state.alertasClasificacion.length;
-  badge.style.display = state.alertasClasificacion.length > 0 ? 'inline-block' : 'none';
-
-  if (state.alertasClasificacion.length === 0) {
-    cont.innerHTML = '<p class="muted centrado" style="padding:16px;">Sin cambios que revisar por ahora.</p>';
-    return;
-  }
-  cont.innerHTML = state.alertasClasificacion
-    .map((a) => {
-      const texto =
-        a.tipo === 'manual_desactualizada'
-          ? `Tu clasificación manual es <strong>"${a.actual}"</strong>, pero con los datos nuevos el sistema ahora propondría <strong>"${a.propuestaNueva}"</strong>.`
-          : `El sistema proponía <strong>"${a.actual}"</strong> la última vez; con los datos nuevos ahora propone <strong>"${a.propuestaNueva}"</strong>.`;
-      return `<div class="alerta-clasificacion-fila">
-        <div>
-          <button type="button" class="sku-link" data-material="${a.material}">${a.material}</button>
-          <span class="desc-inline"> — ${a.descripcion}</span>
-          <p class="alerta-clasificacion-texto">${texto}</p>
-        </div>
-        <button type="button" class="btn-secundario btn-aplicar-propuesta" data-material="${a.material}" data-valor="${a.propuestaNueva}">Usar "${a.propuestaNueva}"</button>
-      </div>`;
-    })
-    .join('');
-
-  cont.querySelectorAll('.btn-aplicar-propuesta').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      editarClasificacionManual(btn.dataset.material, btn.dataset.valor);
-      guardarClasificacionesManuales();
+  const resultado = new Map();
+  for (const [material, { stock, valor, fechasVenc }] of acc.entries()) {
+    fechasVenc.sort();
+    resultado.set(material, {
+      stockFisico: stock,
+      costoUnitario: stock > 0 ? valor / stock : null,
+      fechaVencimiento: fechasVenc.length > 0 ? fechasVenc[0] : null,
     });
-  });
-}
-
-async function guardarReferenciaPropuestaActual() {
-  const estado = document.getElementById('mrp-estado-referencia');
-  const boton = document.getElementById('btn-guardar-referencia-mrp');
-  boton.disabled = true;
-  estado.textContent = 'Guardando…';
-  try {
-    const propuestas = {};
-    state.calculados.forEach((m) => {
-      propuestas[m.material] = m.clasificacionPropuesta;
-    });
-    await GitHubSync.escribirJSON(
-      RUTA_ULTIMA_PROPUESTA,
-      { fecha: hoyISO(), propuestas },
-      `Referencia de clasificación propuesta — ${hoyISO()}`
-    );
-    estado.textContent = '✓ Guardado — la próxima vez que subas consumos, se comparará contra esta.';
-  } catch (err) {
-    console.error(err);
-    estado.textContent = 'Error: ' + err.message;
-  } finally {
-    boton.disabled = false;
   }
+  return resultado;
 }
 
-function editarClasificacionManual(material, valor) {
-  state.edicionesPendientesClasificacion.set(material, valor);
-
-  document.getElementById('mrp-pendientes-aviso').textContent =
-    `${state.edicionesPendientesClasificacion.size} cambio(s) sin guardar en GitHub (pero YA están aplicados en todos los cálculos).`;
-
-  // Recalcular todo en memoria al instante — no depende de guardar en GitHub.
-  recalcularConClasificacionesActuales();
-  actualizarAlertasClasificacion();
-  renderTodo();
-}
-
-async function guardarClasificacionesManuales() {
-  if (state.edicionesPendientesClasificacion.size === 0) return;
-  const estado = document.getElementById('mrp-estado-guardar');
-  const boton = document.getElementById('btn-guardar-clasificaciones');
-  boton.disabled = true;
-  estado.textContent = 'Guardando…';
-  try {
-    for (const [material, valor] of state.edicionesPendientesClasificacion.entries()) {
-      if (valor === '') state.clasificacionesManuales.delete(material);
-      else state.clasificacionesManuales.set(material, valor);
-    }
-    const overrides = Object.fromEntries(state.clasificacionesManuales);
-    await GitHubSync.escribirJSON(
-      RUTA_CLASIFICACIONES_MANUALES,
-      { actualizadoEn: new Date().toISOString(), overrides },
-      `Actualizar clasificaciones manuales (${state.edicionesPendientesClasificacion.size} cambio(s))`
-    );
-    state.edicionesPendientesClasificacion.clear();
-    document.getElementById('mrp-pendientes-aviso').textContent = '';
-    estado.textContent = '✓ Guardado en GitHub — ahora persiste entre sesiones y dispositivos.';
-    calcularAlertasClasificacion();
-  } catch (err) {
-    console.error(err);
-    estado.textContent = 'Error: ' + err.message;
-  } finally {
-    boton.disabled = false;
-  }
-}
-
-function esCambioRealDeClase(m) {
-  const sapNorm = m.clasificacion === 'Produción' ? 'Producción' : m.clasificacion || 'Sin Clasificar';
-  // "Uso Inmediato" -> "Uso Inmediato (confirmado)" es solo una confirmación, no una reclasificación real.
-  if (sapNorm === 'Uso Inmediato' && m.clasificacionPropuesta === 'Uso Inmediato (confirmado)') return false;
-  return sapNorm !== m.clasificacionPropuesta;
-}
-
-function renderMRP() {
-  const filtro = (document.getElementById('mrp-buscar').value || '').toLowerCase();
-  const filtroClase = document.getElementById('mrp-filtro-clase').value;
-
-  let filas = state.calculados;
-  if (filtro) {
-    filas = filas.filter((m) => m.material.toLowerCase().includes(filtro) || (m.descripcion || '').toLowerCase().includes(filtro));
-  }
-  if (filtroClase === 'MANUALES') filas = filas.filter((m) => m.clasificacionEsManual);
-  else if (filtroClase === 'DIFERENTES') filas = filas.filter(esCambioRealDeClase);
-  else if (filtroClase !== 'TODAS') filas = filas.filter((m) => m.clasificacionFinal === filtroClase);
-
-  document.getElementById('mrp-conteo').textContent = `${filas.length} de ${state.calculados.length} materiales`;
-
-  const MAX_FILAS = 400;
-  const tbody = document.getElementById('tabla-mrp-body');
-  tbody.innerHTML = filas
-    .slice(0, MAX_FILAS)
-    .map((m) => {
-      const opciones = ['', ...SupplyEngine.CLASIFICACIONES_MANUALES_VALIDAS]
-        .map((op) => `<option value="${op}" ${(state.edicionesPendientesClasificacion.get(m.material) ?? (m.clasificacionEsManual ? m.clasificacionFinal : '')) === op ? 'selected' : ''}>${op || '— usar propuesta —'}</option>`)
-        .join('');
-      return `<tr>
-      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
-      <td class="desc">${m.descripcion || ''}</td>
-      <td>${m.clasificacion}</td>
-      <td>${m.clasificacionPropuesta}</td>
-      <td><select class="input-clasificacion-manual" data-material="${m.material}">${opciones}</select></td>
-    </tr>`;
-    })
-    .join('');
-
-  if (filas.length > MAX_FILAS) {
-    tbody.innerHTML += `<tr><td colspan="5" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — afina la búsqueda para ver más.</td></tr>`;
-  }
-
-  tbody.querySelectorAll('.input-clasificacion-manual').forEach((sel) => {
-    sel.addEventListener('change', (e) => editarClasificacionManual(e.target.dataset.material, e.target.value));
-  });
-}
-
-function bindMRP() {
-  document.getElementById('mrp-buscar').addEventListener('input', renderMRP);
-  document.getElementById('mrp-filtro-clase').addEventListener('change', renderMRP);
-  document.getElementById('btn-guardar-clasificaciones').addEventListener('click', guardarClasificacionesManuales);
-  document.getElementById('btn-guardar-referencia-mrp').addEventListener('click', guardarReferenciaPropuestaActual);
-}
-
-
-const ALMACENES_ACEITE = ['TK01', 'TK02', 'TK03', 'DK01', 'DK02', 'DK03', 'CL01'];
-const ALMACENES_HARINA = ['C001'];
-
-function obtenerMonitorFilas() {
-  return state.archivos.MONITOR ? state.archivos.MONITOR.filas : null;
-}
-
-function tablaAceiteHarinaHTML(filas, vacioTexto, prefijo) {
-  if (filas.length === 0) return `<tr><td colspan="4" class="muted centrado">${vacioTexto}</td></tr>`;
-  const filasHTML = filas
-    .map((r, i) => {
-      const idDetalle = `detalle-lotes-${prefijo}-${i}`;
-      const detalleLotes = r.lotes
-        .map((l) => `<div class="fila-lote"><span>${l.lote}</span><span>${fmtNum(l.stock, 2)}</span></div>`)
-        .join('');
-      return `<tr class="fila-material-expandible" data-target="${idDetalle}">
-      <td><span class="chevron">▸</span> ${r.material}</td>
-      <td class="desc">${r.descripcion}</td>
-      <td>${r.almacen}</td>
-      <td class="num">${fmtNum(r.stock, 2)}</td>
-    </tr>
-    <tr class="fila-detalle-lotes" id="${idDetalle}" style="display:none">
-      <td colspan="4"><div class="lotes-lista">${detalleLotes}</div></td>
-    </tr>`;
-    })
-    .join('');
-  const total = filas.reduce((a, r) => a + r.stock, 0);
-  return filasHTML + `<tr class="fila-total"><td colspan="3">Total</td><td class="num">${fmtNum(total, 2)}</td></tr>`;
-}
-
-function renderAceiteHarina() {
-  if (!state.archivos.MB52) return;
-  const mb52Rows = state.archivos.MB52.filas;
-  const aceite = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_ACEITE);
-  const harina = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_HARINA);
-  document.getElementById('tabla-aceite-body').innerHTML = tablaAceiteHarinaHTML(aceite, 'Sin stock de Aceite de Pescado en estos almacenes.', 'aceite');
-  document.getElementById('tabla-harina-body').innerHTML = tablaAceiteHarinaHTML(harina, 'Sin stock de Harina de Pescado en C001.', 'harina');
-  renderHarinaConsolidada();
-  renderCombustible();
-}
-
-// Consolidado de harina por calidad. Orden de reglas: Scrap -> NC (NC/BLOQUEO/CALIDAD) -> Calidad E -> Comercial (A/B/C/D)
-const GRUPOS_HARINA = ['HARINA SCRAP', 'HARINA COMERCIAL', 'HARINA CALIDAD E', 'HARINA NC', 'OTROS'];
-function grupoDeHarina(descripcion) {
-  const d = String(descripcion || '').toUpperCase();
-  if (/\bSCRAP\b/.test(d)) return 'HARINA SCRAP';
-  if (/\bNC\b|BLOQUEO|CALIDAD/.test(d)) return 'HARINA NC';
-  if (/\bHARINA\s+E\b/.test(d)) return 'HARINA CALIDAD E';
-  if (/\bHARINA\s+[A-D]\b/.test(d)) return 'HARINA COMERCIAL';
-  return 'OTROS';
-}
-
-function renderHarinaConsolidada() {
-  const tbody = document.getElementById('tabla-harina-consolidada-body');
-  if (!tbody || !state.archivos.MB52) return;
-  const harina = SupplyEngine.stockPorAlmacenes(state.archivos.MB52.filas, ALMACENES_HARINA);
-  const grupos = {};
-  GRUPOS_HARINA.forEach((g) => (grupos[g] = []));
-  harina.forEach((r) => grupos[grupoDeHarina(r.descripcion)].push(r));
-  let html = '';
-  let totalGeneral = 0;
-  GRUPOS_HARINA.forEach((g, i) => {
-    const items = grupos[g];
-    if (g === 'OTROS' && items.length === 0) return;
-    const total = items.reduce((a, r) => a + r.stock, 0);
-    totalGeneral += total;
-    const id = `detalle-harina-grupo-${i}`;
-    const detalle = items.length
-      ? items.slice().sort((x, y) => y.stock - x.stock)
-          .map((r) => `<div class="fila-lote fila-lote-ancha"><span>${r.material} · ${r.descripcion}</span><span>${fmtNum(r.stock, 2)}</span></div>`).join('')
-      : '<div class="fila-lote"><span class="muted">Sin stock</span></div>';
-    html += `<tr class="fila-material-expandible" data-target="${id}">
-      <td><span class="chevron">▸</span> ${g}</td>
-      <td class="num">${items.length}</td>
-      <td class="num">${fmtNum(total, 2)}</td>
-    </tr>
-    <tr class="fila-detalle-lotes" id="${id}" style="display:none">
-      <td colspan="3"><div class="lotes-lista">${detalle}</div></td>
-    </tr>`;
-  });
-  html += `<tr class="fila-total"><td colspan="2">Total</td><td class="num">${fmtNum(totalGeneral, 2)}</td></tr>`;
-  tbody.innerHTML = html;
-}
-
-// ---------- Combustible: tanques Matarani ----------
-const COMB_MATERIALES = { diesel: '30000527', residual: '30000528' };
-const COMB_DEFAULTS = { capDiesel: 80000, capResidual: 115000, cursoDiesel: 0, cursoResidual: 0, ventana: 30 };
-
-function cargarParamsCombustible() {
-  try { return Object.assign({}, COMB_DEFAULTS, JSON.parse(localStorage.getItem('supplymind_combustible') || '{}')); }
-  catch (e) { return Object.assign({}, COMB_DEFAULTS); }
-}
-function guardarParamsCombustible(p) {
-  try { localStorage.setItem('supplymind_combustible', JSON.stringify(p)); } catch (e) { /* sin storage */ }
-}
-
-function consumoDiarioCombustible(dataRows, material, ventanaDias) {
-  const consumos = SupplyEngine.filtrarConsumoReal(dataRows, 'L001', {
-    almacenExtra: 'PI01',
-    materialesCombustible: new Set(Object.values(COMB_MATERIALES)),
-  }).filter((c) => c.material === material);
-  if (!consumos.length) return 0;
-  // La ventana termina en la última fecha con movimientos de DATA (no en "hoy")
-  const fechaMax = dataRows.reduce((mx, r) => {
-    const f = r['Fe.contabilización'];
-    const t = f instanceof Date ? f.getTime() : new Date(f).getTime();
-    return t > mx ? t : mx;
-  }, 0);
-  const desde = fechaMax - (ventanaDias - 1) * 86400000;
-  const total = consumos
-    .filter((c) => new Date(c.fechaISO + 'T00:00:00').getTime() >= desde)
-    .reduce((a, c) => a + c.demanda, 0);
-  return Math.max(0, total) / ventanaDias;
-}
-
-function tanqueHTML(alturaPct, texto, color, etiqueta) {
-  const alto = Math.max(4, Math.min(100, alturaPct));
-  return `<div class="tank-col"><div class="tank-area"><div class="tank" style="height:${alto}%">
-    <div class="tank-body"><div class="tank-liquid tank-${color}"></div><span class="tank-texto">${texto}</span></div>
-    <div class="tank-lid"></div></div></div><div class="comb-col-label">${etiqueta}</div></div>`;
-}
-function barraVerticalComb(pct, etiqueta) {
-  const nivel = Math.max(0, Math.min(100, pct));
-  return `<div class="tank-col"><div class="tank-area"><div class="tank" style="height:100%">
-    <div class="tank-body"><div class="tank-liquid tank-cyan" style="height:${nivel}%"></div><span class="tank-texto">${fmtNum(pct, 0)} %</span></div>
-    <div class="tank-lid"></div></div></div><div class="comb-col-label">${etiqueta}</div></div>`;
-}
-function barraStockVsCapacidad(stock, cap) {
-  const max = Math.max(stock, cap, 1);
-  return `<div class="comb-dual">${tanqueHTML((cap / max) * 100, fmtNum(cap, 0), 'green', 'Capacidad')}${tanqueHTML((stock / max) * 100, fmtNum(stock, 0), 'cyan', 'Stock')}</div>`;
-}
-
-function renderCombustible() {
-  const cont = document.getElementById('comb-kpis');
-  if (!cont || !state.archivos.MB52 || !state.archivos.DATA) return;
-  const p = cargarParamsCombustible();
-  const set = (id, v) => { const el = document.getElementById(id); if (el && document.activeElement !== el) el.value = v; };
-  set('comb-cap-diesel', p.capDiesel); set('comb-cap-residual', p.capResidual);
-  set('comb-curso-diesel', p.cursoDiesel); set('comb-curso-residual', p.cursoResidual);
-  set('comb-ventana', String(p.ventana));
-
-  const stockDe = (mat) => state.archivos.MB52.filas
-    .filter((r) => String(r['Material']).trim() === mat && String(r['Almacén']).trim() === 'L001')
-    .reduce((a, r) => a + (Number(r['Libre utilización']) || 0), 0);
-  const dataRows = state.archivos.DATA.filas;
-  const filas = [
-    { nombre: 'Diesel', stock: stockDe(COMB_MATERIALES.diesel), cap: p.capDiesel, curso: p.cursoDiesel, consumo: consumoDiarioCombustible(dataRows, COMB_MATERIALES.diesel, p.ventana) },
-    { nombre: 'Residual', stock: stockDe(COMB_MATERIALES.residual), cap: p.capResidual, curso: p.cursoResidual, consumo: consumoDiarioCombustible(dataRows, COMB_MATERIALES.residual, p.ventana) },
-  ].map((f) => ({ ...f, pct: f.cap > 0 ? (f.stock / f.cap) * 100 : 0, cobertura: f.consumo > 0 ? f.stock / f.consumo : null }));
-  const [d, r] = filas;
-  const capTot = d.cap + r.cap, stockTot = d.stock + r.stock, cursoTot = d.curso + r.curso;
-  const pctTot = capTot > 0 ? (stockTot / capTot) * 100 : 0;
-  const consumoTot = d.consumo + r.consumo;
-  const covTot = consumoTot > 0 ? stockTot / consumoTot : null;
-  const fmtCov = (c) => (c === null ? '—' : fmtNum(c, 0));
-
-  const kpi = (valor, label, tip, color) => `<div class="kpi-card kpi-val-${color}" title="${tip}"><span class="kpi-label">${label}</span><span class="kpi-value">${valor}</span></div>`;
-  cont.innerHTML =
-    kpi(`${fmtNum(pctTot, 0)} %`, 'Tanques llenos', 'Stock total de Diesel + Residual sobre la capacidad total', 'azul') +
-    kpi(`${fmtNum(d.pct, 0)} %`, 'Tanque Diesel', 'Stock de Diesel en L001 sobre su capacidad', 'verde') +
-    kpi(`${fmtNum(r.pct, 0)} %`, 'Tanque Residual', 'Stock de Residual (R500) en L001 sobre su capacidad', 'rojo') +
-    kpi(fmtCov(d.cobertura), 'Cobertura días (Diesel)', 'Stock ÷ consumo diario promedio de la ventana elegida', 'amarillo') +
-    kpi(fmtCov(r.cobertura), 'Cobertura días (Residual)', 'Stock ÷ consumo diario promedio de la ventana elegida', 'celeste');
-
-  document.getElementById('comb-barra-diesel').innerHTML = barraVerticalComb(d.pct, 'MATARANI');
-  document.getElementById('comb-barra-residual').innerHTML = barraVerticalComb(r.pct, 'MATARANI');
-  document.getElementById('comb-stock-diesel').innerHTML = barraStockVsCapacidad(d.stock, d.cap);
-  document.getElementById('comb-stock-residual').innerHTML = barraStockVsCapacidad(r.stock, r.cap);
-
-  const filaTabla = (f) => `<tr class="fila-total-suave"><td>${f.nombre}</td><td class="num">${fmtNum(f.cap, 0)}</td><td class="num">${fmtNum(f.stock, 0)}</td><td class="num">${fmtNum(f.pct, 0)} %</td><td class="num">${fmtCov(f.cobertura)}</td><td class="num">${fmtNum(f.curso, 0)}</td></tr>
-    <tr><td class="muted">&nbsp;&nbsp;MATARANI</td><td class="num">${fmtNum(f.cap, 0)}</td><td class="num">${fmtNum(f.stock, 0)}</td><td class="num">${fmtNum(f.pct, 0)} %</td><td class="num">${fmtCov(f.cobertura)}</td><td class="num">${fmtNum(f.curso, 0)}</td></tr>`;
-  document.getElementById('comb-tabla-body').innerHTML =
-    filaTabla(d) + filaTabla(r) +
-    `<tr class="fila-total"><td>Total</td><td class="num">${fmtNum(capTot, 0)}</td><td class="num">${fmtNum(stockTot, 0)}</td><td class="num">${fmtNum(pctTot, 0)} %</td><td class="num">${fmtCov(covTot)}</td><td class="num">${fmtNum(cursoTot, 0)}</td></tr>`;
-}
-
-function bindParamsCombustible() {
-  const ids = { 'comb-cap-diesel': 'capDiesel', 'comb-cap-residual': 'capResidual', 'comb-curso-diesel': 'cursoDiesel', 'comb-curso-residual': 'cursoResidual', 'comb-ventana': 'ventana' };
-  Object.entries(ids).forEach(([id, clave]) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.addEventListener('change', () => {
-      const p = cargarParamsCombustible();
-      p[clave] = Number(el.value) || 0;
-      guardarParamsCombustible(p);
-      renderCombustible();
-    });
-  });
-}
-
-function renderAvisoSinMonitor() {
-  const aviso = document.getElementById('aviso-sin-monitor');
-  if (!aviso) return;
-  aviso.style.display = obtenerMonitorFilas() ? 'none' : 'block';
-}
-
-function renderMonitorUsuario() {
-  const cont = document.getElementById('grafico-monitor-usuario');
-  const monitorRows = obtenerMonitorFilas();
-  renderAvisoSinMonitor();
-  if (!monitorRows) {
-    cont.innerHTML = '<p class="muted centrado">Sube tu Monitor (chip opcional en la pantalla de carga) para ver este gráfico.</p>';
-    return;
-  }
-  const porUsuario = SupplyEngine.agruparMonitorPorUsuario(monitorRows);
-  const max = Math.max(...porUsuario.map((u) => u.importe), 1);
-  cont.innerHTML = porUsuario
-    .map((u) => {
-      const pct = max > 0 ? (u.importe / max) * 100 : 0;
-      return `<div class="barra-h-fila">
-        <span class="barra-h-label">${u.usuario}</span>
-        <div class="barra-h-track"><div class="barra-h-fill barra-celeste" style="width:${pct}%"></div></div>
-        <span class="barra-h-valor">${fmtUSD(u.importe)}</span>
-      </div>`;
-    })
-    .join('');
-}
-
-function renderMonitorDetalle() {
-  const tbody = document.getElementById('tabla-monitor-detalle-body');
-  const monitorRows = obtenerMonitorFilas();
-  if (!monitorRows) {
-    tbody.innerHTML = '<tr><td colspan="5" class="muted centrado">Sube tu Monitor (chip opcional en la pantalla de carga) para ver el detalle.</td></tr>';
-    return;
-  }
-  const items = SupplyEngine.detalleMonitor(monitorRows);
-  if (items.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="muted centrado">Tu Monitor no tiene filas.</td></tr>';
-    return;
-  }
-  const totalImporte = items.reduce((a, r) => a + r.importe, 0);
-  tbody.innerHTML =
-    items
-      .map(
-        (r) => `<tr>
-      <td>${r.material}</td>
-      <td class="desc">${r.descripcion}</td>
-      <td class="num">${fmtNum(r.stockNoVal, 0)}</td>
-      <td class="num">${fmtUSD(r.importe)}</td>
-      <td>${r.usuario}</td>
-    </tr>`
-      )
-      .join('') + `<tr class="fila-total"><td colspan="3">Total</td><td class="num">${fmtUSD(totalImporte)}</td><td></td></tr>`;
-}
-
-// ---------------- BIENES DE SEGUNDO USO (BSU) ----------------
-let bsuDatosActuales = [];
-let bsuAnioFiltrado = null;
-
-function renderBSU() {
-  const sinDatos = document.getElementById('bsu-sin-datos');
-  const contenido = document.getElementById('bsu-contenido');
-  if (!state.archivos.BSU) {
-    sinDatos.style.display = 'block';
-    contenido.style.display = 'none';
-    return;
-  }
-  sinDatos.style.display = 'none';
-  contenido.style.display = 'block';
-
-  const bsu = SupplyEngine.procesarBSU(state.archivos.BSU.filas);
-  bsuDatosActuales = bsu;
-  bsuAnioFiltrado = null; // cada vez que hay datos frescos, arrancamos sin filtro
-  const anioActual = new Date().getFullYear();
-
-  renderBSUGraficoAnio(bsu, anioActual);
-  renderBSUConcentracion(bsu);
-  cargarHistorialBSU(bsu.length);
-}
-
-const RUTA_HISTORIAL_BSU = 'bsu/historial.json';
-
-async function cargarHistorialBSU(totalRegistrosActual) {
-  const estado = document.getElementById('estado-snapshot-bsu');
-  try {
-    const guardado = await GitHubSync.leerJSONPublico(RUTA_HISTORIAL_BSU);
-    const historial = guardado && Array.isArray(guardado.historial) ? guardado.historial : [];
-    renderGraficoHistorialBSU(historial);
-    const hoy = hoyISO();
-    const yaGuardadoHoy = historial.some((h) => h.fecha === hoy && h.totalRegistros === totalRegistrosActual);
-    estado.textContent = yaGuardadoHoy ? '✓ Ya guardaste el snapshot de hoy con este número.' : '';
-  } catch (err) {
-    renderGraficoHistorialBSU([]);
-  }
-}
-
-function renderGraficoHistorialBSU(historial) {
-  const cont = document.getElementById('bsu-grafico-historial');
-  const serie = SupplyEngine.construirSerieBSUHistorial(historial);
-  if (serie.length === 0) {
-    cont.innerHTML = '<p class="muted centrado" style="padding:20px 0;">Todavía no hay snapshots guardados — dale a "Guardar snapshot de esta semana".</p>';
-    return;
-  }
-  const maxValor = Math.max(...serie.map((s) => s.totalRegistros), 1);
-  cont.innerHTML = serie
-    .map((s) => {
-      const alturaPct = Math.max(6, (s.totalRegistros / maxValor) * 100);
-      return `<div class="bsu-barra-col">
-        <span class="bsu-barra-valor">${s.totalRegistros}</span>
-        <div class="bsu-barra-track"><div class="bsu-barra-fill bsu-nivel-alto" style="height:${alturaPct}%"></div></div>
-        <span class="bsu-barra-anio">Semana ${s.semana}</span>
-        <span class="bsu-barra-anios">${s.fechaLabel}</span>
-      </div>`;
-    })
-    .join('');
-}
-
-async function guardarSnapshotBSU() {
-  if (!state.archivos.BSU) return;
-  const estado = document.getElementById('estado-snapshot-bsu');
-  const boton = document.getElementById('btn-guardar-snapshot-bsu');
-  const totalRegistros = SupplyEngine.procesarBSU(state.archivos.BSU.filas).length;
-
-  boton.disabled = true;
-  estado.className = 'reporte-card-estado';
-  estado.textContent = 'Guardando…';
-  try {
-    const guardado = await GitHubSync.leerJSONPublico(RUTA_HISTORIAL_BSU);
-    const historial = guardado && Array.isArray(guardado.historial) ? guardado.historial : [];
-    const hoy = hoyISO();
-    const sinHoy = historial.filter((h) => h.fecha !== hoy);
-    sinHoy.push({ fecha: hoy, totalRegistros });
-
-    await GitHubSync.escribirJSON(
-      RUTA_HISTORIAL_BSU,
-      { actualizadoEn: new Date().toISOString(), historial: sinHoy },
-      `Snapshot BSU ${hoy}: ${totalRegistros} registros`
-    );
-    estado.className = 'reporte-card-estado reporte-estado-ok';
-    estado.textContent = `✓ Guardado — ${totalRegistros} registros esta semana.`;
-    renderGraficoHistorialBSU(sinHoy);
-  } catch (err) {
-    console.error(err);
-    estado.className = 'reporte-card-estado reporte-estado-error';
-    estado.textContent = 'Error: ' + err.message;
-  } finally {
-    boton.disabled = false;
-  }
-}
-
-const BSU_NIVEL_INFO = {
-  critico: { label: 'Crítico (5+ años)', clase: 'bsu-nivel-critico' },
-  alto: { label: 'Alto (3-4 años)', clase: 'bsu-nivel-alto' },
-  vigilancia: { label: 'Vigilancia (2 años)', clase: 'bsu-nivel-vigilancia' },
-  reciente: { label: 'Reciente (0-1 años)', clase: 'bsu-nivel-reciente' },
-};
-
-function renderBSUGraficoAnio(bsu, anioActual) {
-  const serie = SupplyEngine.bsuPorAnioIngreso(bsu, anioActual);
-  const cont = document.getElementById('bsu-grafico-anio');
-  if (serie.length === 0) {
-    cont.innerHTML = '<p class="muted centrado">Sin fechas de entrada en el archivo.</p>';
-    return;
-  }
-  const maxCuenta = Math.max(...serie.map((s) => s.cuenta), 1);
-  cont.innerHTML = serie
-    .map((s) => {
-      const alturaPct = s.cuenta === 0 ? 3 : Math.max(6, (s.cuenta / maxCuenta) * 100);
-      const clase = BSU_NIVEL_INFO[s.nivel].clase;
-      const clicable = s.cuenta > 0;
-      const activa = bsuAnioFiltrado === s.anio ? ' bsu-barra-activa' : '';
-      return `<div class="bsu-barra-col${clicable ? ' bsu-barra-clicable' + activa : ''}" ${clicable ? `data-anio="${s.anio}"` : ''}>
-        <span class="bsu-barra-valor">${s.cuenta}</span>
-        <div class="bsu-barra-track"><div class="bsu-barra-fill ${clase}" style="height:${alturaPct}%"></div></div>
-        <span class="bsu-barra-anio">${s.anio}</span>
-        <span class="bsu-barra-anios">${s.antiguedad} año${s.antiguedad === 1 ? '' : 's'}</span>
-      </div>`;
-    })
-    .join('');
-
-  cont.querySelectorAll('.bsu-barra-clicable').forEach((el) => {
-    el.addEventListener('click', () => {
-      const anio = Number(el.dataset.anio);
-      bsuAnioFiltrado = bsuAnioFiltrado === anio ? null : anio;
-      renderBSUGraficoAnio(bsuDatosActuales, anioActual);
-      renderBSUConcentracion(bsuDatosActuales);
-    });
-  });
-
-  // Leyenda: solo los niveles que realmente aparecen en la serie, con su totales.
-  const totalesPorNivel = {};
-  serie.forEach((s) => {
-    if (!totalesPorNivel[s.nivel]) totalesPorNivel[s.nivel] = { total: 0, anios: [] };
-    totalesPorNivel[s.nivel].total += s.cuenta;
-    if (s.cuenta > 0) totalesPorNivel[s.nivel].anios.push(s.anio);
-  });
-  const ordenNiveles = ['critico', 'alto', 'vigilancia', 'reciente'];
-  const leyenda = ordenNiveles
-    .filter((n) => totalesPorNivel[n])
-    .map((n) => {
-      const info = BSU_NIVEL_INFO[n];
-      const t = totalesPorNivel[n];
-      const rangoAnios = t.anios.length ? `${Math.min(...t.anios)}–${Math.max(...t.anios)}` : '—';
-      const textoExtra =
-        n === 'critico'
-          ? 'Bienes ya sin trazabilidad de uso.'
-          : n === 'alto'
-          ? 'El bloque más numeroso.'
-          : n === 'vigilancia'
-          ? 'Aún recuperables para uso.'
-          : 'Recién ingresados.';
-      return `<div class="bsu-leyenda-item">
-        <span class="dot ${info.clase}"></span>
-        <div><strong>${info.label}:</strong> ${t.total} registros de ${rangoAnios}. ${textoExtra}</div>
-      </div>`;
-    })
-    .join('');
-  document.getElementById('bsu-leyenda-niveles').innerHTML = leyenda;
-
-  const faltantes = serie.filter((s) => s.cuenta === 0).map((s) => s.anio);
-  document.getElementById('bsu-nota-anios-faltantes').textContent = faltantes.length
-    ? `${faltantes.join(', ')} no aparece${faltantes.length === 1 ? '' : 'n'}: no hay registros BSU de ese año.`
-    : '';
-}
-
-function renderBSUConcentracion(bsuCompleto) {
-  const bsu = bsuAnioFiltrado
-    ? bsuCompleto.filter((b) => b.fechaEntrada && b.fechaEntrada.getFullYear() === bsuAnioFiltrado)
-    : bsuCompleto;
-
-  const indicador = document.getElementById('bsu-filtro-anio-indicador');
-  if (bsuAnioFiltrado) {
-    indicador.style.display = 'inline-flex';
-    indicador.querySelector('span').textContent = `Filtrado: ${bsuAnioFiltrado}`;
-  } else {
-    indicador.style.display = 'none';
-  }
-
-  const items = SupplyEngine.bsuPorCantidadLibre(bsu);
-  const totalUnidades = items.reduce((a, it) => a + it.cantidad, 0);
-
-  const top = items.slice(0, 8);
-  const maxCant = Math.max(...top.map((it) => it.cantidad), 1);
-  document.getElementById('bsu-lista-items').innerHTML = top
-    .map((it) => {
-      const pct = (it.cantidad / maxCant) * 100;
-      const anio = it.fechaEntrada ? it.fechaEntrada.getFullYear() : '—';
-      return `<div class="bsu-item-fila">
-        <div class="bsu-item-info">
-          <span class="bsu-item-desc">${it.descripcion}</span>
-          <span class="bsu-item-meta">${it.material} · ${anio}</span>
-        </div>
-        <div class="bsu-item-barra-track"><div class="bsu-item-barra-fill" style="width:${pct}%"></div></div>
-        <span class="bsu-item-valor">${fmtNum(it.cantidad, 0)} ${it.um}</span>
-      </div>`;
-    })
-    .join('');
-
-  const restantes = items.slice(8);
-  if (restantes.length > 0) {
-    const sumaRestantes = restantes.reduce((a, it) => a + it.cantidad, 0);
-    document.getElementById('bsu-nota-restantes').textContent =
-      `Los ${restantes.length} ítems restantes suman ${fmtNum(sumaRestantes, 0)} unidades.`;
-  } else {
-    document.getElementById('bsu-nota-restantes').textContent = '';
-  }
-
-  const destacado = items[0];
-  if (destacado) {
-    const pctTotal = totalUnidades > 0 ? (destacado.cantidad / totalUnidades) * 100 : 0;
-    const fechaTexto = destacado.fechaEntrada
-      ? destacado.fechaEntrada.toLocaleDateString('es-PE', { month: 'short', year: 'numeric' })
-      : 'sin fecha';
-    document.getElementById('bsu-destacado').innerHTML = `
-      <span class="bsu-destacado-nombre">${destacado.descripcion}</span>
-      <span class="bsu-destacado-valor">${fmtNum(destacado.cantidad, 0)}</span>
-      <span class="bsu-destacado-sub">unid. · ${fmtNum(pctTotal, 0)}% del total</span>
-      <p class="bsu-destacado-texto">Un solo ítem (${destacado.material}), ingresado en ${fechaTexto}.</p>
-    `;
-  }
-
-  const porAlmacen = SupplyEngine.bsuDistribucionPorAlmacen(bsu);
-  document.getElementById('bsu-lista-almacen').innerHTML = porAlmacen
-    .map((a) => `<div class="bsu-almacen-fila"><span>${a.almacen}</span><span>${a.cuenta}</span></div>`)
-    .join('');
-
-  const principal = porAlmacen[0];
-  const variedad = SupplyEngine.bsuCodigoConMasVariedad(bsu);
-  let notaVariedad = '';
-  if (principal) {
-    const pctPrincipal = bsu.length > 0 ? (principal.cuenta / bsu.length) * 100 : 0;
-    const ubicaciones = SupplyEngine.bsuUbicacionesDistintas(bsu, principal.almacen);
-    notaVariedad = `${fmtNum(pctPrincipal, 0)}% está en ${principal.almacen}, en ${ubicaciones} ubicaciones.`;
-  }
-  if (variedad) {
-    notaVariedad += ` Ojo: un mismo código BSU agrupa ítems distintos — ${variedad.material} contiene ${variedad.cantidadDescripciones} ítems (${variedad.ejemplos.join(', ').toLowerCase()}).`;
-  }
-  document.getElementById('bsu-nota-variedad').textContent = notaVariedad;
-}
-// ---------------- VALORIZACIÓN EN DÓLARES ----------------
-function renderValorizacionReal() {
-  const aviso = document.getElementById('aviso-valorizacion');
-  const mb52Rows = state.archivos.MB52 ? state.archivos.MB52.filas : null;
-  const monitorRows = obtenerMonitorFilas();
-
-  if (!mb52Rows) {
-    ['kpi-real-almacen', 'kpi-real-pptt', 'kpi-real-monitor', 'kpi-real-pct-monitor', 'kpi-real-pct-vencido'].forEach((id) => {
-      document.getElementById(id).textContent = '—';
-    });
-    return;
-  }
-
-  const kpi = SupplyEngine.calcularValorizacionReal(mb52Rows, monitorRows || [], state.tipoCambio);
-  document.getElementById('kpi-real-almacen').textContent = fmtUSD(kpi.valorizadoAlmacen);
-  document.getElementById('kpi-real-pptt').textContent = fmtUSD(kpi.valorizadoPPTT);
-  document.getElementById('kpi-real-monitor').textContent = fmtUSD(kpi.valorizadoMonitor);
-  document.getElementById('kpi-real-pct-monitor').textContent = fmtPct(kpi.pctMonitor);
-  document.getElementById('kpi-real-pct-vencido').textContent = fmtPct(kpi.pctVencido);
-
-  if (!monitorRows) {
-    aviso.style.display = 'block';
-    aviso.textContent = 'Todavía no subes tu Monitor (ZMMR0105) — Valorizado Monitor y % Monitor están en $0 hasta que lo cargues.';
-  } else {
-    aviso.style.display = 'none';
-  }
-}
-
-// ---------------- NAV ----------------
-function bindTabs() {
-  document.querySelectorAll('.tab-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-    });
-  });
-}
-
-// ---------------- RESUMEN ----------------
-function renderInactivosConStock() {
-  const inactivos = state.calculados
-    .filter((m) => m.clasificacionFinal === 'Inactivo' && m.stockFisico > 0)
-    .map((m) => ({ ...m, valor: m.costoUnitario ? m.costoUnitario * m.stockFisico : null }))
-    .sort((a, b) => (b.valor || 0) - (a.valor || 0));
-
-  const tbody = document.getElementById('tabla-inactivos-stock-body');
-  if (inactivos.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="muted centrado">Ningún material inactivo tiene stock físico en L001 ahora mismo.</td></tr>';
-    return;
-  }
-  const totalValor = inactivos.reduce((a, m) => a + (m.valor || 0), 0);
-  tbody.innerHTML =
-    inactivos
-      .map(
-        (m) => `<tr>
-      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
-      <td class="desc">${m.descripcion || ''}</td>
-      <td class="num">${fmtNum(m.stockFisico, 0)}</td>
-      <td class="num">${m.costoUnitario ? fmtSoles(m.costoUnitario) : '<span class="muted">—</span>'}</td>
-      <td class="num">${m.valor !== null ? fmtSoles(m.valor) : '<span class="muted">—</span>'}</td>
-      <td>${m.ultimaFechaConsumo || '<span class="muted">sin consumo registrado</span>'}</td>
-    </tr>`
-      )
-      .join('') + `<tr class="fila-total"><td colspan="4">Total</td><td class="num">${fmtSoles(totalValor)}</td><td></td></tr>`;
-}
-
-function renderResumen() {
-  const total = state.planificados.length;
-  const critico = state.planificados.filter((m) => m.estadoSalud === 'STOCKOUT_CRITICAL').length;
-  const urgente = state.planificados.filter((m) => m.estadoSalud === 'REORDER_URGENT').length;
-  const rojo = critico + urgente;
-  const optimo = state.planificados.filter((m) => m.estadoSalud === 'OPTIMAL').length;
-  const sobrestock = state.planificados.filter((m) => m.estadoSalud === 'OVERSTOCK').length;
-  const sinMovimiento = state.planificados.filter((m) => m.estadoSalud === 'DEAD_STOCK').length;
-  const alta = state.planificados.filter((m) => m.confianza === 'Alta').length;
-  const media = state.planificados.filter((m) => m.confianza === 'Media').length;
-  const baja = state.planificados.filter((m) => m.confianza === 'Baja').length;
-  const sinDatos = state.planificados.filter((m) => m.confianza === 'Sin datos').length;
-
-  document.getElementById('kpi-total').textContent = total;
-  document.getElementById('kpi-rojo').textContent = rojo;
-  document.getElementById('kpi-verde').textContent = optimo;
-  document.getElementById('kpi-sobrestock').textContent = sobrestock;
-  document.getElementById('kpi-amarillo').textContent = sinMovimiento;
-  document.getElementById('kpi-confianza').textContent = `${alta} alta · ${media} media · ${baja} baja · ${sinDatos} sin datos`;
-
-  const pctSalud = total > 0 ? Math.round((optimo / total) * 100) : 0;
-  const gauge = document.getElementById('gauge-salud');
-  const color = pctSalud >= 80 ? '#22c55e' : pctSalud >= 60 ? '#f5a623' : '#ef4444';
-  gauge.style.setProperty('--pct', pctSalud);
-  gauge.style.setProperty('--gauge-color', color);
-  document.getElementById('gauge-valor').textContent = `${pctSalud}%`;
-
-  const tempHoy = state.mesATemporada[new Date().getMonth() + 1];
-  document.getElementById('temporada-actual').textContent = tempHoy;
-  document.getElementById('temporada-actual').className = 'chip chip-' + (tempHoy === 'Alta' ? 'roja' : tempHoy === 'Media' ? 'amarilla' : 'verde');
-
-  const prioritarios = state.planificados
-    .filter((m) => m.riesgo === 'ROJO' && (m.confianza === 'Alta' || m.confianza === 'Media'))
-    .sort((a, b) => (b.ropCalculado - b.stockFisico) - (a.ropCalculado - a.stockFisico))
-    .slice(0, 25);
-
-  const tbody = document.getElementById('tabla-prioritarios-body');
-  tbody.innerHTML = prioritarios
-    .map(
-      (m) => `<tr>
-      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
-      <td class="desc">${m.descripcion || ''}</td>
-      <td>${m.clasificacion}</td>
-      <td>${m.temporadaObjetivo}</td>
-      <td class="num">${fmtNum(m.stockFisico, 0)}</td>
-      <td class="num">${fmtNum(m.ropCalculado, 0)}</td>
-      <td>${confianzaChip(m.confianza)}</td>
-    </tr>`
-    )
-    .join('');
-}
-
-// ---------------- ESTACIONALIDAD ----------------
-function renderEstacionalidad() {
-  const maxIdx = Math.max(...Object.values(state.indiceEstacional));
-  const html = SupplyEngine.NOMBRES_MES.map((nombre, i) => {
-    const mes = i + 1;
-    const idx = state.indiceEstacional[mes];
-    const temp = state.mesATemporada[mes];
-    const alturaPct = Math.max(4, (idx / maxIdx) * 100);
-    const claseColor = temp === 'Alta' ? 'barra-roja' : temp === 'Media' ? 'barra-amarilla' : 'barra-verde';
-    return `<div class="barra-mes">
-      <span class="barra-valor">${idx.toFixed(2)}</span>
-      <div class="barra ${claseColor}" style="height:${alturaPct}%"></div>
-      <span class="barra-label">${nombre}</span>
-    </div>`;
-  }).join('');
-
-  const rango = `${state.fechaMin} a ${state.fechaMax}`;
-  ['grafico-estacional', 'grafico-estacional-resumen'].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = html;
-  });
-  ['rango-fechas', 'rango-fechas-resumen'].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = rango;
-  });
-}
-
-// ---------------- PARAMETROS ----------------
-function renderParametros() {
-  document.getElementById('input-z').value = state.params.Z;
-  document.getElementById('input-s').value = state.params.S;
-  document.getElementById('input-h').value = (state.params.H * 100).toFixed(1);
-  document.getElementById('input-umbral-alta').value = state.umbralAlta;
-  document.getElementById('input-umbral-baja').value = state.umbralBaja;
-}
-
-function bindFormularios() {
-  document.getElementById('input-tipo-cambio').value = state.tipoCambio;
-  document.getElementById('input-tipo-cambio').addEventListener('input', (e) => {
-    const val = Number(e.target.value);
-    if (val > 0) {
-      state.tipoCambio = val;
-      localStorage.setItem('tipo_cambio_v1', String(val));
-      renderValorizacionReal();
-    }
-  });
-
-  document.getElementById('form-parametros').addEventListener('submit', (e) => {
-    e.preventDefault();
-    state.params.Z = Number(document.getElementById('input-z').value);
-    state.params.S = Number(document.getElementById('input-s').value);
-    state.params.H = Number(document.getElementById('input-h').value) / 100;
-    state.umbralAlta = Number(document.getElementById('input-umbral-alta').value);
-    state.umbralBaja = Number(document.getElementById('input-umbral-baja').value);
-    guardarParametros();
-    recalcularConParametrosActuales();
-    flashGuardado();
-  });
-
-  document.getElementById('buscar-material').addEventListener('input', (e) => {
-    state.filtroTexto = e.target.value.toLowerCase();
-    renderTablaMateriales();
-  });
-  document.getElementById('filtro-riesgo').addEventListener('change', (e) => {
-    state.filtroRiesgo = e.target.value;
-    renderTablaMateriales();
-  });
-  document.getElementById('filtro-confianza').addEventListener('change', (e) => {
-    state.filtroConfianza = e.target.value;
-    renderTablaMateriales();
-  });
-  document.getElementById('filtro-tratamiento').addEventListener('change', (e) => {
-    state.filtroTratamiento = e.target.value;
-    renderTablaMateriales();
-  });
-
-  document.getElementById('umbral-moderado').addEventListener('change', renderInmovilizados);
-  document.getElementById('umbral-critico').addEventListener('change', renderInmovilizados);
-  document.getElementById('filtro-antiguedad-inmov').addEventListener('change', renderInmovilizados);
-  document.getElementById('filtro-valor-inmov').addEventListener('change', renderInmovilizados);
-
-  document.getElementById('btn-nuevos-archivos').addEventListener('click', () => {
-    document.getElementById('dashboard').style.display = 'none';
-    document.getElementById('pantalla-carga').style.display = 'block';
-  });
-
-  document.getElementById('btn-exportar').addEventListener('click', exportarExcel);
-  document.getElementById('btn-exportar-pedido').addEventListener('click', exportarListaPedido);
-
-  bindBotonReporte('btn-reporte-combustibles', 'estado-reporte-combustibles', () =>
-    ReportesInventario.generarReporteCombustibles(state.archivos.MB52.filas)
-  );
-  bindBotonReporte('btn-reporte-gases', 'estado-reporte-gases', () =>
-    ReportesInventario.generarReporteGases(state.archivos.MB52.filas)
-  );
-  bindBotonReporte('btn-reporte-iqbf', 'estado-reporte-iqbf', () =>
-    ReportesInventario.generarReporteIQBF(state.archivos.MB52.filas)
-  );
-
-  document.getElementById('buscar-tendencia').addEventListener('change', (e) => {
-    mostrarTendenciaMaterial(e.target.value);
-  });
-
-  document.getElementById('filtro-categoria-abcxyz').addEventListener('change', (e) => {
-    state.filtroCategoria = e.target.value;
-    state.filtroABC = 'TODAS';
-    state.filtroXYZ = 'TODAS';
-    renderABCXYZ();
-  });
-
-  document.getElementById('filtro-categoria-cobertura').addEventListener('change', renderCobertura);
-  document.getElementById('input-cobertura-ideal').addEventListener('change', renderCobertura);
-
-  document.getElementById('sim-leadtime-slider').addEventListener('input', (e) => {
-    state.sim.leadTimeMult = Number(e.target.value);
-    renderSimulacion();
-  });
-  document.getElementById('sim-demanda-slider').addEventListener('input', (e) => {
-    state.sim.demandMult = Number(e.target.value);
-    renderSimulacion();
-  });
-  document.querySelectorAll('.btn-nivel-servicio').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      state.sim.serviceLevelZ = Number(btn.dataset.z);
-      document.querySelectorAll('.btn-nivel-servicio').forEach((b) => b.classList.remove('activo'));
-      btn.classList.add('activo');
-      renderSimulacion();
-    });
-  });
-  document.getElementById('btn-reset-simulacion').addEventListener('click', () => {
-    state.sim = { leadTimeMult: 1.0, demandMult: 1.0, serviceLevelZ: 1.645 };
-    document.getElementById('sim-leadtime-slider').value = 1.0;
-    document.getElementById('sim-demanda-slider').value = 1.0;
-    document.querySelectorAll('.btn-nivel-servicio').forEach((b) => b.classList.remove('activo'));
-    document.querySelector('.btn-nivel-servicio[data-z="1.645"]').classList.add('activo');
-    renderSimulacion();
-  });
-}
-
-function flashGuardado() {
-  const el = document.getElementById('guardado-msg');
-  el.style.opacity = '1';
-  setTimeout(() => (el.style.opacity = '0'), 1800);
-}
-
-// ---------------- TABLA MATERIALES ----------------
-function riesgoChip(r) {
-  const map = { ROJO: 'roja', AMARILLO: 'amarilla', VERDE: 'verde', 'N/A': 'nd' };
-  const label = { ROJO: 'Riesgo de quiebre', AMARILLO: 'Vigilar', VERDE: 'OK', 'N/A': 'No planificado' };
-  return `<span class="chip chip-${map[r] || 'nd'}">${label[r] || r}</span>`;
-}
-
-const ESTADO_SALUD_INFO = {
-  STOCKOUT_CRITICAL: { label: 'Quiebre Crítico', clase: 'salud-critico' },
-  REORDER_URGENT: { label: 'Reordenar Urgente', clase: 'salud-urgente' },
-  OPTIMAL: { label: 'Óptimo', clase: 'salud-optimo' },
-  OVERSTOCK: { label: 'Sobrestock', clase: 'salud-sobrestock' },
-  DEAD_STOCK: { label: 'Sin Movimiento', clase: 'salud-muerto' },
-  'N/A': { label: 'No planificado', clase: 'salud-nd' },
-};
-function estadoSaludChip(estado) {
-  const info = ESTADO_SALUD_INFO[estado] || ESTADO_SALUD_INFO['N/A'];
-  return `<span class="chip ${info.clase}">${info.label}</span>`;
-}
-function confianzaChip(c) {
-  const map = { Alta: 'alta', Media: 'media', Baja: 'baja', 'Sin datos': 'sindatos' };
-  return `<span class="chip chip-${map[c]}">${c}</span>`;
-}
-
-function renderTablaMateriales() {
-  let rows = state.calculados;
-  if (state.filtroTexto) {
-    rows = rows.filter(
-      (m) =>
-        m.material.toLowerCase().includes(state.filtroTexto) ||
-        (m.descripcion || '').toLowerCase().includes(state.filtroTexto)
-    );
-  }
-  if (state.filtroRiesgo !== 'TODOS') rows = rows.filter((m) => m.riesgo === state.filtroRiesgo);
-  if (state.filtroConfianza !== 'TODAS') rows = rows.filter((m) => m.confianza === state.filtroConfianza);
-  if (state.filtroTratamiento === 'PLANIFICADOS') rows = rows.filter((m) => m.incluidoEnPlanificacion);
-  if (state.filtroTratamiento === 'EXCLUIDOS') rows = rows.filter((m) => !m.incluidoEnPlanificacion);
-
-  document.getElementById('conteo-materiales').textContent = `${rows.length} de ${state.calculados.length} materiales`;
-
-  const tbody = document.getElementById('tabla-materiales-body');
-  const MAX_FILAS = 400;
-  tbody.innerHTML = rows
-    .slice(0, MAX_FILAS)
-    .map(
-      (m) => `<tr>
-      <td class="centrado"><input type="checkbox" class="chk-marcar" data-material="${m.material}" ${m.material in state.marcados ? 'checked' : ''} /></td>
-      <td class="num"><input type="number" min="0" step="1" class="input-cantidad-pedido" data-material="${m.material}" value="${m.material in state.marcados ? state.marcados[m.material] : ''}" placeholder="—" /></td>
-      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
-      <td class="desc">${m.descripcion || ''}</td>
-      <td>${m.clasificacion}</td>
-      <td>${m.clasificacionFinal}${m.reclasificadoDesdeUIN ? ' <span class="chip chip-reclasificado">reclasificado</span>' : ''}</td>
-      <td>${m.temporadaObjetivo}</td>
-      <td class="num">${fmtNum(m.leadTime, 0)}</td>
-      <td class="num">${fmtNum(m.stockFisico, 0)}</td>
-      <td class="num">${fmtNum(m.ssActual, 0)}</td>
-      <td class="num">${fmtNum(m.ssCalculado, 1)}</td>
-      <td class="num">${fmtNum(m.ropActual, 0)}</td>
-      <td class="num">${fmtNum(m.ropCalculado, 1)}</td>
-      <td>${confianzaChip(m.confianza)}</td>
-      <td>${m.ultimaFechaConsumo || '<span class="muted">sin consumo</span>'}</td>
-      <td class="num">${m.costoUnitario ? fmtSoles(m.costoUnitario) : '<span class="muted">—</span>'}</td>
-      <td class="num">${m.eoq !== null ? fmtNum(m.eoq, 0) : '<span class="muted">—</span>'}</td>
-      <td>${estadoSaludChip(m.estadoSalud)}</td>
-    </tr>`
-    )
-    .join('');
-
-  if (rows.length > MAX_FILAS) {
-    tbody.innerHTML += `<tr><td colspan="18" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — afina el filtro para ver más.</td></tr>`;
-  }
-}
-
-// ---------------- INMOVILIZADOS ----------------
-function renderInmovilizados() {
-  const umbralMod = Number(document.getElementById('umbral-moderado').value || 180);
-  const umbralCrit = Number(document.getElementById('umbral-critico').value || 365);
-  const antiguedadMin = Number(document.getElementById('filtro-antiguedad-inmov').value || 0);
-  const valorMin = Number(document.getElementById('filtro-valor-inmov').value || 0);
-  const totalDiasObs = SupplyEngine.diasPorTemporada
-    ? Object.values(SupplyEngine.diasPorTemporada(state.fechaMin, state.fechaMax, state.mesATemporada)).reduce((a, b) => a + b, 0)
-    : 0;
-  let inmov = SupplyEngine.calcularInmovilizados(state.calculados, umbralMod, umbralCrit, totalDiasObs);
-
-  const totalSinFiltrar = inmov.length;
-  if (antiguedadMin > 0) inmov = inmov.filter((m) => m.diasSinMovimientoEfectivo >= antiguedadMin);
-  if (valorMin > 0) inmov = inmov.filter((m) => (m.valorInmovilizado || 0) >= valorMin);
-
-  const criticos = inmov.filter((m) => m.severidadInmovilizado === 'Crítico');
-  const moderados = inmov.filter((m) => m.severidadInmovilizado === 'Moderado');
-  const valorTotal = inmov.reduce((acc, m) => acc + (m.valorInmovilizado || 0), 0);
-  const conValor = inmov.filter((m) => m.valorInmovilizado !== null).length;
-
-  document.getElementById('kpi-inmov-total').textContent = inmov.length;
-  document.getElementById('kpi-inmov-critico').textContent = criticos.length;
-  document.getElementById('kpi-inmov-moderado').textContent = moderados.length;
-  document.getElementById('kpi-inmov-valor').textContent = fmtSoles(valorTotal) + ` (${conValor} con costo)`;
-  document.getElementById('conteo-inmov').textContent = `${inmov.length} de ${totalSinFiltrar}`;
-
-  const tbody = document.getElementById('tabla-inmovilizados-body');
-  tbody.innerHTML = inmov
-    .map(
-      (m) => `<tr>
-      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
-      <td class="desc">${m.descripcion || ''}</td>
-      <td>${m.clasificacion}</td>
-      <td class="num">${fmtNum(m.stockFisico, 0)}</td>
-      <td class="num">${m.diasSinMovimientoEfectivo}</td>
-      <td>${m.ultimaFechaConsumo || '<span class="muted">sin consumo en el período</span>'}</td>
-      <td>${m.fechaVencimiento || '<span class="muted">sin vencimiento</span>'}</td>
-      <td><span class="chip chip-${m.severidadInmovilizado === 'Crítico' ? 'roja' : 'amarilla'}">${m.severidadInmovilizado}</span></td>
-      <td class="num">${m.valorInmovilizado !== null ? fmtSoles(m.valorInmovilizado) : '<span class="muted">—</span>'}</td>
-    </tr>`
-    )
-    .join('');
-}
-
-// ---------------- ABC-XYZ ----------------
-const DESCRIPCION_CELDA = {
-  AX: 'Alto valor, demanda predecible — control estricto, SS ajustado',
-  AY: 'Alto valor, demanda variable — vigilar de cerca',
-  AZ: 'Alto valor, demanda errática — el mayor riesgo financiero',
-  BX: 'Valor medio, predecible — control estándar',
-  BY: 'Valor medio, variable — revisión periódica',
-  BZ: 'Valor medio, errático — considerar mayor SS',
-  CX: 'Bajo valor, predecible — control simple',
-  CY: 'Bajo valor, variable — bajo esfuerzo de gestión',
-  CZ: 'Bajo valor, errático — mínimo esfuerzo, aceptar quiebres ocasionales',
-};
-
-function renderABCXYZ() {
-  const filasABC = ['A', 'B', 'C'];
-  const colsXYZ = ['X', 'Y', 'Z', 'N/D'];
-
-  const base = state.filtroCategoria === 'TODAS'
-    ? state.planificados
-    : state.planificados.filter((m) => m.categoria === state.filtroCategoria);
-
-  const conteos = {};
-  filasABC.forEach((a) => colsXYZ.forEach((x) => (conteos[a + x] = 0)));
-  base.forEach((m) => {
-    const clave = m.claseABC + m.claseXYZ;
-    if (conteos[clave] !== undefined) conteos[clave]++;
-  });
-
-  const grid = document.getElementById('grid-abcxyz');
-  let html = '<div class="abcxyz-row abcxyz-header"><div></div>' +
-    colsXYZ.map((x) => `<div class="abcxyz-col-label">${x}</div>`).join('') + '</div>';
-  filasABC.forEach((a) => {
-    html += `<div class="abcxyz-row"><div class="abcxyz-row-label">${a}</div>`;
-    colsXYZ.forEach((x) => {
-      const clave = a + x;
-      const n = conteos[clave];
-      const activa = state.filtroABC === a && state.filtroXYZ === x;
-      html += `<button type="button" class="abcxyz-celda celda-${x === 'N/D' ? 'ND' : x} ${activa ? 'activa' : ''}" data-abc="${a}" data-xyz="${x}" title="${DESCRIPCION_CELDA[a + x] || ''}">
-        <span class="celda-valor">${n}</span>
-      </button>`;
-    });
-    html += '</div>';
-  });
-  grid.innerHTML = html;
-
-  grid.querySelectorAll('.abcxyz-celda').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const abc = btn.dataset.abc;
-      const xyz = btn.dataset.xyz;
-      if (state.filtroABC === abc && state.filtroXYZ === xyz) {
-        state.filtroABC = 'TODAS';
-        state.filtroXYZ = 'TODAS';
+/**
+ * Calcula SS, ROP, EOQ y riesgo para todos los materiales del MRP —
+ * aplicando primero la política de tratamiento por clasificación:
+ * Inactivo y Producción quedan fuera del cálculo, Estratégico siempre entra,
+ * y Uso Inmediato se reclasifica según su histórico real de movimientos
+ * (ver determinarTratamiento / calcularClasificacionMovimiento).
+ */
+function calcularMateriales(mrpRows, statsPorTemporada, mesATemporada, mb52Map, params, hoyISO, movClasificacionMap, materialesConConsumoPI01, simParams, clasificacionesManuales) {
+  const { Z, S, H, diasAnio } = params;
+  const leadTimeMult = simParams && simParams.leadTimeMult ? simParams.leadTimeMult : 1;
+  const demandMult = simParams && simParams.demandMult ? simParams.demandMult : 1;
+
+  return mrpRows.map((m) => {
+    const material = String(m['Material']).trim();
+    const lt = (Number(m['Plazo entrega prev.']) || 0) * leadTimeMult;
+    const tempObjetivo = temporadaObjetivo(lt, hoyISO, mesATemporada);
+
+    const clasificacionSAP = m['Den.Clasificación'] || 'Sin Clasificar';
+    const movInfo = movClasificacionMap ? movClasificacionMap.get(material) : null;
+    const clasificacionManual = clasificacionesManuales ? clasificacionesManuales.get(material) : null;
+    const tratamiento = determinarTratamiento(material, clasificacionSAP, movInfo, clasificacionManual);
+
+    const stat = statsPorTemporada.get(material);
+    const bucket = stat ? stat[tempObjetivo] : null;
+    const ssActual = Number(m['Stock de seguridad']) || 0;
+    const ropActual = Number(m['Punto de pedido']) || 0;
+
+    const diasConConsumo = bucket ? bucket.diasConConsumo : 0;
+    const conf = confianza(diasConConsumo);
+    // El multiplicador de demanda escala la media directo, y la desviación
+    // con la raíz cuadrada (mismo criterio que un pico de demanda conserva
+    // la FORMA de la distribución, no la infla linealmente).
+    const media = (bucket ? bucket.demandaDiariaPromedio : 0) * demandMult;
+    const desvest = (bucket ? bucket.demandaDiariaDesvest : 0) * Math.sqrt(demandMult);
+
+    const mb52 = mb52Map.get(material) || { stockFisico: 0, costoUnitario: null, fechaVencimiento: null };
+    const demandaAnual = media * diasAnio;
+
+    let ssCalculado = null;
+    let ropCalculado = null;
+    let eoq = null;
+    let riesgo = 'N/A';
+    let maxStock = null;
+    let estadoSalud = 'N/A';
+
+    if (tratamiento.incluido) {
+      ssCalculado = conf === 'Sin datos' ? ssActual : Z * desvest * Math.sqrt(lt);
+      ropCalculado = media * lt + ssCalculado;
+      eoq =
+        mb52.costoUnitario && mb52.costoUnitario > 0 && H > 0
+          ? Math.sqrt((2 * demandaAnual * S) / (H * mb52.costoUnitario))
+          : null;
+      maxStock = eoq !== null ? Math.max(ropCalculado + eoq, ropCalculado * 1.5) : ropCalculado * 1.5;
+
+      const coberturaDiasLocal = media > 0 ? mb52.stockFisico / media : mb52.stockFisico > 0 ? 999 : 0;
+
+      // Estado de salud en 5 niveles (más específico que el semáforo simple):
+      if (conf === 'Sin datos' && mb52.stockFisico > 0) {
+        estadoSalud = 'DEAD_STOCK'; // stock físico pero sin ningún consumo real registrado
+      } else if (mb52.stockFisico <= 0 || (coberturaDiasLocal < Math.max(3, lt * 0.35) && mb52.stockFisico < ssCalculado)) {
+        estadoSalud = 'STOCKOUT_CRITICAL';
+      } else if (mb52.stockFisico <= ropCalculado) {
+        estadoSalud = 'REORDER_URGENT';
+      } else if (mb52.stockFisico > maxStock) {
+        estadoSalud = 'OVERSTOCK';
       } else {
-        state.filtroABC = abc;
-        state.filtroXYZ = xyz;
+        estadoSalud = 'OPTIMAL';
       }
-      renderABCXYZ();
-    });
+
+      // 'riesgo' se conserva por compatibilidad con las vistas que agrupan en 3 niveles.
+      if (estadoSalud === 'STOCKOUT_CRITICAL' || estadoSalud === 'REORDER_URGENT') riesgo = 'ROJO';
+      else if (estadoSalud === 'OVERSTOCK' || estadoSalud === 'DEAD_STOCK') riesgo = 'AMARILLO';
+      else riesgo = 'VERDE';
+    }
+
+    const ultimaFechaConsumo = stat ? stat.ultimaFechaConsumo : null;
+    const diasSinMovimiento = ultimaFechaConsumo ? diffDiasISO(ultimaFechaConsumo, hoyISO) : null;
+
+    return {
+      material,
+      descripcion: m['Texto breve de material'],
+      clasificacion: clasificacionSAP,
+      clasificacionFinal: tratamiento.clasificacionFinal,
+      clasificacionPropuesta: tratamiento.clasificacionPropuesta,
+      clasificacionEsManual: !!tratamiento.esManual,
+      incluidoEnPlanificacion: tratamiento.incluido,
+      reclasificadoDesdeUIN: tratamiento.reclasificado,
+      motivoExclusion: tratamiento.motivo,
+      unidadNegocio: m['Unidad de Negocio'] || 'Sin Asignar',
+      unidadMedida: m['Unidad medida base'],
+      grupoArticulo: m['Grupo de artículos'],
+      denomGrupoArticulo: m['Denom.gr-artículos'] || '',
+      categoria: categorizarMaterial(material, m['Denom.gr-artículos'], materialesConConsumoPI01),
+      leadTime: lt,
+      temporadaObjetivo: tempObjetivo,
+      stockFisico: mb52.stockFisico,
+      fechaVencimiento: mb52.fechaVencimiento,
+      costoUnitario: mb52.costoUnitario,
+      ssActual,
+      ropActual,
+      diasConConsumo,
+      confianza: conf,
+      demandaDiariaPromedio: media,
+      demandaDiariaDesvest: desvest,
+      ssCalculado,
+      ropCalculado,
+      difSS: ssCalculado !== null ? ssCalculado - ssActual : null,
+      difROP: ropCalculado !== null ? ropCalculado - ropActual : null,
+      demandaAnual,
+      eoq,
+      maxStock,
+      riesgo,
+      estadoSalud,
+      ultimaFechaConsumo,
+      diasSinMovimiento,
+      stSAP: m['ST'] ?? null,
+    };
   });
-
-  let rows = base;
-  if (state.filtroABC !== 'TODAS') rows = rows.filter((m) => m.claseABC === state.filtroABC);
-  if (state.filtroXYZ !== 'TODAS') rows = rows.filter((m) => m.claseXYZ === state.filtroXYZ);
-  rows = [...rows].sort((a, b) => b.valorConsumoAnual - a.valorConsumoAnual);
-
-  document.getElementById('conteo-abcxyz').textContent =
-    state.filtroABC === 'TODAS' ? `${base.length} materiales` : `${rows.length} materiales en ${state.filtroABC}${state.filtroXYZ}`;
-
-  const tbody = document.getElementById('tabla-abcxyz-body');
-  const MAX_FILAS = 300;
-  tbody.innerHTML = rows
-    .slice(0, MAX_FILAS)
-    .map(
-      (m) => `<tr>
-      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
-      <td class="desc">${m.descripcion || ''}</td>
-      <td>${m.denomGrupoArticulo || ''}</td>
-      <td><span class="chip chip-cat-${m.categoria.toLowerCase()}">${m.categoria}</span></td>
-      <td class="num">${m.valorConsumoAnual > 0 ? fmtSoles(m.valorConsumoAnual) : '<span class="muted">—</span>'}</td>
-      <td><span class="chip chip-abc">${m.claseABC}</span></td>
-      <td><span class="chip chip-xyz-${m.claseXYZ === 'N/D' ? 'nd' : m.claseXYZ.toLowerCase()}">${m.claseXYZ}</span></td>
-      <td class="num">${fmtNum(m.stockFisico, 0)}</td>
-      <td>${estadoSaludChip(m.estadoSalud)}</td>
-    </tr>`
-    )
-    .join('');
-
-  if (rows.length > MAX_FILAS) {
-    tbody.innerHTML += `<tr><td colspan="9" class="muted centrado">… mostrando los primeros ${MAX_FILAS} — filtra por celda o categoría para ver un grupo más chico.</td></tr>`;
-  }
 }
 
-// ---------------- COBERTURA (Insumos y Materia Prima) ----------------
-function renderCobertura() {
-  const coberturaIdeal = Number(document.getElementById('input-cobertura-ideal').value) || 12;
-  state.coberturaIdealDias = coberturaIdeal;
-  state.filtroCategoriaCobertura = document.getElementById('filtro-categoria-cobertura').value;
-
-  const FILTROS_POR_CLASIFICACION = new Set(['Producción', 'EPPS', 'Estratégico', 'Energéticos']);
-  let base = state.calculados.filter((m) => m.clasificacionFinal !== 'Inactivo');
-  if (state.filtroCategoriaCobertura !== 'TODAS') {
-    if (FILTROS_POR_CLASIFICACION.has(state.filtroCategoriaCobertura)) {
-      base = base.filter((m) => m.clasificacionFinal === state.filtroCategoriaCobertura);
-    } else {
-      base = base.filter((m) => m.categoria === state.filtroCategoriaCobertura);
-    }
-  }
-
-  const filas = base.map((m) => {
-    const stockIdealVivo = m.demandaDiariaPromedio * coberturaIdeal;
-    const coberturaDiasVivo = m.demandaDiariaPromedio > 0 ? m.stockDisponibleTotal / m.demandaDiariaPromedio : null;
-    const solicitarVivo = Math.max(0, stockIdealVivo - m.stockDisponibleTotal);
-    return { ...m, stockIdealVivo, coberturaDiasVivo, solicitarVivo };
-  });
-
-  filas.sort((a, b) => (a.coberturaDiasVivo ?? Infinity) - (b.coberturaDiasVivo ?? Infinity));
-
-  const bajoCobertura = filas.filter((m) => m.coberturaDiasVivo !== null && m.coberturaDiasVivo < coberturaIdeal);
-  document.getElementById('kpi-cob-total').textContent = filas.length;
-  document.getElementById('kpi-cob-bajo').textContent = bajoCobertura.length;
-  document.getElementById('kpi-cob-solicitar').textContent = fmtNum(filas.reduce((acc, m) => acc + m.solicitarVivo, 0), 0);
-
-  const tbody = document.getElementById('tabla-cobertura-body');
-  const MAX_FILAS = 300;
-  tbody.innerHTML = filas
-    .slice(0, MAX_FILAS)
+function calcularInmovilizados(calculados, umbralModerado, umbralCritico, totalDiasObservados) {
+  return calculados
+    .filter((m) => m.stockFisico > 0)
     .map((m) => {
-      const claseColor = m.coberturaDiasVivo === null ? 'nd' : m.coberturaDiasVivo < coberturaIdeal ? 'roja' : 'verde';
-      return `<tr>
-      <td>${m.grupoArticulo || ''}</td>
-      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
-      <td class="desc">${m.descripcion || ''}</td>
-      <td class="num">${fmtNum(m.demandaDiariaPromedio, 2)}</td>
-      <td class="num">${fmtNum(m.demandaDiariaDesvest, 2)}</td>
-      <td class="num">${coberturaIdeal}</td>
-      <td class="num">${fmtNum(m.stockIdealVivo, 0)}</td>
-      <td class="num">${fmtNum(m.stockFisico, 0)}</td>
-      <td class="num"><span class="dot-cobertura dot-${claseColor}"></span>${m.coberturaDiasVivo === null ? '—' : fmtNum(m.coberturaDiasVivo, 0)}</td>
-      <td class="num">${fmtNum(m.solicitarVivo, 0)}</td>
-      <td class="num">${fmtNum(m.transito, 0)}</td>
-      <td class="num">${fmtNum(m.planta, 0)}</td>
-      <td>${m.stSAP ?? '<span class="muted">—</span>'}</td>
-      <td>${m.incluidoEnPlanificacion ? '<span class="chip chip-verde">Planificado</span>' : `<span class="chip chip-amarilla">${m.clasificacionFinal}</span>`}</td>
-    </tr>`;
+      const dias = m.diasSinMovimiento === null ? totalDiasObservados : m.diasSinMovimiento;
+      let severidad = 'Activo';
+      if (dias >= umbralCritico) severidad = 'Crítico';
+      else if (dias >= umbralModerado) severidad = 'Moderado';
+      const valorInmovilizado = m.costoUnitario ? m.costoUnitario * m.stockFisico : null;
+      return { ...m, diasSinMovimientoEfectivo: dias, severidadInmovilizado: severidad, valorInmovilizado };
     })
-    .join('');
-
-  if (filas.length > MAX_FILAS) {
-    tbody.innerHTML += `<tr><td colspan="14" class="muted centrado">… mostrando los primeros ${MAX_FILAS}.</td></tr>`;
-  }
+    .filter((m) => m.severidadInmovilizado !== 'Activo')
+    .sort((a, b) => b.diasSinMovimientoEfectivo - a.diasSinMovimientoEfectivo);
 }
 
-// ---------------- SIMULADOR DE ESCENARIOS ----------------
-function ejecutarSimulacion() {
-  const paramsSim = { ...state.params, Z: state.sim.serviceLevelZ };
-  let simulados = SupplyEngine.calcularMateriales(
-    state.mrpRowsCache,
-    state.statsPorTemporada,
-    state.mesATemporada,
-    state.mb52Map,
-    paramsSim,
-    hoyISO(),
-    state.movClasificacionMap,
-    state.materialesConConsumoPI01,
-    { leadTimeMult: state.sim.leadTimeMult, demandMult: state.sim.demandMult }
-  );
-  simulados = simulados.filter((m) => m.incluidoEnPlanificacion);
-  return simulados;
-}
+/**
+ * Serie mensual de consumo real para UN material específico — usada en la
+ * pestaña "Tendencia por Producto". Devuelve [{mes:'YYYY-MM', total}, ...]
+ * ordenado cronológicamente, solo con los meses donde hubo al menos un
+ * movimiento (no rellena huecos con cero, a diferencia del cálculo de SS).
+ */
+const ETIQUETAS_MOVIMIENTO = {
+  201: 'Consumo centro de costo', 202: 'Anulación consumo centro de costo',
+  261: 'Consumo orden de mantenimiento', 262: 'Anulación consumo orden',
+  281: 'Consumo proyecto', 282: 'Anulación consumo proyecto',
+  601: 'Salida por entrega', 602: 'Anulación salida entrega',
+  301: 'Despacho a embarcación (combustible)', 302: 'Anulación despacho combustible',
+};
 
-function renderSimulacion() {
-  if (!state.mrpRowsCache) return;
-
-  document.getElementById('sim-leadtime-valor').textContent =
-    state.sim.leadTimeMult === 1 ? 'Normal (1.0x)' : (state.sim.leadTimeMult > 1 ? '+' : '') + Math.round((state.sim.leadTimeMult - 1) * 100) + '%';
-  document.getElementById('sim-demanda-valor').textContent =
-    state.sim.demandMult === 1 ? 'Normal (1.0x)' : (state.sim.demandMult > 1 ? '+' : '') + Math.round((state.sim.demandMult - 1) * 100) + '%';
-  document.getElementById('sim-nivel-servicio-valor').textContent = `${Math.round((zAporcentaje(state.sim.serviceLevelZ)) * 100)}%`;
-
-  const base = SupplyEngine.calcularResumenSimulacion(state.planificados);
-  const sim = SupplyEngine.calcularResumenSimulacion(ejecutarSimulacion());
-
-  pintarComparativo('sim-presupuesto', base.presupuestoCompras, sim.presupuestoCompras, fmtSoles, false);
-  pintarComparativo('sim-riesgo', base.materialesEnRiesgo, sim.materialesEnRiesgo, (n) => fmtNum(n, 0), false);
-  pintarComparativo('sim-sobrestock', base.capitalSobrestock, sim.capitalSobrestock, fmtSoles, false);
-  pintarComparativo('sim-cobertura', base.coberturaPromedio, sim.coberturaPromedio, (n) => fmtNum(n, 0) + ' días', true);
-
-  const notas = document.getElementById('sim-notas');
-  const notasHTML = [];
-  if (state.sim.leadTimeMult > 1.2) {
-    notasHTML.push(`<p class="sim-nota sim-nota-roja">⚠️ Un retraso de proveedor del ${Math.round((state.sim.leadTimeMult - 1) * 100)}% dispara el ROP y deja <strong>${sim.materialesEnRiesgo} materiales en riesgo de quiebre</strong> (hoy: ${base.materialesEnRiesgo}). Conviene adelantar órdenes de compra de los críticos.</p>`);
+/**
+ * Serie mensual de consumo real para UN material específico, con el
+ * detalle de movimientos que componen cada punto (fechas, cantidades y
+ * clase de movimiento SAP) — para el tooltip interactivo del gráfico.
+ */
+function serieMensualPorMaterial(consumoReal, material) {
+  const mapa = new Map(); // mes -> { total, movimientos: [{fechaISO, demanda, claseMovimiento}] }
+  for (const r of consumoReal) {
+    if (r.material !== material) continue;
+    const clave = r.fechaISO.slice(0, 7);
+    if (!mapa.has(clave)) mapa.set(clave, { total: 0, movimientos: [] });
+    const entry = mapa.get(clave);
+    entry.total += r.demanda;
+    entry.movimientos.push({ fechaISO: r.fechaISO, demanda: r.demanda, claseMovimiento: r.claseMovimiento });
   }
-  if (state.sim.serviceLevelZ >= 2.05) {
-    notasHTML.push(`<p class="sim-nota sim-nota-azul">💡 Para sostener ese nivel de servicio, el presupuesto de compras necesario sube a <strong>${fmtSoles(sim.presupuestoCompras)}</strong>. Aplícalo solo a materiales A/Z para no inmovilizar capital de más.</p>`);
-  }
-  if (state.sim.demandMult > 1.2) {
-    notasHTML.push(`<p class="sim-nota sim-nota-amarilla">📈 Un aumento del ${Math.round((state.sim.demandMult - 1) * 100)}% en demanda reduce la cobertura promedio de ${fmtNum(base.coberturaPromedio, 0)} a <strong>${fmtNum(sim.coberturaPromedio, 0)} días</strong>. Revisa tus lotes mínimos de compra.</p>`);
-  }
-  if (notasHTML.length === 0) {
-    notasHTML.push('<p class="sim-nota">Mueve los controles arriba para ver en vivo cómo cambiaría tu necesidad de compra, tu riesgo de quiebre y tu capital en sobre-stock según distintos escenarios.</p>');
-  }
-  notas.innerHTML = notasHTML.join('');
-}
-
-function pintarComparativo(prefijo, valorBase, valorSim, formateador, invertirColor) {
-  document.getElementById(`${prefijo}-valor`).textContent = formateador(valorSim);
-  document.getElementById(`${prefijo}-base`).textContent = `Base actual: ${formateador(valorBase)}`;
-  const diff = valorSim - valorBase;
-  const el = document.getElementById(`${prefijo}-diff`);
-  if (Math.abs(diff) < 0.005) {
-    el.textContent = '';
-    return;
-  }
-  const empeora = invertirColor ? diff < 0 : diff > 0;
-  el.className = 'sim-diff ' + (empeora ? 'sim-diff-mal' : 'sim-diff-bien');
-  el.textContent = (diff > 0 ? '+' : '') + formateador(diff);
-}
-
-function zAporcentaje(z) {
-  if (z >= 2.33) return 0.99;
-  if (z >= 2.05) return 0.98;
-  if (z >= 1.645) return 0.95;
-  if (z >= 1.282) return 0.9;
-  return 0.85;
-}
-
-// ---------------- LISTA DE PEDIDO ----------------
-function renderListaPedido() {
-  const materialesMarcados = Object.keys(state.marcados);
-  const items = materialesMarcados
-    .map((material) => state.calculados.find((m) => m.material === material))
-    .filter(Boolean);
-
-  const total = items.length;
-  const cantidadTotal = items.reduce((acc, m) => acc + (state.marcados[m.material] || 0), 0);
-  const valorTotal = items.reduce((acc, m) => acc + (state.marcados[m.material] || 0) * (m.costoUnitario || 0), 0);
-  const enRiesgo = items.filter((m) => m.riesgo === 'ROJO').length;
-
-  document.getElementById('kpi-pedido-total').textContent = total;
-  document.getElementById('kpi-pedido-cantidad').textContent = fmtNum(cantidadTotal, 0);
-  document.getElementById('kpi-pedido-valor').textContent = fmtSoles(valorTotal);
-  document.getElementById('kpi-pedido-rojo').textContent = enRiesgo;
-  document.getElementById('conteo-pedido').textContent = `${total} materiales`;
-
-  const tbody = document.getElementById('tabla-pedido-body');
-  if (items.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" class="muted centrado">Todavía no marcaste ningún material — hazlo desde la pestaña Materiales, casilla "Pedir".</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = items
-    .sort((a, b) => (b.riesgo === 'ROJO' ? 1 : 0) - (a.riesgo === 'ROJO' ? 1 : 0))
-    .map((m) => {
-      const cantidad = state.marcados[m.material] || 0;
-      const valor = cantidad * (m.costoUnitario || 0);
-      return `<tr>
-      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
-      <td class="desc">${m.descripcion || ''}</td>
-      <td class="num">${fmtNum(m.stockFisico, 0)}</td>
-      <td class="num">${fmtNum(m.ropCalculado, 1)}</td>
-      <td class="num"><input type="number" min="0" step="1" class="input-cantidad-pedido" data-material="${m.material}" value="${cantidad}" /></td>
-      <td class="num">${m.costoUnitario ? fmtSoles(m.costoUnitario) : '<span class="muted">—</span>'}</td>
-      <td class="num">${m.costoUnitario ? fmtSoles(valor) : '<span class="muted">—</span>'}</td>
-      <td>${estadoSaludChip(m.estadoSalud)}</td>
-      <td><button type="button" class="btn-quitar-pedido" data-material="${m.material}">Quitar</button></td>
-    </tr>`;
-    })
-    .join('');
-
-  tbody.querySelectorAll('.btn-quitar-pedido').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const material = e.target.dataset.material;
-      delete state.marcados[material];
-      guardarMarcados();
-      renderListaPedido();
-      renderTablaMateriales();
+  return Array.from(mapa.entries())
+    .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+    .map(([mes, e]) => {
+      const porClase = new Map();
+      e.movimientos.forEach((mv) => {
+        porClase.set(mv.claseMovimiento, (porClase.get(mv.claseMovimiento) || 0) + mv.demanda);
+      });
+      const detalle = [...porClase.entries()]
+        .map(([clase, total]) => ({ clase, etiqueta: ETIQUETAS_MOVIMIENTO[clase] || `Movimiento ${clase}`, total }))
+        .sort((a, b) => Math.abs(b.total) - Math.abs(a.total));
+      const ultimoMovimiento = [...e.movimientos].sort((a, b) => (a.fechaISO < b.fechaISO ? 1 : -1))[0];
+      return {
+        mes,
+        total: e.total,
+        numMovimientos: e.movimientos.length,
+        detalle,
+        ultimaFechaDelMes: ultimoMovimiento ? ultimoMovimiento.fechaISO : null,
+      };
     });
-  });
 }
 
-function exportarListaPedido() {
-  const items = Object.keys(state.marcados)
-    .map((material) => state.calculados.find((m) => m.material === material))
-    .filter(Boolean);
-  if (items.length === 0) {
-    alert('No hay materiales marcados para exportar.');
-    return;
+/**
+ * Estadísticas de demanda MENSUAL por material (no diaria) — la variabilidad
+ * diaria de repuestos/insumos industriales es intrínsecamente enorme (la
+ * mayoría de los días hay cero consumo), así que un CV diario clasifica
+ * prácticamente todo como "errático" sin distinguir nada útil. La demanda
+ * mensual agregada es la base estándar para análisis XYZ en este tipo de
+ * inventario intermitente.
+ */
+function calcularStatsMensualesGenerales(consumoReal, fechaMinISO, fechaMaxISO) {
+  const min = new Date(fechaMinISO + 'T00:00:00');
+  const max = new Date(fechaMaxISO + 'T00:00:00');
+  const mesesTotales = (max.getFullYear() - min.getFullYear()) * 12 + (max.getMonth() - min.getMonth()) + 1;
+
+  const porMaterialMes = new Map();
+  for (const r of consumoReal) {
+    const mesKey = r.fechaISO.slice(0, 7);
+    if (!porMaterialMes.has(r.material)) porMaterialMes.set(r.material, new Map());
+    const m = porMaterialMes.get(r.material);
+    m.set(mesKey, (m.get(mesKey) || 0) + r.demanda);
   }
-  const headers = ['Material', 'Descripción', 'Stock Real', 'ROP Calculado', 'Cantidad a Pedir', 'Costo Unitario', 'Valor Estimado', 'Riesgo'];
-  const rows = items.map((m) => {
-    const cantidad = state.marcados[m.material] || 0;
-    return [
-      m.material, m.descripcion, m.stockFisico, m.ropCalculado, cantidad,
-      m.costoUnitario, cantidad * (m.costoUnitario || 0), m.riesgo,
-    ];
-  });
-  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Lista de Pedido');
-  const fecha = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `Lista_Pedido_L001_${fecha}.xlsx`);
+
+  const resultado = new Map();
+  for (const [material, mapaMeses] of porMaterialMes.entries()) {
+    let suma = 0;
+    let sumaSq = 0;
+    let mesesConConsumo = 0;
+    for (const v of mapaMeses.values()) {
+      suma += v;
+      sumaSq += v * v;
+      if (v > 0) mesesConConsumo += 1;
+    }
+    const media = suma / mesesTotales;
+    let varianza = (sumaSq - mesesTotales * media * media) / Math.max(mesesTotales - 1, 1);
+    if (varianza < 0 || !isFinite(varianza)) varianza = 0;
+    resultado.set(material, { media, desvest: Math.sqrt(varianza), mesesConConsumo, mesesTotales });
+  }
+  return resultado;
 }
 
-// ---------------- MATERIALES PLANIFICADOS ----------------
-function renderMaterialesPlanificados() {
-  const planificados = state.planificados;
-  const total = planificados.length;
-  const reclasificados = planificados.filter((m) => m.reclasificadoDesdeUIN);
-  const conStock = planificados.filter((m) => m.stockFisico > 0).length;
-  const estrategicos = planificados.filter((m) => m.clasificacionFinal === 'Estratégico').length;
+/**
+ * Categoriza un material en Combustibles / Insumos / Otros:
+ * - Combustibles: por el grupo de SAP (PETROLEO/GAS/DIESEL/COMBUST) — es
+ *   una categoría física clara, no depende de dónde se consuma.
+ * - Insumos: cualquier material (que no sea combustible) que SÍ tiene
+ *   consumo real registrado en PI01 (almacén de Planta). PI01 es donde se
+ *   registra el consumo operativo real de insumos/materia prima — usar el
+ *   texto del grupo SAP no sirve porque etiquetas como "QUIMICOS Y
+ *   REACTIVOS" mezclan reactivos de laboratorio con insumos reales.
+ * - Otros: todo lo demás (repuestos, EPP, ferretería, etc.), que en la
+ *   práctica se consume casi todo en L001.
+ */
+/** Diesel, Petróleo R500, y los 4 materiales de balones de gas/oxígeno. */
+const MATERIALES_ENERGETICOS = ['30000527', '30000528', '20000669', '20000670', '20000671', '20000699'];
 
-  document.getElementById('kpi-plan-total').textContent = total;
-  document.getElementById('kpi-plan-reclasificados').textContent = reclasificados.length;
-  document.getElementById('kpi-plan-stock').textContent = total > 0 ? `${Math.round((conStock / total) * 100)}%` : '0%';
-  document.getElementById('kpi-plan-estrategicos').textContent = total > 0 ? `${Math.round((estrategicos / total) * 100)}%` : '0%';
-
-  const sinTratamiento = planificados.filter((m) => m.ssActual === 0 && m.ropActual === 0);
-  const sinTratAltaBaja = sinTratamiento.filter((m) => m.clasificacionFinal === 'Alta Rotación' || m.clasificacionFinal === 'Mediana Rotación' || m.clasificacionFinal === 'Baja Rotación');
-  document.getElementById('kpi-sintrat-total').textContent = sinTratamiento.length;
-  document.getElementById('kpi-sintrat-altabaja').textContent = sinTratAltaBaja.length;
-  document.getElementById('kpi-sintrat-pct').textContent = total > 0 ? `${Math.round((sinTratamiento.length / total) * 100)}%` : '0%';
-
-  const excluidos = state.calculados.filter((m) => !m.incluidoEnPlanificacion);
-  const porMotivo = {};
-  excluidos.forEach((m) => {
-    porMotivo[m.clasificacionFinal] = (porMotivo[m.clasificacionFinal] || 0) + 1;
-  });
-  const tbodyExcl = document.getElementById('tabla-exclusiones-body');
-  tbodyExcl.innerHTML = Object.entries(porMotivo)
-    .sort((a, b) => b[1] - a[1])
-    .map(([motivo, n]) => `<tr><td>${motivo}</td><td class="num">${n}</td></tr>`)
-    .join('') || '<tr><td colspan="2" class="muted centrado">Ningún material quedó excluido.</td></tr>';
-
-  const tbodyReclas = document.getElementById('tabla-reclasificados-body');
-  tbodyReclas.innerHTML = reclasificados
-    .sort((a, b) => b.diasConConsumo - a.diasConConsumo)
-    .map(
-      (m) => `<tr>
-      <td><button type="button" class="sku-link" data-material="${m.material}">${m.material}</button></td>
-      <td class="desc">${m.descripcion || ''}</td>
-      <td><span class="chip ${m.clasificacionFinal === 'Alta Rotación' ? 'chip-verde' : m.clasificacionFinal === 'Mediana Rotación' ? 'chip-cyan' : 'chip-amarilla'}">${m.clasificacionFinal}</span></td>
-      <td class="num">${m.motivoExclusion ? (m.motivoExclusion.match(/(\d+) de (\d+)/) || [])[0] || '' : ''}</td>
-      <td class="num">${fmtNum(m.stockFisico, 0)}</td>
-      <td>${estadoSaludChip(m.estadoSalud)}</td>
-    </tr>`
-    )
-    .join('') || '<tr><td colspan="6" class="muted centrado">Ningún material tiene una clasificación calculada distinta a la de SAP.</td></tr>';
+function categorizarMaterial(material, denomGrupoArticulo, materialesConConsumoPI01) {
+  if (MATERIALES_ENERGETICOS.includes(material)) return 'Energéticos';
+  if (materialesConConsumoPI01 && materialesConConsumoPI01.has(material)) return 'Insumos';
+  return 'Otros';
 }
 
-// ---------------- EVENTOS DELEGADOS (evita rebindear en cada render) ----------------
-function bindEventosDelegados() {
-  bindParamsCombustible();
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.sku-link');
-    if (btn) abrirDetalleMaterial(btn.dataset.material);
-    if (e.target.closest('#btn-cerrar-detalle') || e.target.id === 'overlay-detalle') cerrarDetalleMaterial();
+/**
+ * Devuelve el set de materiales que tienen al menos un movimiento de
+ * "consumo real" (códigos base, sin contar el extra de combustibles)
+ * registrado en el almacén indicado — se usa para detectar qué materiales
+ * son Insumos reales (consumo en PI01).
+ */
+function materialesConConsumoEnAlmacen(dataRows, almacen) {
+  const set = new Set();
+  for (const row of dataRows) {
+    if (String(row['Almacén']).trim() !== almacen) continue;
+    const clase = Number(row['Clase de movimiento']);
+    if (!CODIGOS_CONSUMO.has(clase)) continue;
+    set.add(String(row['Material']).trim());
+  }
+  return set;
+}
 
-    const filaExpandible = e.target.closest('.fila-material-expandible');
-    if (filaExpandible) {
-      const detalle = document.getElementById(filaExpandible.dataset.target);
-      if (detalle) {
-        const abierta = detalle.style.display !== 'none';
-        detalle.style.display = abierta ? 'none' : 'table-row';
-        filaExpandible.classList.toggle('expandida', !abierta);
+/**
+ * Clasificación ABC (por valor de consumo anual: costo unitario × demanda
+ * anual estimada) y XYZ (por coeficiente de variación de la demanda
+ * MENSUAL, medido sobre todo el período).
+ *
+ * El ABC corre el Pareto POR SEPARADO dentro de cada categoría (Combustibles /
+ * Insumos / Otros), para que un material de muy alto valor (ej. diesel) no
+ * arrastre a todo lo demás a la categoría C solo por dominar el valor total.
+ *
+ * ABC: Pareto clásico 80/95 — A = primer 80% del valor acumulado DE SU
+ * CATEGORÍA, B = siguiente 15% (hasta 95%), C = el resto (incluye
+ * materiales sin costo unitario conocido).
+ *
+ * XYZ: en vez de umbrales fijos de manual (X≤0.5, Y≤1.0, Z>1.0 — pensados
+ * para demanda tipo retail), se usan TERCILES calculados sobre la propia
+ * distribución de CV mensual de tus materiales: el tercio con menor CV es
+ * X (lo más predecible QUE TIENES), el tercio del medio es Y, el tercio
+ * con mayor CV es Z. Así la clasificación siempre distingue algo útil, sin
+ * importar qué tan intermitente sea tu demanda en términos absolutos.
+ * N/D = menos de 3 meses con consumo registrado.
+ */
+function calcularABCXYZ(calculados, statsMensuales) {
+  const conCategoria = calculados; // 'categoria' ya viene calculado desde calcularMateriales
+
+  const valorPorMaterial = new Map();
+  conCategoria.forEach((m) => {
+    const valor = m.costoUnitario && m.demandaAnual ? m.costoUnitario * m.demandaAnual : 0;
+    valorPorMaterial.set(m.material, valor);
+  });
+
+  const claseABC = new Map();
+  const categorias = [...new Set(conCategoria.map((m) => m.categoria))];
+  categorias.forEach((cat) => {
+    const items = conCategoria.filter((m) => m.categoria === cat);
+    const ordenado = items
+      .map((m) => [m.material, valorPorMaterial.get(m.material)])
+      .sort((a, b) => b[1] - a[1]);
+    const totalValor = ordenado.reduce((acc, [, v]) => acc + v, 0) || 1;
+    let acumulado = 0;
+    for (const [material, valor] of ordenado) {
+      const pctAcumAntes = acumulado / totalValor;
+      let clase;
+      if (valor === 0) clase = 'C';
+      else if (pctAcumAntes < 0.8) clase = 'A';
+      else if (pctAcumAntes < 0.95) clase = 'B';
+      else clase = 'C';
+      claseABC.set(material, clase);
+      acumulado += valor;
+    }
+  });
+
+  const cvPorMaterial = new Map();
+  for (const [material, s] of statsMensuales.entries()) {
+    if (s.mesesConConsumo < 3 || s.media <= 0) continue;
+    cvPorMaterial.set(material, s.desvest / s.media);
+  }
+
+  const cvsOrdenados = [...cvPorMaterial.values()].sort((a, b) => a - b);
+  const percentil = (p) => {
+    if (cvsOrdenados.length === 0) return null;
+    const idx = Math.min(cvsOrdenados.length - 1, Math.floor(p * cvsOrdenados.length));
+    return cvsOrdenados[idx];
+  };
+  const corteX = percentil(1 / 3);
+  const corteY = percentil(2 / 3);
+
+  const claseXYZ = new Map();
+  for (const m of conCategoria) {
+    const cv = cvPorMaterial.get(m.material);
+    if (cv === undefined || corteX === null) {
+      claseXYZ.set(m.material, 'N/D');
+      continue;
+    }
+    claseXYZ.set(m.material, cv <= corteX ? 'X' : cv <= corteY ? 'Y' : 'Z');
+  }
+
+  return conCategoria.map((m) => ({
+    ...m,
+    valorConsumoAnual: valorPorMaterial.get(m.material) || 0,
+    claseABC: claseABC.get(m.material) || 'C',
+    claseXYZ: claseXYZ.get(m.material) || 'N/D',
+    cvMensual: cvPorMaterial.get(m.material) ?? null,
+  }));
+}
+
+/**
+ * Agrega el stock libre de MB52 por material Y por almacén (sin filtrar a
+ * uno solo) — permite ver cuánto stock hay del mismo material en otros
+ * almacenes distintos al principal (L001), para el monitor de traslados.
+ */
+function agregarStockPorAlmacenTodos(mb52Rows) {
+  const mapa = new Map(); // material -> Map(almacen -> stock)
+  for (const row of mb52Rows) {
+    const material = String(row['Material']).trim();
+    const almacen = String(row['Almacén'] || '').trim();
+    if (!almacen) continue;
+    const stock = Number(row['Libre utilización']) || 0;
+    if (!mapa.has(material)) mapa.set(material, new Map());
+    const m = mapa.get(material);
+    m.set(almacen, (m.get(almacen) || 0) + stock);
+  }
+  return mapa;
+}
+
+/**
+ * Calcula, para cada material, su "necesidad" en el almacén principal
+ * (ROP calculado − stock real, nunca negativo) y cuánto de esa necesidad
+ * podría cubrirse con stock libre que ya existe en OTROS almacenes —
+ * candidato a traslado interno en vez de compra nueva.
+ */
+function enriquecerConTraslados(calculados, stockPorAlmacenTodos, almacenPrincipal) {
+  return calculados.map((m) => {
+    const necesidad = m.ropCalculado !== null ? Math.max(0, m.ropCalculado - m.stockFisico) : 0;
+    const porAlmacen = stockPorAlmacenTodos.get(m.material);
+    const detalleOtrosAlmacenes = [];
+    let stockOtrosAlmacenes = 0;
+    if (porAlmacen) {
+      for (const [almacen, stock] of porAlmacen.entries()) {
+        if (almacen === almacenPrincipal || stock <= 0) continue;
+        detalleOtrosAlmacenes.push({ almacen, stock });
+        stockOtrosAlmacenes += stock;
       }
+      detalleOtrosAlmacenes.sort((a, b) => b.stock - a.stock);
     }
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') cerrarDetalleMaterial();
-  });
-  document.addEventListener('change', (e) => {
-    if (e.target.classList.contains('input-cantidad-pedido')) {
-      actualizarCantidadPedido(e.target.dataset.material, e.target.value);
-      renderListaPedido();
-    }
-    if (e.target.classList.contains('chk-marcar')) {
-      marcarMaterial(e.target.dataset.material, e.target.checked);
-      // Actualiza solo la celda de cantidad de esa fila (no toda la tabla, para no perder el foco)
-      const fila = e.target.closest('tr');
-      const inputCantidad = fila ? fila.querySelector('.input-cantidad-pedido') : null;
-      if (inputCantidad) inputCantidad.value = e.target.dataset.material in state.marcados ? state.marcados[e.target.dataset.material] : '';
-      renderListaPedido();
-    }
+    return { ...m, necesidad, stockOtrosAlmacenes, detalleOtrosAlmacenes };
   });
 }
 
-let materialDetalleActualCodigo = null;
+/**
+ * Agrega las columnas del "monitor de cobertura" al estilo del Excel de
+ * Brayan: stock en Planta (PI01), stock en tránsito (MB52), stock ideal
+ * (consumo promedio × cobertura ideal en días) y cobertura real en días
+ * con el stock disponible total (Real + Planta + Tránsito).
+ */
+function enriquecerConCobertura(calculados, stockPorAlmacenTodos, transitoMap, almacenPrincipal, almacenPlanta, coberturaIdealDias) {
+  return calculados.map((m) => {
+    const porAlmacen = stockPorAlmacenTodos.get(m.material);
+    const planta = porAlmacen && porAlmacen.has(almacenPlanta) ? porAlmacen.get(almacenPlanta) : 0;
+    const transito = transitoMap.get(m.material) || 0;
 
-function abrirDetalleMaterial(codigo) {
-  const m = state.calculados.find((x) => x.material === codigo);
-  if (!m) return;
-  materialDetalleActualCodigo = codigo;
-  const cajaIA = document.getElementById('detalle-ia-respuesta');
-  cajaIA.style.display = 'none';
-  cajaIA.textContent = '';
+    const stockIdeal = m.demandaDiariaPromedio * coberturaIdealDias;
+    const stockDisponibleTotal = m.stockFisico + planta + transito;
+    const coberturaDias = m.demandaDiariaPromedio > 0 ? stockDisponibleTotal / m.demandaDiariaPromedio : null;
+    const solicitarCobertura = Math.max(0, stockIdeal - stockDisponibleTotal);
 
-  document.getElementById('detalle-codigo').textContent = m.material;
-  document.getElementById('detalle-descripcion').textContent = m.descripcion || '';
-  document.getElementById('detalle-clasificacion').textContent = m.clasificacionFinal;
-  document.getElementById('detalle-categoria').textContent = m.categoria;
-  document.getElementById('detalle-temporada').textContent = `Temporada objetivo: ${m.temporadaObjetivo}`;
-  document.getElementById('detalle-estado-chip').innerHTML = estadoSaludChip(m.estadoSalud);
-  document.getElementById('detalle-diagnostico').textContent = SupplyEngine.generarDiagnostico(m);
+    return { ...m, planta, transito, stockIdeal, stockDisponibleTotal, coberturaDias, solicitarCobertura };
+  });
+}
 
-  const metricas = [
-    ['Stock Real', fmtNum(m.stockFisico, 0)],
-    ['SS Actual (SAP)', fmtNum(m.ssActual, 0)],
-    ['SS Calculado', fmtNum(m.ssCalculado, 1)],
-    ['ROP Actual (SAP)', fmtNum(m.ropActual, 0)],
-    ['ROP Calculado', fmtNum(m.ropCalculado, 1)],
-    ['Stock Máximo Recom.', m.maxStock !== null ? fmtNum(m.maxStock, 0) : '—'],
-    ['EOQ', m.eoq !== null ? fmtNum(m.eoq, 0) : '—'],
-    ['Costo Unitario', m.costoUnitario ? fmtSoles(m.costoUnitario) : '—'],
-    ['Lead Time', fmtNum(m.leadTime, 0) + ' días'],
-    ['Confianza del Dato', m.confianza],
-    ['Último Consumo', m.ultimaFechaConsumo || 'sin consumo'],
-    ['Vencimiento', m.fechaVencimiento || 'sin vencimiento'],
-  ];
-  document.getElementById('detalle-metricas').innerHTML = metricas
-    .map(([label, valor]) => `<div class="detalle-metrica"><span class="detalle-metrica-label">${label}</span><span class="detalle-metrica-valor">${valor}</span></div>`)
-    .join('');
+/**
+ * Clasificación de rotación basada en la frecuencia real de consumo
+ * (no en el histórico completo agregado, sino en CUÁNTOS MESES DISTINTOS
+ * tuvo consumo dentro del período observado, sobre una ventana de referencia
+ * de 12 meses):
+ *   - Uso Inmediato: 0-1 meses con consumo — sin movimiento real
+ *   - Baja Rotación: 2-5 meses — movimiento bajo/intermitente
+ *   - Mediana Rotación: 6-9 meses — movimiento regular, pero no constante
+ *   - Alta Rotación: 10-12 meses — se mueve casi todos los meses
+ */
+function calcularClasificacionMovimiento(consumoReal, fechaMinISO, fechaMaxISO) {
+  const min = new Date(fechaMinISO + 'T00:00:00');
+  const max = new Date(fechaMaxISO + 'T00:00:00');
+  const mesesTotales = (max.getFullYear() - min.getFullYear()) * 12 + (max.getMonth() - min.getMonth()) + 1;
 
-  const serie = SupplyEngine.serieMensualPorMaterial(state.consumoReal, codigo);
-  if (serie.length === 0) {
-    document.getElementById('detalle-grafico').innerHTML = '<p class="muted centrado">Sin consumo real registrado en el período.</p>';
-    document.getElementById('detalle-tendencia-stats').innerHTML = '';
-  } else {
-    document.getElementById('detalle-grafico').innerHTML = construirGraficoLinea(serie);
-    const total = serie.reduce((a, p) => a + p.total, 0);
-    const promedio = total / serie.length;
-    document.getElementById('detalle-tendencia-stats').innerHTML =
-      `<span>Total período: <strong>${fmtNum(total, 0)}</strong></span><span>Promedio mensual: <strong>${fmtNum(promedio, 1)}</strong></span>`;
+  const mesesPorMaterial = new Map();
+  for (const r of consumoReal) {
+    if (r.demanda <= 0) continue;
+    if (!mesesPorMaterial.has(r.material)) mesesPorMaterial.set(r.material, new Set());
+    mesesPorMaterial.get(r.material).add(r.fechaISO.slice(0, 7));
   }
 
-  document.getElementById('overlay-detalle').style.display = 'flex';
+  const resultado = new Map();
+  for (const [material, meses] of mesesPorMaterial.entries()) {
+    const n = meses.size;
+    const pctMeses = n / mesesTotales;
+    const clasificacionMovimiento = clasificarPorMesesConMovimiento(n, mesesTotales);
+    resultado.set(material, { mesesConConsumo: n, mesesTotales, pctMeses, clasificacionMovimiento });
+  }
+  return resultado; // los materiales sin ninguna fila aquí = Sin Movimiento (se resuelve al consultar el mapa)
 }
 
-function cerrarDetalleMaterial() {
-  document.getElementById('overlay-detalle').style.display = 'none';
+/**
+ * Clasificación por meses con movimiento (4 niveles, sobre una ventana de
+ * referencia de 12 meses — se escala si el período analizado es distinto):
+ *   - UIN (Uso Inmediato): 0-1 meses — sin movimiento real
+ *   - BRT (Baja Rotación): 2-5 meses — movimiento bajo/intermitente
+ *   - MRT (Mediana Rotación): 6-9 meses — movimiento regular, pero no constante
+ *   - ART (Alta Rotación): 10-12 meses — se mueve casi todos los meses
+ */
+function clasificarPorMesesConMovimiento(mesesConConsumo, mesesTotales) {
+  const factor = mesesTotales / 12;
+  if (mesesConConsumo <= 1 * factor) return 'Uso Inmediato';
+  if (mesesConConsumo <= 5 * factor) return 'Baja Rotación';
+  if (mesesConConsumo <= 9 * factor) return 'Mediana Rotación';
+  return 'Alta Rotación';
 }
 
-// ---------------- TENDENCIA POR PRODUCTO ----------------
-function poblarListaTendencia() {
-  const datalist = document.getElementById('lista-materiales-tendencia');
-  datalist.innerHTML = state.calculados
-    .map((m) => `<option value="${m.material} — ${(m.descripcion || '').replace(/"/g, '')}"></option>`)
-    .join('');
-}
+/**
+ * Decide qué tratamiento recibe cada material según su clasificación SAP,
+ * usando el histórico de movimientos para los casos que lo requieren
+ * (Uso Inmediato). Devuelve si el material entra o no al cálculo de
+ * SS/ROP/EOQ, con qué clasificación "final", y el motivo si queda fuera.
+ */
+/**
+ * Clasificación PROPUESTA automáticamente por el sistema — la misma lógica
+ * de siempre (SAP + reclasificación por historial de movimiento). No sabe
+ * nada de anulaciones manuales; eso lo resuelve determinarTratamiento.
+ */
+function proponerClasificacion(material, clasificacionSAP, movInfo) {
+  const sap = (clasificacionSAP || '').trim();
 
-function mostrarTendenciaMaterial(valorInput) {
-  const codigo = (valorInput || '').split('—')[0].trim();
-  const material = state.calculados.find((m) => m.material === codigo);
-
-  if (!material) {
-    document.getElementById('tendencia-vacio').style.display = 'block';
-    document.getElementById('tendencia-contenido').style.display = 'none';
-    return;
+  // Energéticos (Diesel, R500, balones de gas y oxígeno) se gestionan aparte,
+  // con su propia tabla de cobertura — no entran a la planificación SS/ROP
+  // estándar, sin importar qué diga SAP.
+  if (MATERIALES_ENERGETICOS.includes(material)) {
+    return { clasificacionFinal: 'Energéticos', incluido: false, reclasificado: false, motivo: 'Energético (combustible o gas) — se cubre aparte, en su propia tabla de Cobertura' };
+  }
+  if (sap === 'Inactivo') {
+    return { clasificacionFinal: 'Inactivo', incluido: false, reclasificado: false, motivo: 'Inactivo — código sin uso, no requiere gestión de stock' };
+  }
+  if (sap === 'Produción' || sap === 'Producción') {
+    return { clasificacionFinal: 'Producción', incluido: false, reclasificado: false, motivo: 'Uso en producción — se cubre aparte, en su propia tabla de Cobertura' };
+  }
+  if (sap === 'Estratégico') {
+    return { clasificacionFinal: 'Estratégico', incluido: false, reclasificado: false, motivo: 'Estratégico — se cubre aparte, en su propia tabla de Cobertura (no el semáforo SS/ROP estándar)' };
   }
 
-  const serie = SupplyEngine.serieMensualPorMaterial(state.consumoReal, codigo);
-
-  document.getElementById('tendencia-vacio').style.display = 'none';
-  document.getElementById('tendencia-contenido').style.display = 'block';
-  document.getElementById('tendencia-material-nombre').textContent = `${material.material} — ${material.descripcion || ''}`;
-  document.getElementById('tendencia-material-clasif').textContent = `${material.clasificacion} · Temporada objetivo: ${material.temporadaObjetivo}`;
-
-  if (serie.length === 0) {
-    document.getElementById('tendencia-total').textContent = '0';
-    document.getElementById('tendencia-promedio').textContent = '0';
-    document.getElementById('tendencia-pico').textContent = '—';
-    document.getElementById('tendencia-valle').textContent = '—';
-    document.getElementById('tendencia-grafico').innerHTML = '<p class="muted centrado">Este material no registra consumo real en el período analizado.</p>';
-    return;
-  }
-
-  const total = serie.reduce((a, p) => a + p.total, 0);
-  const promedio = total / serie.length;
-  const pico = serie.reduce((a, b) => (b.total > a.total ? b : a));
-  const valle = serie.reduce((a, b) => (b.total < a.total ? b : a));
-
-  document.getElementById('tendencia-total').textContent = fmtNum(total, 0);
-  document.getElementById('tendencia-promedio').textContent = fmtNum(promedio, 1);
-  document.getElementById('tendencia-pico').textContent = `${pico.mes} (${fmtNum(pico.total, 0)})`;
-  document.getElementById('tendencia-valle').textContent = `${valle.mes} (${fmtNum(valle.total, 0)})`;
-
-  document.getElementById('tendencia-grafico').innerHTML = construirGraficoLinea(serie);
-}
-
-function formatMesLegible(mesISO) {
-  const NOMBRES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-  const [anio, mes] = mesISO.split('-');
-  return `${NOMBRES[Number(mes) - 1]} ${anio}`;
-}
-
-function construirGraficoLinea(serie) {
-  const W = 1000;
-  const H = 260;
-  const PAD_L = 50;
-  const PAD_B = 30;
-  const PAD_T = 20;
-  const maxVal = Math.max(...serie.map((p) => p.total), 1);
-
-  const puntos = serie.map((p, i) => {
-    const x = PAD_L + (i / Math.max(serie.length - 1, 1)) * (W - PAD_L - 20);
-    const y = PAD_T + (1 - p.total / maxVal) * (H - PAD_T - PAD_B);
-    return { x, y, ...p };
-  });
-
-  const linea = puntos.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-  const area = `${PAD_L},${H - PAD_B} ${linea} ${puntos[puntos.length - 1].x.toFixed(1)},${H - PAD_B}`;
-
-  const circulos = puntos
-    .map((p) => {
-      const detalleAttr = encodeURIComponent(JSON.stringify(p.detalle || []));
-      return `<circle class="punto-hover" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4"
-        data-mes="${p.mes}" data-total="${p.total}" data-nummov="${p.numMovimientos || 0}"
-        data-ultimafecha="${p.ultimaFechaDelMes || ''}" data-detalle="${detalleAttr}" />`;
-    })
-    .join('');
-
-  const etiquetasX = puntos
-    .filter((_, i) => i % Math.ceil(puntos.length / 12) === 0)
-    .map((p) => `<text x="${p.x.toFixed(1)}" y="${H - 8}" font-size="10" fill="#8b96ab" text-anchor="middle">${p.mes.slice(2)}</text>`)
-    .join('');
-
-  const lineasGuia = [0, 0.25, 0.5, 0.75, 1].map((f) => {
-    const y = PAD_T + f * (H - PAD_T - PAD_B);
-    return `<line x1="${PAD_L}" y1="${y.toFixed(1)}" x2="${W - 20}" y2="${y.toFixed(1)}" stroke="#232d40" stroke-width="1" />`;
-  }).join('');
-
-  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible;">
-    <defs>
-      <linearGradient id="gradTendencia" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#00d9f5" stop-opacity="0.35" />
-        <stop offset="100%" stop-color="#00d9f5" stop-opacity="0" />
-      </linearGradient>
-    </defs>
-    ${lineasGuia}
-    <polygon points="${area}" fill="url(#gradTendencia)" />
-    <polyline points="${linea}" fill="none" stroke="#00d9f5" stroke-width="2.5" />
-    ${circulos}
-    ${etiquetasX}
-  </svg>`;
-}
-
-function bindTooltipTendencia() {
-  const tooltip = document.getElementById('tooltip-tendencia');
-
-  document.addEventListener('mousemove', (e) => {
-    const punto = e.target.closest('.punto-hover');
-    if (!punto) return;
-    tooltip.style.left = e.clientX + 16 + 'px';
-    tooltip.style.top = e.clientY + 12 + 'px';
-  });
-
-  document.addEventListener('mouseover', (e) => {
-    const punto = e.target.closest('.punto-hover');
-    if (!punto) return;
-
-    const mes = punto.dataset.mes;
-    const total = Number(punto.dataset.total);
-    const numMov = punto.dataset.nummov;
-    const ultimaFecha = punto.dataset.ultimafecha;
-    let detalle = [];
-    try {
-      detalle = JSON.parse(decodeURIComponent(punto.dataset.detalle));
-    } catch (err) {
-      detalle = [];
-    }
-
-    const detalleHTML = detalle
-      .map((d) => `<div class="tooltip-detalle-fila"><span>${d.etiqueta}</span><span>${fmtNum(d.total, 1)}</span></div>`)
-      .join('');
-
-    tooltip.innerHTML = `
-      <div class="tooltip-mes">${formatMesLegible(mes)}</div>
-      <div class="tooltip-cantidad">${fmtNum(total, 1)} unidades</div>
-      <div class="tooltip-meta">${numMov} movimiento${numMov == 1 ? '' : 's'} · último: ${ultimaFecha || '—'}</div>
-      ${detalleHTML ? `<div class="tooltip-separador"></div>${detalleHTML}` : ''}
-    `;
-    tooltip.style.display = 'block';
-  });
-
-  document.addEventListener('mouseout', (e) => {
-    const punto = e.target.closest('.punto-hover');
-    if (!punto) return;
-    if (e.relatedTarget && e.relatedTarget.closest('.punto-hover')) return;
-    tooltip.style.display = 'none';
-  });
-}
-
-// ---------------- EXPORTAR ----------------
-function exportarExcel() {
-  const headers = [
-    'Material', 'Descripción', 'Clasificación', 'Temporada Objetivo', 'Lead Time',
-    'Stock Físico', 'SS Actual', 'SS Calculado', 'ROP Actual', 'ROP Calculado',
-    'Confianza', 'Costo Unitario', 'EOQ', 'Riesgo', 'Días Sin Movimiento',
-  ];
-  const rows = state.calculados.map((m) => [
-    m.material, m.descripcion, m.clasificacion, m.temporadaObjetivo, m.leadTime,
-    m.stockFisico, m.ssActual, m.ssCalculado, m.ropActual, m.ropCalculado,
-    m.confianza, m.costoUnitario, m.eoq, m.riesgo, m.diasSinMovimiento,
-  ]);
-  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Calculo');
-  const fecha = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `Abastecimiento_L001_${fecha}.xlsx`);
-}
-
-// ---------------- INIT ----------------
-// ---------------- REPORTES DE INVENTARIO ----------------
-function bindBotonReporte(botonId, estadoId, generador) {
-  document.getElementById(botonId).addEventListener('click', async () => {
-    const estado = document.getElementById(estadoId);
-    const boton = document.getElementById(botonId);
-    if (!state.archivos.MB52) {
-      estado.textContent = 'Primero carga tu archivo MB52 (pestaña de carga inicial).';
-      estado.className = 'reporte-card-estado reporte-estado-error';
-      return;
-    }
-    boton.disabled = true;
-    estado.textContent = 'Generando…';
-    estado.className = 'reporte-card-estado';
-    try {
-      const resultado = await generador();
-      if (Array.isArray(resultado)) {
-        const sinStock = resultado.filter((r) => !r.encontrado);
-        estado.textContent = sinStock.length > 0
-          ? `Descargado — sin stock en MB52 para: ${sinStock.map((r) => r.hoja).join(', ')}.`
-          : 'Descargado ✓ — completa la Cantidad Física a mano y firma.';
-        estado.className = 'reporte-card-estado ' + (sinStock.length > 0 ? 'reporte-estado-alerta' : 'reporte-estado-ok');
-      } else {
-        estado.textContent = `Descargado ✓ — ${resultado.totalLotes} lotes encontrados. Completa la Cantidad Física a mano y firma.`;
-        estado.className = 'reporte-card-estado reporte-estado-ok';
-      }
-    } catch (err) {
-      console.error(err);
-      estado.textContent = 'Error: ' + err.message;
-      estado.className = 'reporte-card-estado reporte-estado-error';
-    } finally {
-      boton.disabled = false;
-    }
-  });
-}
-
-// ---------------- INVENTARIO CÍCLICO POR ZONAS ----------------
-const RUTA_ZONAS_CICLICO = 'conteo/zonas.json';
-let zonasCiclico = []; // [{ zona, ubicaciones: [...] }]
-let programaCiclicoGenerado = null;
-
-function nuevaFilaZonaVacia() {
-  return { zona: '', ubicaciones: [] };
-}
-
-function renderTablaZonas() {
-  const tbody = document.getElementById('tabla-zonas-ciclico-body');
-  if (zonasCiclico.length === 0) zonasCiclico.push(nuevaFilaZonaVacia());
-  tbody.innerHTML = zonasCiclico
-    .map(
-      (z, i) => `<tr>
-      <td><input type="text" class="input-zona-nombre" data-idx="${i}" value="${z.zona}" placeholder="Ej. Pasillo 1" /></td>
-      <td><input type="text" class="input-zona-ubicaciones" data-idx="${i}" value="${(z.ubicaciones || []).join(', ')}" placeholder="Ej. 01.1, 01.2, 01.3" /></td>
-      <td class="num"><button type="button" class="btn-quitar-zona" data-idx="${i}" title="Quitar zona">✕</button></td>
-    </tr>`
-    )
-    .join('');
-
-  tbody.querySelectorAll('.input-zona-nombre').forEach((inp) => {
-    inp.addEventListener('input', (e) => {
-      zonasCiclico[Number(e.target.dataset.idx)].zona = e.target.value;
-    });
-  });
-  tbody.querySelectorAll('.input-zona-ubicaciones').forEach((inp) => {
-    inp.addEventListener('input', (e) => {
-      zonasCiclico[Number(e.target.dataset.idx)].ubicaciones = e.target.value
-        .split(',')
-        .map((u) => u.trim())
-        .filter(Boolean);
-    });
-  });
-  tbody.querySelectorAll('.btn-quitar-zona').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      zonasCiclico.splice(Number(e.target.dataset.idx), 1);
-      renderTablaZonas();
-    });
-  });
-}
-
-async function cargarZonasGuardadas() {
-  const estado = document.getElementById('estado-gh-ciclico');
-  try {
-    const guardado = await GitHubSync.leerJSONPublico(RUTA_ZONAS_CICLICO);
-    if (guardado && Array.isArray(guardado.zonas) && guardado.zonas.length > 0) {
-      zonasCiclico = guardado.zonas;
-      estado.textContent = `Zonas cargadas desde el repositorio (guardadas el ${new Date(guardado.actualizadoEn).toLocaleString('es-PE')}).`;
-    } else {
-      estado.textContent = 'Todavía no hay zonas guardadas — defínelas y dale "Guardar zonas".';
-    }
-  } catch (err) {
-    estado.textContent = 'No se pudo leer las zonas guardadas (puede que aún no exista el archivo, es normal la primera vez).';
-  }
-  renderTablaZonas();
-}
-
-async function guardarZonasCiclico() {
-  const estado = document.getElementById('estado-gh-ciclico');
-  const boton = document.getElementById('btn-guardar-zonas');
-  const zonasValidas = zonasCiclico.filter((z) => z.zona.trim() && z.ubicaciones.length > 0);
-  if (zonasValidas.length === 0) {
-    estado.textContent = 'Define al menos una zona con nombre y ubicaciones antes de guardar.';
-    return;
-  }
-  boton.disabled = true;
-  estado.textContent = 'Guardando zonas…';
-  try {
-    await GitHubSync.escribirJSON(
-      RUTA_ZONAS_CICLICO,
-      { actualizadoEn: new Date().toISOString(), zonas: zonasValidas },
-      'Actualizar definición de zonas del inventario cíclico'
-    );
-    estado.textContent = '✓ Zonas guardadas en el repositorio.';
-  } catch (err) {
-    console.error(err);
-    estado.textContent = 'Error guardando zonas: ' + err.message;
-  } finally {
-    boton.disabled = false;
-  }
-}
-
-function generarProgramaCiclico() {
-  if (!state.archivos.MB52) {
-    alert('Primero carga tu MB52 (pantalla de carga inicial).');
-    return;
-  }
-  const zonasValidas = zonasCiclico.filter((z) => z.zona.trim() && z.ubicaciones.length > 0);
-  if (zonasValidas.length === 0) {
-    document.getElementById('preview-zonas-ciclico').textContent = 'Define al menos una zona con nombre y ubicaciones.';
-    return;
-  }
-  const cicloSemanas = Math.max(1, Number(document.getElementById('input-ciclo-semanas').value) || 4);
-  const fechaInicio = document.getElementById('input-fecha-inicio-ciclico').value || hoyISO();
-
-  const zonasConMateriales = SupplyEngine.construirZonasManual(state.archivos.MB52.filas, 'L001', zonasValidas);
-  const sinMateriales = zonasConMateriales.filter((z) => z.materiales.length === 0).map((z) => z.zona);
-  const conSemana = SupplyEngine.asignarSemanasCiclo(zonasConMateriales.filter((z) => z.materiales.length > 0), cicloSemanas);
-
-  programaCiclicoGenerado = { cicloSemanas, fechaInicio, zonas: conSemana };
-
-  const totalMateriales = conSemana.reduce((a, z) => a + z.materiales.length, 0);
-  document.getElementById('preview-zonas-ciclico').textContent =
-    `${conSemana.length} zona(s) con materiales, ${totalMateriales} materiales en total.` +
-    (sinMateriales.length ? ` Sin materiales encontrados en: ${sinMateriales.join(', ')} (revisa los códigos de Ubicación).` : '');
-
-  const tbody = document.getElementById('tabla-preview-programa-ciclico-body');
-  tbody.innerHTML = conSemana
-    .map((z) => `<tr><td class="num">${z.semana}</td><td>${z.zona}</td><td class="num">${z.materiales.length}</td></tr>`)
-    .join('');
-  document.getElementById('panel-preview-programa-ciclico').style.display = 'block';
-  document.getElementById('btn-publicar-programa-ciclico').disabled = false;
-}
-
-async function publicarProgramaCiclico() {
-  if (!programaCiclicoGenerado) return;
-  const estado = document.getElementById('estado-publicar-ciclico');
-  const boton = document.getElementById('btn-publicar-programa-ciclico');
-  boton.disabled = true;
-  estado.className = 'reporte-card-estado';
-  estado.textContent = 'Publicando…';
-  try {
-    const objeto = {
-      publicadoEn: new Date().toISOString(),
-      fechaInicio: programaCiclicoGenerado.fechaInicio,
-      cicloSemanas: programaCiclicoGenerado.cicloSemanas,
-      zonas: programaCiclicoGenerado.zonas,
-    };
-    await GitHubSync.escribirJSON(GitHubSync.RUTA_PROGRAMA, objeto, 'Actualizar programa de inventario cíclico');
-    estado.className = 'reporte-card-estado reporte-estado-ok';
-    estado.textContent = '✓ Programa publicado — ya está disponible para el personal en la página de Contar.';
-  } catch (err) {
-    console.error(err);
-    estado.className = 'reporte-card-estado reporte-estado-error';
-    estado.textContent = 'Error: ' + err.message;
-  } finally {
-    boton.disabled = false;
-  }
-}
-
-function bindInventarioCiclico() {
-  document.getElementById('input-fecha-inicio-ciclico').value = hoyISO();
-  document.getElementById('btn-agregar-zona').addEventListener('click', () => {
-    zonasCiclico.push(nuevaFilaZonaVacia());
-    renderTablaZonas();
-  });
-  document.getElementById('btn-guardar-zonas').addEventListener('click', guardarZonasCiclico);
-  document.getElementById('btn-generar-programa-ciclico').addEventListener('click', generarProgramaCiclico);
-  document.getElementById('btn-publicar-programa-ciclico').addEventListener('click', publicarProgramaCiclico);
-  cargarZonasGuardadas();
-}
-
-// ---------------- SNAPSHOT PARA WHATSAPP ----------------
-const RUTA_SNAPSHOT_WHATSAPP = 'snapshot/resumen.json';
-
-async function publicarSnapshotParaWhatsApp() {
-  try {
-    const materialesParaReordenar = state.planificados
-      .filter((m) => m.riesgo === 'ROJO' || m.riesgo === 'AMARILLO')
-      .map((m) => ({
-        material: m.material,
-        descripcion: m.descripcion,
-        clasificacion: m.clasificacionFinal,
-        stock: m.stockFisico,
-        rop: Math.round(m.ropCalculado || 0),
-        riesgo: m.riesgo,
-        coberturaDias: m.coberturaDias,
-      }));
-
-    const mb52Rows = state.archivos.MB52.filas;
-    const stockAceite = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_ACEITE).map((a) => ({
-      material: a.material,
-      descripcion: a.descripcion,
-      stock: a.stock,
-    }));
-    const stockHarina = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_HARINA).map((h) => ({
-      material: h.material,
-      descripcion: h.descripcion,
-      stock: h.stock,
-    }));
-
-    const monitorRows = obtenerMonitorFilas();
-    const kpi = SupplyEngine.calcularValorizacionReal(mb52Rows, monitorRows || [], state.tipoCambio);
-
-    const snapshot = {
-      publicadoEn: new Date().toISOString(),
-      totalMaterialesParaReordenar: materialesParaReordenar.length,
-      materialesParaReordenar,
-      stockAceitePescado: stockAceite,
-      stockHarinaPescado: stockHarina,
-      valorizacion: {
-        almacenUSD: Math.round(kpi.valorizadoAlmacen),
-        ppttUSD: Math.round(kpi.valorizadoPPTT),
-        pctVencido: Number(kpi.pctVencido.toFixed(2)),
-      },
-    };
-
-    await GitHubSync.escribirJSON(RUTA_SNAPSHOT_WHATSAPP, snapshot, 'Actualizar snapshot para WhatsApp');
-  } catch (err) {
-    // No interrumpe al usuario — si el Worker/token de WhatsApp no está configurado todavía, es normal.
-    console.warn('No se pudo publicar el snapshot para WhatsApp:', err.message);
-  }
-}
-
-// ---------------- IA ----------------
-function construirContextoResumenIA() {
-  const porRiesgo = { ROJO: 0, AMARILLO: 0, VERDE: 0 };
-  state.planificados.forEach((m) => {
-    porRiesgo[m.riesgo] = (porRiesgo[m.riesgo] || 0) + 1;
-  });
-
-  const top10 = [...state.planificados]
-    .filter((m) => m.riesgo === 'ROJO')
-    .sort((a, b) => (a.coberturaDias ?? 999) - (b.coberturaDias ?? 999))
-    .slice(0, 10)
-    .map((m) => ({
-      material: m.material,
-      descripcion: m.descripcion,
-      stock: m.stockFisico,
-      ropCalculado: Math.round(m.ropCalculado || 0),
-      coberturaDias: m.coberturaDias,
-    }));
-
-  let valorizacion = null;
-  if (state.archivos.MB52) {
-    const monitorRows = obtenerMonitorFilas();
-    const kpi = SupplyEngine.calcularValorizacionReal(state.archivos.MB52.filas, monitorRows || [], state.tipoCambio);
-    valorizacion = {
-      valorizadoAlmacenUSD: Math.round(kpi.valorizadoAlmacen),
-      valorizadoPPTTUSD: Math.round(kpi.valorizadoPPTT),
-      valorizadoMonitorUSD: Math.round(kpi.valorizadoMonitor),
-      pctVencido: Number(kpi.pctVencido.toFixed(2)),
+  // Para todo lo demás (SAP decía Uso Inmediato, Alta/Baja Rotación, o venía en blanco): la
+  // propuesta se calcula SIEMPRE con el consumo real de este material, sin importar qué decía
+  // SAP — SAP solo queda como referencia en la columna "Clasificación SAP". Así, un material
+  // que SAP marcaba "Alta Rotación" pero que en los datos reales casi no se mueve, se propone
+  // correctamente como Baja Rotación (o Uso Inmediato) en vez de heredar la etiqueta vieja.
+  const clase = movInfo ? movInfo.clasificacionMovimiento : 'Uso Inmediato';
+  if (clase === 'Alta Rotación' || clase === 'Mediana Rotación' || clase === 'Baja Rotación') {
+    const coincideConSAP = sap === clase;
+    return {
+      clasificacionFinal: clase,
+      incluido: true,
+      reclasificado: !coincideConSAP,
+      motivo: movInfo
+        ? `Consumo en ${movInfo.mesesConConsumo} de ${movInfo.mesesTotales} meses` + (coincideConSAP ? '' : ` (SAP decía "${sap || 'sin clasificar'}")`)
+        : null,
     };
   }
-
-  const inactivosConStock = state.calculados.filter((m) => m.clasificacionFinal === 'Inactivo' && m.stockFisico > 0).length;
-
   return {
-    fecha: hoyISO(),
-    totalMaterialesPlanificados: state.planificados.length,
-    conteoPorRiesgo: porRiesgo,
-    top10MaterialesEnRiesgoRojo: top10,
-    valorizacion,
-    materialesInactivosConStockFisico: inactivosConStock,
-    alertasDeClasificacionPendientesDeRevisar: state.alertasClasificacion ? state.alertasClasificacion.length : 0,
+    clasificacionFinal: 'Uso Inmediato (confirmado)',
+    incluido: false,
+    reclasificado: sap !== 'Uso Inmediato' && !!sap,
+    motivo: 'Sin consumo regular en el período — se confirma compra solo por reserva, no requiere stock',
   };
 }
 
-async function preguntarDatosIA() {
-  const pregunta = document.getElementById('ia-pregunta').value.trim();
-  if (!pregunta) return;
-  const caja = document.getElementById('ia-respuesta');
-  const boton = document.getElementById('btn-ia-preguntar');
-  boton.disabled = true;
-  caja.style.display = 'block';
-  caja.className = 'ia-respuesta ia-cargando';
-  caja.textContent = 'Pensando…';
-  try {
-    const contexto = construirContextoResumenIA();
-    const respuesta = await IAClient.preguntarIA(pregunta, contexto);
-    caja.className = 'ia-respuesta';
-    caja.textContent = respuesta;
-  } catch (err) {
-    console.error(err);
-    caja.className = 'ia-respuesta ia-error';
-    caja.textContent = 'Error: ' + err.message;
-  } finally {
-    boton.disabled = false;
-  }
-}
+/** Clasificaciones válidas que el usuario puede asignar a mano. */
+const CLASIFICACIONES_MANUALES_VALIDAS = [
+  'Alta Rotación',
+  'Mediana Rotación',
+  'Baja Rotación',
+  'Estratégico',
+  'Inactivo',
+  'Producción',
+  'Energéticos',
+  'EPPS',
+  'Uso Inmediato (confirmado)',
+];
 
-async function explicarMaterialConIA() {
-  if (!materialDetalleActualCodigo) return;
-  const m = state.calculados.find((x) => x.material === materialDetalleActualCodigo);
-  if (!m) return;
-  const caja = document.getElementById('detalle-ia-respuesta');
-  const boton = document.getElementById('btn-explicar-ia');
-  boton.disabled = true;
-  caja.style.display = 'block';
-  caja.className = 'ia-respuesta ia-cargando';
-  caja.textContent = 'Pensando…';
-  try {
-    const contexto = {
-      material: m.material,
-      descripcion: m.descripcion,
-      clasificacion: m.clasificacionFinal,
-      categoria: m.categoria,
-      stockFisico: m.stockFisico,
-      ssActualSAP: m.ssActual,
-      ssCalculado: m.ssCalculado,
-      ropActualSAP: m.ropActual,
-      ropCalculado: m.ropCalculado,
-      maxStockRecomendado: m.maxStock,
-      eoq: m.eoq,
-      leadTimeDias: m.leadTime,
-      coberturaDias: m.coberturaDias,
-      riesgo: m.riesgo,
-      estadoSalud: m.estadoSalud,
-      ultimaFechaConsumo: m.ultimaFechaConsumo,
+/**
+ * Decide el tratamiento EFECTIVO de un material: si el usuario definió una
+ * clasificación manual para este código, esa manda (sin importar lo que
+ * diga SAP o el historial). Si no, se usa la propuesta automática.
+ */
+function determinarTratamiento(material, clasificacionSAP, movInfo, clasificacionManual) {
+  const propuesta = proponerClasificacion(material, clasificacionSAP, movInfo);
+
+  if (clasificacionManual && CLASIFICACIONES_MANUALES_VALIDAS.includes(clasificacionManual)) {
+    const incluido = clasificacionManual === 'Alta Rotación' || clasificacionManual === 'Mediana Rotación' || clasificacionManual === 'Baja Rotación';
+    return {
+      clasificacionFinal: clasificacionManual,
+      incluido,
+      reclasificado: clasificacionManual !== propuesta.clasificacionFinal,
+      motivo: `Clasificación manual definida por ti (la propuesta automática era "${propuesta.clasificacionFinal}")`,
+      esManual: true,
+      clasificacionPropuesta: propuesta.clasificacionFinal,
     };
-    const respuesta = await IAClient.explicarConIA(contexto);
-    caja.className = 'ia-respuesta';
-    caja.textContent = respuesta;
-  } catch (err) {
-    console.error(err);
-    caja.className = 'ia-respuesta ia-error';
-    caja.textContent = 'Error: ' + err.message;
-  } finally {
-    boton.disabled = false;
+  }
+
+  return { ...propuesta, esManual: false, clasificacionPropuesta: propuesta.clasificacionFinal };
+}
+
+/**
+ * Resumen comparativo para el Simulador de Escenarios: presupuesto de
+ * compras requerido, materiales en riesgo de quiebre, capital en exceso
+ * de stock (más del doble del ROP) y cobertura promedio en días.
+ */
+function calcularResumenSimulacion(planificados) {
+  const conRiesgo = planificados.filter((m) => m.riesgo === 'ROJO' || m.riesgo === 'AMARILLO');
+  const presupuestoCompras = conRiesgo.reduce((acc, m) => {
+    const necesidad = m.ropCalculado !== null ? Math.max(0, m.ropCalculado - m.stockFisico) : 0;
+    return acc + necesidad * (m.costoUnitario || 0);
+  }, 0);
+
+  const materialesEnRiesgo = planificados.filter((m) => m.riesgo === 'ROJO').length;
+
+  const sobrestock = planificados.filter((m) => m.ropCalculado !== null && m.ropCalculado > 0 && m.stockFisico > m.ropCalculado * 2);
+  const capitalSobrestock = sobrestock.reduce((acc, m) => {
+    const exceso = m.stockFisico - m.ropCalculado * 2;
+    return acc + exceso * (m.costoUnitario || 0);
+  }, 0);
+
+  const conCobertura = planificados.filter((m) => m.demandaDiariaPromedio > 0);
+  const coberturaPromedio =
+    conCobertura.length > 0
+      ? conCobertura.reduce((acc, m) => acc + m.stockFisico / m.demandaDiariaPromedio, 0) / conCobertura.length
+      : 0;
+
+  return { presupuestoCompras, materialesEnRiesgo, capitalSobrestock, coberturaPromedio };
+}
+
+/**
+ * Explica en una frase por qué un material quedó en su estado de salud —
+ * se usa en la ficha de detalle por material.
+ */
+function generarDiagnostico(m) {
+  if (!m.incluidoEnPlanificacion) {
+    return m.motivoExclusion || 'Este material no está incluido en la planificación de SS/ROP.';
+  }
+  switch (m.estadoSalud) {
+    case 'STOCKOUT_CRITICAL':
+      return `Stock real (${Math.round(m.stockFisico)}) está en cero o por debajo del Stock de Seguridad (${Math.round(m.ssCalculado)}) con muy pocos días de cobertura — riesgo inmediato de quiebre.`;
+    case 'REORDER_URGENT':
+      return `Stock real (${Math.round(m.stockFisico)}) ya cruzó el Punto de Pedido (${Math.round(m.ropCalculado)}) — corresponde generar el pedido ahora.`;
+    case 'OVERSTOCK':
+      return `Stock real (${Math.round(m.stockFisico)}) supera el máximo recomendado (${Math.round(m.maxStock)}) — hay capital de más inmovilizado en este material.`;
+    case 'DEAD_STOCK':
+      return `Tiene stock físico (${Math.round(m.stockFisico)}) pero no registra ningún consumo real en el período analizado — revisar si sigue vigente.`;
+    case 'OPTIMAL':
+      return `Stock real (${Math.round(m.stockFisico)}) está dentro del rango saludable, entre el Punto de Pedido (${Math.round(m.ropCalculado)}) y el máximo recomendado (${Math.round(m.maxStock)}).`;
+    default:
+      return 'Sin información suficiente para diagnosticar.';
   }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-  cargarParametrosGuardados();
-  cargarMarcados();
-  bindDropzone();
-  document.getElementById('btn-actualizar-datos').addEventListener('click', mostrarPantallaCarga);
-  document.getElementById('bsu-filtro-anio-indicador').addEventListener('click', () => {
-    bsuAnioFiltrado = null;
-    renderBSUGraficoAnio(bsuDatosActuales, new Date().getFullYear());
-    renderBSUConcentracion(bsuDatosActuales);
+// ============================================================
+// VALORIZACIÓN EN DÓLARES — Almacén / PPTT / Monitor / % Vencido
+// (usa el mismo MB52 ya cargado para el resto de la app, más un
+// archivo Monitor/ZMMR0105 aparte, que sí es un archivo distinto)
+// ============================================================
+
+const ALMACENES_PPTT = ['C001', 'TK01', 'TK02', 'TK03', 'DK01', 'DK02', 'DK03', 'CL01'];
+const ALMACENES_VENCIDO_SCOPE = ['L001', 'L002', 'L003', 'L004', 'L005', 'L006', 'L007', 'L008', 'L010'];
+
+function sumValorPorAlmacenes(mb52Rows, almacenes) {
+  let total = 0;
+  for (const row of mb52Rows) {
+    const alm = String(row['Almacén'] || '').trim();
+    if (!almacenes.includes(alm)) continue;
+    total += Number(row['Valor libre util.']) || 0;
+  }
+  return total;
+}
+
+function sumValorVencido(mb52Rows) {
+  let total = 0;
+  for (const row of mb52Rows) {
+    const alm = String(row['Almacén'] || '').trim();
+    const dias = Number(row['Días Res.']);
+    if (!ALMACENES_VENCIDO_SCOPE.includes(alm)) continue;
+    if (!(dias < 0)) continue;
+    total += Number(row['Valor libre util.']) || 0;
+  }
+  return total;
+}
+
+function sumImporteMonitor(monitorRows) {
+  let total = 0;
+  for (const row of monitorRows) {
+    total += Number(row['Importe']) || 0;
+  }
+  return total;
+}
+
+/**
+ * Calcula los 5 KPIs de "Valorización en Dólares":
+ * - Valorizado Almacén = Valor libre util. de L001, dividido entre el dólar.
+ * - Valorizado PPTT = Valor libre util. de los almacenes de producto
+ *   terminado (C001, TK01-03, DK01-03, CL01), dividido entre el dólar.
+ * - % Vencido = Valor libre util. con Días Res. < 0 (en L001-L008, L010)
+ *   dividido entre el Valor libre util. de L001 — ambos en soles, el
+ *   tipo de cambio se cancela así que no hace falta convertir para este %.
+ * - Valorizado Monitor = suma de Importe del Monitor — YA está en dólares.
+ * - % Monitor = Valorizado Monitor (US$) entre Valorizado Almacén (US$).
+ */
+function calcularValorizacionReal(mb52Rows, monitorRows, tipoCambio) {
+  const tc = tipoCambio > 0 ? tipoCambio : 1;
+
+  const valorAlmacenSoles = sumValorPorAlmacenes(mb52Rows, ['L001']);
+  const valorPPTTSoles = sumValorPorAlmacenes(mb52Rows, ALMACENES_PPTT);
+  const valorVencidoSoles = sumValorVencido(mb52Rows);
+
+  const valorizadoAlmacen = valorAlmacenSoles / tc;
+  const valorizadoPPTT = valorPPTTSoles / tc;
+  const valorizadoMonitor = sumImporteMonitor(monitorRows); // ya en USD
+
+  const pctVencido = valorAlmacenSoles > 0 ? (valorVencidoSoles / valorAlmacenSoles) * 100 : 0;
+  const pctMonitor = valorizadoAlmacen > 0 ? (valorizadoMonitor / valorizadoAlmacen) * 100 : 0;
+
+  return { valorizadoAlmacen, valorizadoPPTT, valorizadoMonitor, pctMonitor, pctVencido };
+}
+
+/**
+ * Stock de un conjunto de materiales/almacenes específicos (para las tablas
+ * de "Stock de Aceite de Pescado" y "Stock de Harina de Pescado" — se
+ * definen por almacén, no por categoría, tal como me indicaste).
+ */
+function stockPorAlmacenes(mb52Rows, almacenes) {
+  const acc = new Map(); // material -> {descripcion, almacen, stock, lotes: Map(lote->stock)}
+  for (const row of mb52Rows) {
+    const almacen = String(row['Almacén'] || '').trim();
+    if (!almacenes.includes(almacen)) continue;
+    const material = String(row['Material'] || '').trim();
+    const clave = material + '|' + almacen;
+    const stock = Number(row['Libre utilización']) || 0;
+    const lote = String(row['Lote'] || '').trim() || 'Sin lote';
+    if (!acc.has(clave)) {
+      acc.set(clave, {
+        material,
+        descripcion: row['Texto breve de material'] || '',
+        almacen,
+        stock: 0,
+        lotes: new Map(),
+      });
+    }
+    const entry = acc.get(clave);
+    entry.stock += stock;
+    entry.lotes.set(lote, (entry.lotes.get(lote) || 0) + stock);
+  }
+  return [...acc.values()]
+    .map((e) => ({
+      ...e,
+      lotes: [...e.lotes.entries()]
+        .map(([lote, stock]) => ({ lote, stock }))
+        .sort((a, b) => b.stock - a.stock),
+    }))
+    .sort((a, b) => b.stock - a.stock);
+}
+
+/**
+ * Agrupa el Monitor (ZMMR0105) por Nombre del usuario, sumando Importe.
+ */
+function agruparMonitorPorUsuario(monitorRows) {
+  const mapa = new Map();
+  for (const row of monitorRows) {
+    const usuario = String(row['Nombre del usuario'] || 'Sin usuario').trim();
+    mapa.set(usuario, (mapa.get(usuario) || 0) + (Number(row['Importe']) || 0));
+  }
+  return [...mapa.entries()]
+    .map(([usuario, importe]) => ({ usuario, importe }))
+    .sort((a, b) => b.importe - a.importe);
+}
+
+/**
+ * Detalle línea por línea del Monitor (ZMMR0105), para la tabla de detalle.
+ */
+function detalleMonitor(monitorRows) {
+  return monitorRows
+    .map((row) => ({
+      // "Material" trae el código de referencia interno (ej. BSU-002025);
+      // "Material_1" es el código real de SAP — el que se usa en todo el resto
+      // de la app (Excel duplica el encabezado "Material" y SheetJS numera
+      // la segunda ocurrencia con el sufijo _1 automáticamente).
+      material: String(row['Material_1'] ?? row['Material'] ?? '').trim(),
+      descripcion: row['Texto breve de material'] || '',
+      stockNoVal: Number(row['Stock no Val']) || 0,
+      importe: Number(row['Importe']) || 0,
+      usuario: row['Nombre del usuario'] || '',
+    }))
+    .sort((a, b) => b.importe - a.importe);
+}
+
+// ============================================================
+// INVENTARIO CÍCLICO POR ZONAS (definidas a mano) — usa el mismo
+// MB52 ya cargado en la app. Cada zona la define el usuario con un
+// nombre y una lista de códigos de "Ubicación" del MB52.
+// ============================================================
+
+/**
+ * Arma, para cada zona definida a mano, la lista de materiales que caen
+ * ahí (por Ubicación, dentro de un almacén), sumando stock si un material
+ * aparece en más de un lote de la misma ubicación.
+ */
+function construirZonasManual(mb52Rows, almacen, definicionesZona) {
+  return definicionesZona
+    .filter((def) => def.zona && def.ubicaciones && def.ubicaciones.length > 0)
+    .map((def) => {
+      const ubicacionesSet = new Set(def.ubicaciones.map((u) => u.trim().toUpperCase()).filter(Boolean));
+      const materiales = new Map();
+      for (const row of mb52Rows) {
+        if (String(row['Almacén'] || '').trim() !== almacen) continue;
+        const ubic = String(row['Ubicación'] || '').trim().toUpperCase();
+        if (!ubicacionesSet.has(ubic)) continue;
+        const material = String(row['Material'] || '').trim();
+        if (!material) continue;
+        const cantidad = Number(row['Libre utilización']) || 0;
+        if (!materiales.has(material)) {
+          materiales.set(material, {
+            material,
+            descripcion: row['Texto breve de material'] || '',
+            um: row['Unidad medida base'] || '',
+            cantidadSistema: 0,
+          });
+        }
+        materiales.get(material).cantidadSistema += cantidad;
+      }
+      return {
+        zona: def.zona,
+        ubicaciones: def.ubicaciones,
+        materiales: [...materiales.values()].sort((a, b) => a.material.localeCompare(b.material)),
+      };
+    });
+}
+
+/**
+ * Reparte las zonas entre las semanas del ciclo — reparto "greedy" por
+ * carga de trabajo (cantidad de materiales), no solo por cantidad de
+ * zonas, para que ninguna semana quede con muchísimo más trabajo que otra.
+ */
+function asignarSemanasCiclo(zonas, cicloSemanas) {
+  const ordenado = [...zonas].sort((a, b) => b.materiales.length - a.materiales.length);
+  const cargaPorSemana = new Array(cicloSemanas).fill(0);
+  const resultado = ordenado.map((z) => {
+    let semanaMin = 0;
+    for (let s = 1; s < cicloSemanas; s++) {
+      if (cargaPorSemana[s] < cargaPorSemana[semanaMin]) semanaMin = s;
+    }
+    cargaPorSemana[semanaMin] += z.materiales.length;
+    return { ...z, semana: semanaMin + 1 };
   });
-  bindTabs();
-  bindFormularios();
-  bindEventosDelegados();
-  bindTooltipTendencia();
-  bindInventarioCiclico();
-  bindMRP();
-  document.getElementById('btn-guardar-snapshot-bsu').addEventListener('click', guardarSnapshotBSU);
-  document.getElementById('btn-ia-preguntar').addEventListener('click', preguntarDatosIA);
-  document.getElementById('ia-pregunta').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') preguntarDatosIA();
+  return resultado.sort((a, b) => a.semana - b.semana || a.zona.localeCompare(b.zona));
+}
+
+function slugZonaCiclo(zona) {
+  return (
+    String(zona)
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'ZONA'
+  );
+}
+
+// ============================================================
+// BIENES DE SEGUNDO USO (BSU) — reporte ZMMR0080
+// ============================================================
+
+function procesarBSU(bsuRows) {
+  return bsuRows
+    .filter((r) => r['Material'])
+    .map((r) => ({
+      material: String(r['Material']).trim(),
+      descripcion: r['Descripción del bien'] || '',
+      almacen: String(r['Almacén'] || '').trim(),
+      ubicacion: String(r['Ubicación'] || '').trim(),
+      lote: r['Lote'] || '',
+      cantidad: Number(r['Libre utilización']) || 0,
+      um: r['Unidad de medida'] || '',
+      fechaEntrada: r['Fecha última Entrada Mercancía'] ? new Date(r['Fecha última Entrada Mercancía']) : null,
+    }))
+    .filter((r) => r.cantidad > 0);
+}
+
+/**
+ * Serie de registros BSU por año de ingreso (año de "Fecha última Entrada
+ * Mercancía"), clasificada por antigüedad respecto al año actual:
+ * Reciente (0-1 años), Vigilancia (2 años), Alto (3-4 años), Crítico (5+).
+ * Rellena los años sin registros dentro del rango para detectarlos.
+ */
+function bsuPorAnioIngreso(bsu, anioActual) {
+  const mapa = new Map();
+  bsu.forEach((b) => {
+    if (!b.fechaEntrada) return;
+    const anio = b.fechaEntrada.getFullYear();
+    mapa.set(anio, (mapa.get(anio) || 0) + 1);
   });
-  document.getElementById('btn-explicar-ia').addEventListener('click', explicarMaterialConIA);
-  await cargarCacheAlIniciar();
-});
+  const anios = [...mapa.keys()].sort((a, b) => a - b);
+  if (anios.length === 0) return [];
+  const minAnio = anios[0];
+  const maxAnio = anios[anios.length - 1];
+
+  const serie = [];
+  for (let a = minAnio; a <= maxAnio; a++) {
+    const cuenta = mapa.get(a) || 0;
+    const antiguedad = anioActual - a;
+    let nivel;
+    if (antiguedad >= 5) nivel = 'critico';
+    else if (antiguedad >= 3) nivel = 'alto';
+    else if (antiguedad >= 2) nivel = 'vigilancia';
+    else nivel = 'reciente';
+    serie.push({ anio: a, cuenta, antiguedad, nivel });
+  }
+  return serie;
+}
+
+/** Items individuales ordenados por cantidad libre (mayor a menor). */
+function bsuPorCantidadLibre(bsu) {
+  return [...bsu].sort((a, b) => b.cantidad - a.cantidad);
+}
+
+/** Cantidad de registros por almacén. */
+function bsuDistribucionPorAlmacen(bsu) {
+  const mapa = new Map();
+  bsu.forEach((b) => mapa.set(b.almacen || 'Sin almacén', (mapa.get(b.almacen || 'Sin almacén') || 0) + 1));
+  return [...mapa.entries()].map(([almacen, cuenta]) => ({ almacen, cuenta })).sort((a, b) => b.cuenta - a.cuenta);
+}
+
+/** Cuántas ubicaciones distintas hay dentro de un almacén. */
+function bsuUbicacionesDistintas(bsu, almacen) {
+  return new Set(bsu.filter((b) => b.almacen === almacen).map((b) => b.ubicacion)).size;
+}
+
+/**
+ * Encuentra el código BSU que agrupa más descripciones de bien distintas
+ * (un mismo código genérico usado para varios tipos de ítem) — el insight
+ * "ojo: un mismo código BSU agrupa ítems distintos".
+ */
+function bsuCodigoConMasVariedad(bsu) {
+  const mapa = new Map(); // material -> Set(descripcion)
+  bsu.forEach((b) => {
+    if (!mapa.has(b.material)) mapa.set(b.material, new Set());
+    mapa.get(b.material).add(b.descripcion);
+  });
+  let mejor = null;
+  for (const [material, descs] of mapa.entries()) {
+    if (descs.size > 1 && (!mejor || descs.size > mejor.cantidadDescripciones)) {
+      mejor = { material, cantidadDescripciones: descs.size, ejemplos: [...descs].slice(0, 3) };
+    }
+  }
+  return mejor;
+}
+
+/** Número de semana ISO-8601 del año para una fecha dada. */
+function numeroSemanaISO(fecha) {
+  const d = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()));
+  const diaSemana = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - diaSemana);
+  const inicioAnio = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d - inicioAnio) / 86400000 + 1) / 7);
+}
+
+/**
+ * A partir del historial guardado [{fecha, totalRegistros}], arma la serie
+ * para el gráfico de seguimiento semanal: la semana ISO real del año (no
+ * relativa al primer snapshot) y una etiqueta de fecha legible.
+ */
+function construirSerieBSUHistorial(historial) {
+  if (!historial || historial.length === 0) return [];
+  const ordenado = [...historial].sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
+  return ordenado.map((h) => {
+    const fecha = new Date(h.fecha + 'T00:00:00');
+    return {
+      ...h,
+      semana: numeroSemanaISO(fecha),
+      fechaLabel: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }),
+    };
+  });
+}
+
+const SupplyEngine = {
+  NOMBRES_MES,
+  CODIGOS_CONSUMO,
+  toISODate,
+  filtrarConsumoReal,
+  calcularIndiceEstacional,
+  clasificarTemporadas,
+  diasPorTemporada,
+  calcularStatsPorTemporada,
+  temporadaObjetivo,
+  agregarMB52,
+  calcularMateriales,
+  calcularInmovilizados,
+  serieMensualPorMaterial,
+  calcularStatsMensualesGenerales,
+  calcularABCXYZ,
+  categorizarMaterial,
+  materialesConConsumoEnAlmacen,
+  agregarStockPorAlmacenTodos,
+  enriquecerConTraslados,
+  enriquecerConCobertura,
+  materialesPorCategoria,
+  extraerTransitoPorMaterial,
+  calcularClasificacionMovimiento,
+  determinarTratamiento,
+  proponerClasificacion,
+  CLASIFICACIONES_MANUALES_VALIDAS,
+  calcularResumenSimulacion,
+  generarDiagnostico,
+  calcularValorizacionReal,
+  stockPorAlmacenes,
+  agruparMonitorPorUsuario,
+  detalleMonitor,
+  construirZonasManual,
+  asignarSemanasCiclo,
+  slugZonaCiclo,
+  procesarBSU,
+  bsuPorAnioIngreso,
+  bsuPorCantidadLibre,
+  bsuDistribucionPorAlmacen,
+  bsuUbicacionesDistintas,
+  bsuCodigoConMasVariedad,
+  construirSerieBSUHistorial,
+  confianza,
+};
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = SupplyEngine;
+}
+if (typeof window !== 'undefined') {
+  window.SupplyEngine = SupplyEngine;
+}
