@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-10-14T18:02:22.507Z",
+  "publicadoEn": "2026-10-15T14:10:38.073Z",
   "totalMaterialesParaReordenar": 249,
   "materialesParaReordenar": [
     {
@@ -2140,9 +2140,9 @@
       "descripcion": "PAPEL INDIC.PH 0-12 PAMPEHA",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 2,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "31015362",
@@ -2203,9 +2203,9 @@
       "descripcion": "TUBO CENTRIF.CONICO GRAD.15ML",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 9,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "32021935",
