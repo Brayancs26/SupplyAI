@@ -722,16 +722,21 @@ function consumoDiarioCombustible(dataRows, material, ventanaDias) {
   return Math.max(0, total) / ventanaDias;
 }
 
+function tanqueHTML(alturaPct, texto, color, etiqueta) {
+  const alto = Math.max(4, Math.min(100, alturaPct));
+  return `<div class="tank-col"><div class="tank-area"><div class="tank" style="height:${alto}%">
+    <div class="tank-body"><div class="tank-liquid tank-${color}"></div><span class="tank-texto">${texto}</span></div>
+    <div class="tank-lid"></div></div></div><div class="comb-col-label">${etiqueta}</div></div>`;
+}
 function barraVerticalComb(pct, etiqueta) {
-  const alto = Math.max(0, Math.min(100, pct));
-  return `<div class="comb-col"><div class="comb-col-track"><div class="comb-col-fill" style="height:${alto}%"><span class="comb-col-tag">${fmtNum(pct, 0)} %</span></div></div><div class="comb-col-label">${etiqueta}</div></div>`;
+  const nivel = Math.max(0, Math.min(100, pct));
+  return `<div class="tank-col"><div class="tank-area"><div class="tank" style="height:100%">
+    <div class="tank-body"><div class="tank-liquid tank-cyan" style="height:${nivel}%"></div><span class="tank-texto">${fmtNum(pct, 0)} %</span></div>
+    <div class="tank-lid"></div></div></div><div class="comb-col-label">${etiqueta}</div></div>`;
 }
 function barraStockVsCapacidad(stock, cap) {
   const max = Math.max(stock, cap, 1);
-  return `<div class="comb-dual">
-    <div class="comb-dual-col"><span class="comb-chip comb-chip-cap">${fmtNum(cap, 0)}</span><div class="comb-dual-track"><div class="comb-dual-fill comb-dual-cap" style="height:${(cap / max) * 100}%"></div></div><div class="comb-col-label">Capacidad</div></div>
-    <div class="comb-dual-col"><span class="comb-chip comb-chip-stock">${fmtNum(stock, 0)}</span><div class="comb-dual-track"><div class="comb-dual-fill comb-dual-stock" style="height:${(stock / max) * 100}%"></div></div><div class="comb-col-label">Stock</div></div>
-  </div>`;
+  return `<div class="comb-dual">${tanqueHTML((cap / max) * 100, fmtNum(cap, 0), 'green', 'Capacidad')}${tanqueHTML((stock / max) * 100, fmtNum(stock, 0), 'cyan', 'Stock')}</div>`;
 }
 
 function renderCombustible() {
@@ -758,13 +763,13 @@ function renderCombustible() {
   const covTot = consumoTot > 0 ? stockTot / consumoTot : null;
   const fmtCov = (c) => (c === null ? '—' : fmtNum(c, 0));
 
-  const kpi = (valor, label, tip) => `<div class="kpi-card"><span class="kpi-value">${valor}</span><span class="kpi-label term" data-tooltip="${tip}">${label}</span></div>`;
+  const kpi = (valor, label, tip, color) => `<div class="kpi-card kpi-val-${color}" title="${tip}"><span class="kpi-label">${label}</span><span class="kpi-value">${valor}</span></div>`;
   cont.innerHTML =
-    kpi(`${fmtNum(pctTot, 0)} %`, 'Tanques llenos', 'Stock total de Diesel + Residual sobre la capacidad total') +
-    kpi(`${fmtNum(d.pct, 0)} %`, 'Tanque Diesel', 'Stock de Diesel en L001 sobre su capacidad') +
-    kpi(`${fmtNum(r.pct, 0)} %`, 'Tanque Residual', 'Stock de Residual (R500) en L001 sobre su capacidad') +
-    kpi(fmtCov(d.cobertura), 'Cobertura días (Diesel)', 'Stock ÷ consumo diario promedio de la ventana elegida') +
-    kpi(fmtCov(r.cobertura), 'Cobertura días (Residual)', 'Stock ÷ consumo diario promedio de la ventana elegida');
+    kpi(`${fmtNum(pctTot, 0)} %`, 'Tanques llenos', 'Stock total de Diesel + Residual sobre la capacidad total', 'azul') +
+    kpi(`${fmtNum(d.pct, 0)} %`, 'Tanque Diesel', 'Stock de Diesel en L001 sobre su capacidad', 'verde') +
+    kpi(`${fmtNum(r.pct, 0)} %`, 'Tanque Residual', 'Stock de Residual (R500) en L001 sobre su capacidad', 'rojo') +
+    kpi(fmtCov(d.cobertura), 'Cobertura días (Diesel)', 'Stock ÷ consumo diario promedio de la ventana elegida', 'amarillo') +
+    kpi(fmtCov(r.cobertura), 'Cobertura días (Residual)', 'Stock ÷ consumo diario promedio de la ventana elegida', 'celeste');
 
   document.getElementById('comb-barra-diesel').innerHTML = barraVerticalComb(d.pct, 'MATARANI');
   document.getElementById('comb-barra-residual').innerHTML = barraVerticalComb(r.pct, 'MATARANI');
