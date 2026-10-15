@@ -224,6 +224,44 @@
         </div>
       </div>
 
+      <div class="panel" id="panel-combustible">
+        <div class="panel-header">
+          <h2>Combustible — Tanques Matarani</h2>
+          <p class="panel-sub">Stock del almacén L001 (MB52) frente a la capacidad de cada tanque. La cobertura usa el consumo diario promedio de la ventana elegida.</p>
+        </div>
+        <div class="comb-params">
+          <label><span class="term" data-tooltip="Capacidad total de tanques de Diesel, en galones">Capacidad Diesel (GLN)</span><input type="number" id="comb-cap-diesel" min="0" step="1000" /></label>
+          <label><span class="term" data-tooltip="Capacidad total de tanques de Residual (Petróleo Industrial N°500), en galones">Capacidad Residual (GLN)</span><input type="number" id="comb-cap-residual" min="0" step="1000" /></label>
+          <label><span class="term" data-tooltip="Galones ya pedidos y aún no recibidos. No viene en los archivos SAP cargados: ingrésalo a mano">En curso Diesel (GLN)</span><input type="number" id="comb-curso-diesel" min="0" step="1000" /></label>
+          <label><span class="term" data-tooltip="Galones ya pedidos y aún no recibidos. No viene en los archivos SAP cargados: ingrésalo a mano">En curso Residual (GLN)</span><input type="number" id="comb-curso-residual" min="0" step="1000" /></label>
+          <label><span>Ventana de consumo</span>
+            <select id="comb-ventana">
+              <option value="7">Últimos 7 días</option>
+              <option value="15">Últimos 15 días</option>
+              <option value="30" selected>Últimos 30 días</option>
+              <option value="60">Últimos 60 días</option>
+              <option value="90">Últimos 90 días</option>
+            </select>
+          </label>
+        </div>
+        <div class="comb-kpis" id="comb-kpis"></div>
+        <div class="comb-grid">
+          <div class="comb-card"><h3>% Capacidad · Tanque Diesel</h3><div id="comb-barra-diesel" class="comb-barra-wrap"></div></div>
+          <div class="comb-card"><h3>% Capacidad · Tanque Residual</h3><div id="comb-barra-residual" class="comb-barra-wrap"></div></div>
+          <div class="comb-card comb-card-tabla">
+            <h3>Cobertura en días por centro</h3>
+            <table>
+              <thead><tr><th>Tipo de combustible</th><th class="num">Capacidad</th><th class="num">Stock</th><th class="num">% Stock</th><th class="num">Cobertura (días)</th><th class="num">En curso</th></tr></thead>
+              <tbody id="comb-tabla-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="comb-grid comb-grid-2">
+          <div class="comb-card"><h3>Stock vs capacidad · Diesel</h3><div id="comb-stock-diesel" class="comb-barra-wrap"></div></div>
+          <div class="comb-card"><h3>Stock vs capacidad · Residual</h3><div id="comb-stock-residual" class="comb-barra-wrap"></div></div>
+        </div>
+      </div>
+
       <div class="grid-tres-paneles">
         <div class="panel">
           <div class="panel-header">
