@@ -725,3 +725,5 @@ footer {
   .kpi-inline-card:nth-child(2n+1) { border-left: none; }
   .term::after { white-space: normal; }
 }
+
+.fila-lote-ancha { max-width: none; gap: 24px; }
