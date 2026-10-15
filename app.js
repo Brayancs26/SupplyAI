@@ -645,6 +645,7 @@ function renderAceiteHarina() {
   document.getElementById('tabla-aceite-body').innerHTML = tablaAceiteHarinaHTML(aceite, 'Sin stock de Aceite de Pescado en estos almacenes.', 'aceite');
   document.getElementById('tabla-harina-body').innerHTML = tablaAceiteHarinaHTML(harina, 'Sin stock de Harina de Pescado en C001.', 'harina');
   renderHarinaConsolidada();
+  renderCombustible();
 }
 
 // Consolidado de harina por calidad. Orden de reglas: Scrap -> NC (NC/BLOQUEO/CALIDAD) -> Calidad E -> Comercial (A/B/C/D)
@@ -688,6 +689,107 @@ function renderHarinaConsolidada() {
   });
   html += `<tr class="fila-total"><td colspan="2">Total</td><td class="num">${fmtNum(totalGeneral, 2)}</td></tr>`;
   tbody.innerHTML = html;
+}
+
+// ---------- Combustible: tanques Matarani ----------
+const COMB_MATERIALES = { diesel: '30000527', residual: '30000528' };
+const COMB_DEFAULTS = { capDiesel: 80000, capResidual: 115000, cursoDiesel: 0, cursoResidual: 0, ventana: 30 };
+
+function cargarParamsCombustible() {
+  try { return Object.assign({}, COMB_DEFAULTS, JSON.parse(localStorage.getItem('supplymind_combustible') || '{}')); }
+  catch (e) { return Object.assign({}, COMB_DEFAULTS); }
+}
+function guardarParamsCombustible(p) {
+  try { localStorage.setItem('supplymind_combustible', JSON.stringify(p)); } catch (e) { /* sin storage */ }
+}
+
+function consumoDiarioCombustible(dataRows, material, ventanaDias) {
+  const consumos = SupplyEngine.filtrarConsumoReal(dataRows, 'L001', {
+    almacenExtra: 'PI01',
+    materialesCombustible: new Set(Object.values(COMB_MATERIALES)),
+  }).filter((c) => c.material === material);
+  if (!consumos.length) return 0;
+  // La ventana termina en la última fecha con movimientos de DATA (no en "hoy")
+  const fechaMax = dataRows.reduce((mx, r) => {
+    const f = r['Fe.contabilización'];
+    const t = f instanceof Date ? f.getTime() : new Date(f).getTime();
+    return t > mx ? t : mx;
+  }, 0);
+  const desde = fechaMax - (ventanaDias - 1) * 86400000;
+  const total = consumos
+    .filter((c) => new Date(c.fechaISO + 'T00:00:00').getTime() >= desde)
+    .reduce((a, c) => a + c.demanda, 0);
+  return Math.max(0, total) / ventanaDias;
+}
+
+function barraVerticalComb(pct, etiqueta) {
+  const alto = Math.max(0, Math.min(100, pct));
+  return `<div class="comb-col"><div class="comb-col-track"><div class="comb-col-fill" style="height:${alto}%"><span class="comb-col-tag">${fmtNum(pct, 0)} %</span></div></div><div class="comb-col-label">${etiqueta}</div></div>`;
+}
+function barraStockVsCapacidad(stock, cap) {
+  const max = Math.max(stock, cap, 1);
+  return `<div class="comb-dual">
+    <div class="comb-dual-col"><span class="comb-chip comb-chip-cap">${fmtNum(cap, 0)}</span><div class="comb-dual-track"><div class="comb-dual-fill comb-dual-cap" style="height:${(cap / max) * 100}%"></div></div><div class="comb-col-label">Capacidad</div></div>
+    <div class="comb-dual-col"><span class="comb-chip comb-chip-stock">${fmtNum(stock, 0)}</span><div class="comb-dual-track"><div class="comb-dual-fill comb-dual-stock" style="height:${(stock / max) * 100}%"></div></div><div class="comb-col-label">Stock</div></div>
+  </div>`;
+}
+
+function renderCombustible() {
+  const cont = document.getElementById('comb-kpis');
+  if (!cont || !state.archivos.MB52 || !state.archivos.DATA) return;
+  const p = cargarParamsCombustible();
+  const set = (id, v) => { const el = document.getElementById(id); if (el && document.activeElement !== el) el.value = v; };
+  set('comb-cap-diesel', p.capDiesel); set('comb-cap-residual', p.capResidual);
+  set('comb-curso-diesel', p.cursoDiesel); set('comb-curso-residual', p.cursoResidual);
+  set('comb-ventana', String(p.ventana));
+
+  const stockDe = (mat) => state.archivos.MB52.filas
+    .filter((r) => String(r['Material']).trim() === mat && String(r['Almacén']).trim() === 'L001')
+    .reduce((a, r) => a + (Number(r['Libre utilización']) || 0), 0);
+  const dataRows = state.archivos.DATA.filas;
+  const filas = [
+    { nombre: 'Diesel', stock: stockDe(COMB_MATERIALES.diesel), cap: p.capDiesel, curso: p.cursoDiesel, consumo: consumoDiarioCombustible(dataRows, COMB_MATERIALES.diesel, p.ventana) },
+    { nombre: 'Residual', stock: stockDe(COMB_MATERIALES.residual), cap: p.capResidual, curso: p.cursoResidual, consumo: consumoDiarioCombustible(dataRows, COMB_MATERIALES.residual, p.ventana) },
+  ].map((f) => ({ ...f, pct: f.cap > 0 ? (f.stock / f.cap) * 100 : 0, cobertura: f.consumo > 0 ? f.stock / f.consumo : null }));
+  const [d, r] = filas;
+  const capTot = d.cap + r.cap, stockTot = d.stock + r.stock, cursoTot = d.curso + r.curso;
+  const pctTot = capTot > 0 ? (stockTot / capTot) * 100 : 0;
+  const consumoTot = d.consumo + r.consumo;
+  const covTot = consumoTot > 0 ? stockTot / consumoTot : null;
+  const fmtCov = (c) => (c === null ? '—' : fmtNum(c, 0));
+
+  const kpi = (valor, label, tip) => `<div class="kpi-card"><span class="kpi-value">${valor}</span><span class="kpi-label term" data-tooltip="${tip}">${label}</span></div>`;
+  cont.innerHTML =
+    kpi(`${fmtNum(pctTot, 0)} %`, 'Tanques llenos', 'Stock total de Diesel + Residual sobre la capacidad total') +
+    kpi(`${fmtNum(d.pct, 0)} %`, 'Tanque Diesel', 'Stock de Diesel en L001 sobre su capacidad') +
+    kpi(`${fmtNum(r.pct, 0)} %`, 'Tanque Residual', 'Stock de Residual (R500) en L001 sobre su capacidad') +
+    kpi(fmtCov(d.cobertura), 'Cobertura días (Diesel)', 'Stock ÷ consumo diario promedio de la ventana elegida') +
+    kpi(fmtCov(r.cobertura), 'Cobertura días (Residual)', 'Stock ÷ consumo diario promedio de la ventana elegida');
+
+  document.getElementById('comb-barra-diesel').innerHTML = barraVerticalComb(d.pct, 'MATARANI');
+  document.getElementById('comb-barra-residual').innerHTML = barraVerticalComb(r.pct, 'MATARANI');
+  document.getElementById('comb-stock-diesel').innerHTML = barraStockVsCapacidad(d.stock, d.cap);
+  document.getElementById('comb-stock-residual').innerHTML = barraStockVsCapacidad(r.stock, r.cap);
+
+  const filaTabla = (f) => `<tr class="fila-total-suave"><td>${f.nombre}</td><td class="num">${fmtNum(f.cap, 0)}</td><td class="num">${fmtNum(f.stock, 0)}</td><td class="num">${fmtNum(f.pct, 0)} %</td><td class="num">${fmtCov(f.cobertura)}</td><td class="num">${fmtNum(f.curso, 0)}</td></tr>
+    <tr><td class="muted">&nbsp;&nbsp;MATARANI</td><td class="num">${fmtNum(f.cap, 0)}</td><td class="num">${fmtNum(f.stock, 0)}</td><td class="num">${fmtNum(f.pct, 0)} %</td><td class="num">${fmtCov(f.cobertura)}</td><td class="num">${fmtNum(f.curso, 0)}</td></tr>`;
+  document.getElementById('comb-tabla-body').innerHTML =
+    filaTabla(d) + filaTabla(r) +
+    `<tr class="fila-total"><td>Total</td><td class="num">${fmtNum(capTot, 0)}</td><td class="num">${fmtNum(stockTot, 0)}</td><td class="num">${fmtNum(pctTot, 0)} %</td><td class="num">${fmtCov(covTot)}</td><td class="num">${fmtNum(cursoTot, 0)}</td></tr>`;
+}
+
+function bindParamsCombustible() {
+  const ids = { 'comb-cap-diesel': 'capDiesel', 'comb-cap-residual': 'capResidual', 'comb-curso-diesel': 'cursoDiesel', 'comb-curso-residual': 'cursoResidual', 'comb-ventana': 'ventana' };
+  Object.entries(ids).forEach(([id, clave]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', () => {
+      const p = cargarParamsCombustible();
+      p[clave] = Number(el.value) || 0;
+      guardarParamsCombustible(p);
+      renderCombustible();
+    });
+  });
 }
 
 function renderAvisoSinMonitor() {
@@ -1722,6 +1824,7 @@ function renderMaterialesPlanificados() {
 
 // ---------------- EVENTOS DELEGADOS (evita rebindear en cada render) ----------------
 function bindEventosDelegados() {
+  bindParamsCombustible();
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.sku-link');
     if (btn) abrirDetalleMaterial(btn.dataset.material);
