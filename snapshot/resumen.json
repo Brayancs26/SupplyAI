@@ -1,7 +1,16 @@
 {
-  "publicadoEn": "2026-10-15T14:10:38.073Z",
-  "totalMaterialesParaReordenar": 249,
+  "publicadoEn": "2026-10-15T14:10:44.985Z",
+  "totalMaterialesParaReordenar": 263,
   "materialesParaReordenar": [
+    {
+      "material": "32004359",
+      "descripcion": "GUANTE CUERO CR.FUEGO T/14\"",
+      "clasificacion": "Mediana Rotación",
+      "stock": 0,
+      "rop": 2,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
     {
       "material": "31012396",
       "descripcion": "PERNO HEX.INOX.1/4\"X1 1/2\"",
@@ -141,10 +150,19 @@
       "material": "32005402",
       "descripcion": "WYPALL ROLLO BLANCO X-80",
       "clasificacion": "Alta Rotación",
-      "stock": 108,
+      "stock": 107,
       "rop": 10,
       "riesgo": "AMARILLO",
-      "coberturaDias": 489.6986301369863
+      "coberturaDias": 485.16438356164383
+    },
+    {
+      "material": "32008505",
+      "descripcion": "PAPEL BOND A4 75GR PQTE.500UN",
+      "clasificacion": "Alta Rotación",
+      "stock": 5,
+      "rop": 8,
+      "riesgo": "ROJO",
+      "coberturaDias": 33.775510204081634
     },
     {
       "material": "33032733",
@@ -255,6 +273,15 @@
       "coberturaDias": 827.5
     },
     {
+      "material": "32003846",
+      "descripcion": "CARETA AUTO-OSCURECIBLEA P/SOLDAR",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 1,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
       "material": "32005539",
       "descripcion": "FASTENER CJ.50UN",
       "clasificacion": "Baja Rotación",
@@ -271,6 +298,24 @@
       "rop": 99,
       "riesgo": "ROJO",
       "coberturaDias": 30.553846153846152
+    },
+    {
+      "material": "32005600",
+      "descripcion": "RESPIRADOR MEDIA CARA REUSABLE 3M T/L",
+      "clasificacion": "Mediana Rotación",
+      "stock": 0,
+      "rop": 2,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32006780",
+      "descripcion": "KIT LENTES SEGUR.TRANSP.SOLUS 1000",
+      "clasificacion": "Mediana Rotación",
+      "stock": 0,
+      "rop": 2,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
     },
     {
       "material": "31008509",
@@ -363,13 +408,31 @@
       "coberturaDias": null
     },
     {
+      "material": "32006878",
+      "descripcion": "RESPIRADOR DESCARTABLE POLVO N95 8210",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 8,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
       "material": "32022255",
       "descripcion": "RESPIRADOR P/VAP.ORG.-HUMOS R95",
       "clasificacion": "Baja Rotación",
-      "stock": 94,
+      "stock": 0,
       "rop": 14,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 550.6902654867257
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32022272",
+      "descripcion": "GUANTE QUIRURGICO NITRI. 4MM T/L",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 95,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
     },
     {
       "material": "32022265",
@@ -397,6 +460,15 @@
       "rop": 2,
       "riesgo": "AMARILLO",
       "coberturaDias": 3360.923076923077
+    },
+    {
+      "material": "20000546",
+      "descripcion": "CINTA EMB.TRANSP.2\"X11 YD.45MIC",
+      "clasificacion": "Alta Rotación",
+      "stock": 12,
+      "rop": 15,
+      "riesgo": "ROJO",
+      "coberturaDias": 70.37837837837837
     },
     {
       "material": "20001638",
@@ -456,10 +528,10 @@
       "material": "31013843",
       "descripcion": "SILICONA CARTUCHO TRANSP.",
       "clasificacion": "Alta Rotación",
-      "stock": 7,
+      "stock": 6,
       "rop": 10,
       "riesgo": "ROJO",
-      "coberturaDias": 34.8421052631579
+      "coberturaDias": 29.86466165413534
     },
     {
       "material": "31014281",
@@ -474,10 +546,10 @@
       "material": "31015361",
       "descripcion": "BROCHA NY. 1\"",
       "clasificacion": "Baja Rotación",
-      "stock": 26,
+      "stock": 25,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 2151.5
+      "coberturaDias": 2068.75
     },
     {
       "material": "31015544",
@@ -501,10 +573,19 @@
       "material": "31032188",
       "descripcion": "CINTA AISLANTE NEGRA 600V-33+ 3M",
       "clasificacion": "Baja Rotación",
-      "stock": 19,
+      "stock": 17,
       "rop": 4,
       "riesgo": "AMARILLO",
-      "coberturaDias": 339.94594594594594
+      "coberturaDias": 304.1621621621622
+    },
+    {
+      "material": "32003567",
+      "descripcion": "BLOCK FORMATO AST 100HJ",
+      "clasificacion": "Mediana Rotación",
+      "stock": 4,
+      "rop": 4,
+      "riesgo": "ROJO",
+      "coberturaDias": 61.58139534883721
     },
     {
       "material": "32003965",
@@ -573,10 +654,19 @@
       "material": "32005599",
       "descripcion": "MASCARA CARA COMPL.T/M 6800 3M",
       "clasificacion": "Baja Rotación",
-      "stock": 6,
+      "stock": 0,
       "rop": 2,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 330.99999999999994
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32005601",
+      "descripcion": "RESPIRADOR MEDIA CARA REUSABLE 3M T/M",
+      "clasificacion": "Mediana Rotación",
+      "stock": 0,
+      "rop": 3,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
     },
     {
       "material": "32005804",
@@ -588,31 +678,49 @@
       "coberturaDias": 276.58186758985244
     },
     {
+      "material": "32007250",
+      "descripcion": "LENTE SEGUR.OSCU.SECUREFIT 402X 3M",
+      "clasificacion": "Alta Rotación",
+      "stock": 0,
+      "rop": 23,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32007478",
+      "descripcion": "LENTE SEGUR.TRANSP.SECUREFIT 401X 3M",
+      "clasificacion": "Alta Rotación",
+      "stock": 0,
+      "rop": 32,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
       "material": "32007837",
       "descripcion": "OREJERA ADAPT.P/CASCO PELTOR X4P3E",
       "clasificacion": "Mediana Rotación",
-      "stock": 36,
+      "stock": 0,
       "rop": 0,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 722.1818181818181
+      "riesgo": "ROJO",
+      "coberturaDias": 0
     },
     {
       "material": "32022260",
       "descripcion": "GUANTE NITRI. 19 T/L (09)",
       "clasificacion": "Baja Rotación",
-      "stock": 59,
+      "stock": 0,
       "rop": 3,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 1775.3636363636363
+      "riesgo": "ROJO",
+      "coberturaDias": 0
     },
     {
       "material": "32022269",
       "descripcion": "GUANTE QUIRURGICO NITRI.4MM T/M",
       "clasificacion": "Baja Rotación",
-      "stock": 2050,
+      "stock": 0,
       "rop": 142,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 1357.1
+      "riesgo": "ROJO",
+      "coberturaDias": 0
     },
     {
       "material": "32022278",
@@ -627,10 +735,10 @@
       "material": "32024575",
       "descripcion": "CARTUCHO MULTIGAS VAP.6006 3M",
       "clasificacion": "Baja Rotación",
-      "stock": 14,
+      "stock": 0,
       "rop": 1,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 3089.333333333333
+      "riesgo": "ROJO",
+      "coberturaDias": 0
     },
     {
       "material": "31013875",
@@ -645,10 +753,10 @@
       "material": "32004469",
       "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
       "clasificacion": "Alta Rotación",
-      "stock": 889,
+      "stock": 883,
       "rop": 169,
       "riesgo": "AMARILLO",
-      "coberturaDias": 304.6159420289855
+      "coberturaDias": 302.5600414078675
     },
     {
       "material": "32004575",
@@ -663,10 +771,19 @@
       "material": "32005491",
       "descripcion": "BOLSA P/BASURA NEGRO 140L PQTE.100UN",
       "clasificacion": "Mediana Rotación",
-      "stock": 5,
+      "stock": 3,
       "rop": 6,
       "riesgo": "ROJO",
-      "coberturaDias": 52.53968253968254
+      "coberturaDias": 31.523809523809526
+    },
+    {
+      "material": "32005361",
+      "descripcion": "TRAPEADOR MOPA ALGO.C/MANGO",
+      "clasificacion": "Mediana Rotación",
+      "stock": 4,
+      "rop": 4,
+      "riesgo": "ROJO",
+      "coberturaDias": 71.56756756756756
     },
     {
       "material": "33034469",
@@ -987,10 +1104,10 @@
       "material": "32003569",
       "descripcion": "BLOCK FORMATO PTS BLOCK 100HJ",
       "clasificacion": "Mediana Rotación",
-      "stock": 3,
+      "stock": 2,
       "rop": 4,
       "riesgo": "ROJO",
-      "coberturaDias": 48.4390243902439
+      "coberturaDias": 32.29268292682927
     },
     {
       "material": "32003602",
@@ -2181,6 +2298,15 @@
       "coberturaDias": 0
     },
     {
+      "material": "32004945",
+      "descripcion": "POLO ALGO.M/LARG.CUELLO ALTO AZUL T/XL",
+      "clasificacion": "Mediana Rotación",
+      "stock": 0,
+      "rop": 0,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
       "material": "33042326",
       "descripcion": "TUBO CONDU. FLEX.PVC C/FO.3/4\"",
       "clasificacion": "Baja Rotación",
@@ -2211,37 +2337,37 @@
       "material": "32021935",
       "descripcion": "BOTA NEGRO/VERDE BEKINA STEPLITE S5 T/43",
       "clasificacion": "Baja Rotación",
-      "stock": 24,
+      "stock": 0,
       "rop": 0,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 1765.3333333333335
+      "riesgo": "ROJO",
+      "coberturaDias": 0
     },
     {
       "material": "32021934",
       "descripcion": "BOTA NEGRO/VERDE BEKINA STEPLITE S5 T/42",
       "clasificacion": "Baja Rotación",
-      "stock": 23,
+      "stock": 0,
       "rop": 0,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 725.047619047619
+      "riesgo": "ROJO",
+      "coberturaDias": 0
     },
     {
       "material": "32021933",
       "descripcion": "BOTA NEGRO/VERDE BEKINA STEPLITE S5 T/41",
       "clasificacion": "Baja Rotación",
-      "stock": 28,
+      "stock": 0,
       "rop": 0,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 6178.666666666666
+      "riesgo": "ROJO",
+      "coberturaDias": 0
     },
     {
       "material": "32021937",
       "descripcion": "BOTA NEGRO/VERDE BEKINA STEPLITE S5 T/45",
       "clasificacion": "Baja Rotación",
-      "stock": 6,
+      "stock": 0,
       "rop": 0,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 1986
+      "riesgo": "ROJO",
+      "coberturaDias": 0
     }
   ],
   "stockAceitePescado": [
@@ -2268,19 +2394,24 @@
       "stock": 159.2
     },
     {
-      "material": "50003969",
-      "descripcion": "HARINA B PRIME",
-      "stock": 57.85
-    },
-    {
-      "material": "50003907",
-      "descripcion": "HARINA NC. CONTAMINACION FISICA",
-      "stock": 19.8
+      "material": "50003916",
+      "descripcion": "HARINA NC. FFA",
+      "stock": 50
     },
     {
       "material": "50003967",
       "descripcion": "HARINA A SUPER PRIME",
       "stock": 16.45
+    },
+    {
+      "material": "50003907",
+      "descripcion": "HARINA NC. CONTAMINACION FISICA",
+      "stock": 14
+    },
+    {
+      "material": "50003969",
+      "descripcion": "HARINA B PRIME",
+      "stock": 7.85
     },
     {
       "material": "50003935",
@@ -2314,8 +2445,8 @@
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1091766,
-    "ppttUSD": 423889,
+    "almacenUSD": 1091426,
+    "ppttUSD": 403917,
     "pctVencido": 0.71
   }
 }
