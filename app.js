@@ -2124,6 +2124,50 @@ function bindBotonReporte(botonId, estadoId, generador) {
   });
 }
 
+// ---------------- TOMA DE INVENTARIO POR CATEGORÍA (Combustibles / Gases / IQBF) ----------------
+const RUTA_TOMAS_ESPECIALES = 'conteo/especiales';
+
+async function enviarATomaInventario(tipo) {
+  const estado = document.getElementById(`estado-toma-${tipo}`);
+  const boton = document.querySelector(`.btn-toma[data-toma="${tipo}"]`);
+  if (!state.archivos.MB52) {
+    estado.textContent = 'Primero carga tu archivo MB52 (pantalla de carga inicial).';
+    estado.className = 'reporte-card-estado reporte-estado-error';
+    return;
+  }
+  boton.disabled = true;
+  estado.className = 'reporte-card-estado';
+  estado.textContent = 'Enviando…';
+  try {
+    const def = ReportesInventario.TOMAS_ESPECIALES[tipo];
+    const items = ReportesInventario.construirFilasToma(tipo, state.archivos.MB52.filas);
+    if (items.length === 0) {
+      estado.textContent = 'No encontré filas de esta categoría en el MB52.';
+      estado.className = 'reporte-card-estado reporte-estado-alerta';
+      return;
+    }
+    await GitHubSync.escribirJSON(
+      `${RUTA_TOMAS_ESPECIALES}/${tipo}.json`,
+      { tipo, titulo: def.titulo, generadoEn: new Date().toISOString(), items },
+      `Toma de inventario — ${def.titulo}`
+    );
+    estado.textContent = `✓ ${items.length} filas enviadas — ya aparecen en Contar Inventario.`;
+    estado.className = 'reporte-card-estado reporte-estado-ok';
+  } catch (err) {
+    console.error(err);
+    estado.textContent = 'Error: ' + err.message;
+    estado.className = 'reporte-card-estado reporte-estado-error';
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+function bindTomasEspeciales() {
+  document.querySelectorAll('.btn-toma').forEach((btn) => {
+    btn.addEventListener('click', () => enviarATomaInventario(btn.dataset.toma));
+  });
+}
+
 // ---------------- INVENTARIO CÍCLICO POR ZONAS ----------------
 const RUTA_ZONAS_CICLICO = 'conteo/zonas.json';
 let zonasCiclico = []; // [{ zona, ubicaciones: [...] }]
@@ -2221,7 +2265,9 @@ function generarProgramaCiclico() {
   const cicloSemanas = Math.max(1, Number(document.getElementById('input-ciclo-semanas').value) || 4);
   const fechaInicio = document.getElementById('input-fecha-inicio-ciclico').value || hoyISO();
 
-  const zonasConMateriales = SupplyEngine.construirZonasManual(state.archivos.MB52.filas, 'L001', zonasValidas);
+  const especiales = new Set(ReportesInventario.MATERIALES_ESPECIALES);
+  const filasSinEspeciales = state.archivos.MB52.filas.filter((r) => !especiales.has(String(r['Material'] || '').trim()));
+  const zonasConMateriales = SupplyEngine.construirZonasManual(filasSinEspeciales, 'L001', zonasValidas);
   const sinMateriales = zonasConMateriales.filter((z) => z.materiales.length === 0).map((z) => z.zona);
   const conSemana = SupplyEngine.asignarSemanasCiclo(zonasConMateriales.filter((z) => z.materiales.length > 0), cicloSemanas);
 
@@ -2267,6 +2313,7 @@ async function publicarProgramaCiclico() {
 }
 
 function bindInventarioCiclico() {
+  bindTomasEspeciales();
   document.getElementById('input-fecha-inicio-ciclico').value = hoyISO();
   document.getElementById('btn-agregar-zona').addEventListener('click', () => {
     zonasCiclico.push(nuevaFilaZonaVacia());
