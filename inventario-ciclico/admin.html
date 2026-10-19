@@ -53,12 +53,13 @@
     <div class="panel">
       <div class="panel-header">
         <h2>Inventarios enviados al operario</h2>
-        <p class="panel-sub">Estado de cada toma por categoría. Cuando el operario termina y guarda, deja de aparecerle en su celular.</p>
+        <p class="panel-sub">Estado de cada toma por categoría. Cuando el operario termina y guarda, deja de aparecerle en su celular. El ícono de enlace aparece en las tomas pendientes: ábrelo o cópialo para enviarlo.</p>
       </div>
+      <div style="padding: 0 20px 12px;"><button type="button" id="btn-actualizar-estado" class="btn-secundario">Actualizar estado</button></div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Categoría</th><th class="num">Filas</th><th>Enviado</th><th>Estado</th><th>Terminado</th><th>Contado por</th></tr></thead>
-          <tbody id="tabla-estado-envios-body"><tr><td colspan="6" class="muted centrado">Cargando…</td></tr></tbody>
+          <thead><tr><th>Categoría</th><th class="num">Filas</th><th>Enviado</th><th>Estado</th><th>Terminado</th><th>Contado por</th><th class="num">Enlace</th></tr></thead>
+          <tbody id="tabla-estado-envios-body"><tr><td colspan="7" class="muted centrado">Cargando…</td></tr></tbody>
         </table>
       </div>
     </div>

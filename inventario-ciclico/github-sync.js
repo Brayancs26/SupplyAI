@@ -57,6 +57,24 @@ async function leerJSONPublico(ruta) {
 }
 
 /**
+ * Lectura "fresca": pasa por la API de GitHub (se actualiza casi al instante),
+ * a diferencia de raw.githubusercontent que puede tardar unos minutos en
+ * reflejar un cambio recién guardado. Si falla, cae a la lectura normal.
+ * Úsala con moderación (la API sin token permite ~60 lecturas por hora).
+ */
+async function leerJSONFresco(ruta) {
+  const cfg = configEfectiva();
+  if (!cfg.owner || !cfg.repo) throw new Error('No se detectó el repositorio (usuario/repo).');
+  try {
+    const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${ruta}?ref=${cfg.branch}&_=${Date.now()}`;
+    const res = await fetch(url, { headers: { Accept: 'application/vnd.github.raw+json' }, cache: 'no-store' });
+    if (res.status === 404) return null;
+    if (res.ok) return await res.json();
+  } catch (e) { /* cae a raw */ }
+  return leerJSONPublico(ruta);
+}
+
+/**
  * URL del Worker de Cloudflare que guarda de forma segura — reemplázala por
  * la tuya después de desplegarlo (ver instrucciones). Mientras esté vacía,
  * la app avisa que falta configurar el Worker en vez de fallar en silencio.
@@ -126,6 +144,7 @@ window.GitHubSync = {
   detectarRepoDesdeURL,
   configEfectiva,
   leerJSONPublico,
+  leerJSONFresco,
   escribirJSON,
   listarCarpeta,
   leerVariosJSON,

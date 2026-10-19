@@ -276,3 +276,9 @@ footer { text-align: center; color: var(--text-muted); font-size: 11.5px; paddin
 .input-error { border-color: var(--red) !important; box-shadow: 0 0 0 2px var(--red-soft); }
 .texto-error { color: var(--red) !important; }
 #input-nombre-contador { width: 100%; font-size: 16px; padding: 12px; }
+
+.icono-enlace { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin-left: 6px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--cyan); cursor: pointer; text-decoration: none; transition: background .15s var(--ease), transform .1s var(--ease); }
+.icono-enlace:hover { background: var(--cyan-soft); transform: translateY(-2px); }
+.icono-enlace:active { transform: scale(.96); }
+.icono-enlace.copiado { color: var(--green); border-color: var(--green); }
+.btn-secundario { background: transparent; border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 9px 14px; font-family: var(--font-ui); font-size: 13px; font-weight: 600; cursor: pointer; }

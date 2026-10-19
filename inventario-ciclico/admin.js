@@ -30,22 +30,33 @@ const TIPOS_ENVIO = [
 ];
 const fmtFechaHora = (iso) => (iso ? new Date(iso).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : '—');
 
+function urlConteo(tipo) {
+  return new URL(`index.html?tipo=${tipo}`, window.location.href).href;
+}
+function iconosEnlace(tipo) {
+  const url = urlConteo(tipo);
+  return `<a class="icono-enlace" href="${url}" target="_blank" rel="noopener" title="Abrir el enlace de conteo de esta toma" aria-label="Abrir enlace de conteo">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg></a>
+    <button type="button" class="icono-enlace btn-copiar-enlace" data-url="${url}" title="Copiar el enlace para enviarlo" aria-label="Copiar enlace">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>`;
+}
+
 async function cargarEstadoEnvios() {
   const tbody = document.getElementById('tabla-estado-envios-body');
   const filas = await Promise.all(
     TIPOS_ENVIO.map(async (t) => {
       try {
         const [datos, estado] = await Promise.all([
-          GitHubSync.leerJSONPublico(`conteo/especiales/${t.tipo}.json`),
-          GitHubSync.leerJSONPublico(`conteo/especiales/${t.tipo}_estado.json`).catch(() => null),
+          GitHubSync.leerJSONFresco(`conteo/especiales/${t.tipo}.json`),
+          GitHubSync.leerJSONFresco(`conteo/especiales/${t.tipo}_estado.json`).catch(() => null),
         ]);
         return { ...t, datos, estado };
       } catch (e) { return { ...t, datos: null, estado: null }; }
     })
   );
   tbody.innerHTML = filas
-    .map(({ titulo, datos, estado }) => {
-      if (!datos) return `<tr><td>${titulo}</td><td class="num">—</td><td>—</td><td><span class="chip-estado chip-gris">Sin enviar</span></td><td>—</td><td>—</td></tr>`;
+    .map(({ tipo, titulo, datos, estado }) => {
+      if (!datos) return `<tr><td>${titulo}</td><td class="num">—</td><td>—</td><td><span class="chip-estado chip-gris">Sin enviar</span></td><td>—</td><td>—</td><td></td></tr>`;
       const hecho = estado && estado.generadoEn === datos.generadoEn ? estado : datos.completadoEn ? datos : null;
       const terminado = !!hecho;
       return `<tr>
@@ -55,9 +66,16 @@ async function cargarEstadoEnvios() {
         <td><span class="chip-estado ${terminado ? 'chip-verde' : 'chip-amarillo'}">${terminado ? 'Terminado' : 'Pendiente de contar'}</span></td>
         <td>${terminado ? fmtFechaHora(hecho.completadoEn) : '—'}</td>
         <td>${terminado ? hecho.completadoPor || '—' : '—'}</td>
+        <td class="num">${terminado ? '' : iconosEnlace(tipo)}</td>
       </tr>`;
     })
     .join('');
+  tbody.querySelectorAll('.btn-copiar-enlace').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(btn.dataset.url); btn.classList.add('copiado'); setTimeout(() => btn.classList.remove('copiado'), 1500); }
+      catch (e) { window.prompt('Copia el enlace:', btn.dataset.url); }
+    });
+  });
 }
 
 // ---------------- RESULTADOS ----------------
@@ -161,5 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
   bindTabs();
   bindConfig();
   cargarEstadoEnvios();
+  document.getElementById('btn-actualizar-estado').addEventListener('click', cargarEstadoEnvios);
   document.getElementById('btn-cargar-resultados').addEventListener('click', cargarResultados);
 });
