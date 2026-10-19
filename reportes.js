@@ -40,6 +40,63 @@ const CONFIG_IQBF = {
   filaFin: 39,
 };
 
+const CONFIG_COMBUSTIBLES = {
+  materiales: FUENTES_COMBUSTIBLE.map((f) => f.material),
+  almacenes: ['L001'],
+  ubicacionExacta: null,
+  incluirStockCero: true, // los tanques se listan siempre, aunque estén en cero
+};
+
+/** Materiales que se cuentan por separado (no entran a las zonas del inventario cíclico). */
+const MATERIALES_ESPECIALES = [
+  ...CONFIG_COMBUSTIBLES.materiales,
+  ...CONFIG_GASES.materiales,
+  ...CONFIG_IQBF.materiales,
+];
+
+const TOMAS_ESPECIALES = {
+  combustibles: { titulo: 'Combustible', config: CONFIG_COMBUSTIBLES },
+  gases: { titulo: 'Balones de Gases', config: CONFIG_GASES },
+  iqbf: { titulo: 'IQBF (Insumos Químicos)', config: CONFIG_IQBF },
+};
+
+/**
+ * Arma las filas de la toma de inventario de una categoría especial
+ * (una fila por material + almacén + ubicación + lote) a partir del MB52.
+ */
+function construirFilasToma(tipo, mb52Rows) {
+  const def = TOMAS_ESPECIALES[tipo];
+  if (!def) throw new Error('Categoría de inventario desconocida: ' + tipo);
+  const cfg = def.config;
+  const filas = new Map();
+  mb52Rows.forEach((row) => {
+    const material = String(row['Material'] || '').trim();
+    const almacen = String(row['Almacén'] || '').trim();
+    const ubicacion = String(row['Ubicación'] || '').trim();
+    if (!cfg.materiales.includes(material)) return;
+    if (!cfg.almacenes.includes(almacen)) return;
+    if (cfg.ubicacionExacta && ubicacion !== cfg.ubicacionExacta) return;
+    const stock = Number(row['Libre utilización']) || 0;
+    if (!cfg.incluirStockCero && stock <= 0) return;
+    const lote = String(row['Lote'] || '').trim();
+    const id = [material, almacen, ubicacion, lote].join('|');
+    if (!filas.has(id)) {
+      filas.set(id, {
+        id,
+        material,
+        descripcion: row['Texto breve de material'] || '',
+        almacen,
+        lote,
+        ubicacion,
+        um: row['Unidad medida base'] || '',
+        cantidadSistema: 0,
+      });
+    }
+    filas.get(id).cantidadSistema += stock;
+  });
+  return [...filas.values()].sort((a, b) => a.material.localeCompare(b.material) || a.lote.localeCompare(b.lote));
+}
+
 function actualizarCelda(ws, direccion, nuevaCelda) {
   const existente = ws[direccion] || {};
   ws[direccion] = { ...existente, ...nuevaCelda };
@@ -154,6 +211,9 @@ async function generarReporteIQBF(mb52Rows) {
 
 window.ReportesInventario = {
   FUENTES_COMBUSTIBLE,
+  MATERIALES_ESPECIALES,
+  TOMAS_ESPECIALES,
+  construirFilasToma,
   CONFIG_GASES,
   CONFIG_IQBF,
   generarReporteCombustibles,
