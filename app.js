@@ -2153,6 +2153,7 @@ async function enviarATomaInventario(tipo) {
     );
     estado.textContent = `✓ ${items.length} filas enviadas — ya aparecen en Contar Inventario.`;
     estado.className = 'reporte-card-estado reporte-estado-ok';
+    mostrarLinkDeConteo(tipo, def.titulo);
   } catch (err) {
     console.error(err);
     estado.textContent = 'Error: ' + err.message;
@@ -2160,6 +2161,34 @@ async function enviarATomaInventario(tipo) {
   } finally {
     boton.disabled = false;
   }
+}
+
+function urlPaginaContar() {
+  return new URL('inventario-ciclico/index.html', window.location.href).href;
+}
+
+function mostrarLinkDeConteo(tipo, titulo) {
+  const cont = document.getElementById(`link-toma-${tipo}`);
+  if (!cont) return;
+  const url = urlPaginaContar();
+  cont.style.display = 'block';
+  cont.innerHTML = `<span class="link-toma-label">Link para el operario</span>
+    <input type="text" readonly class="link-toma-input" value="${url}" />
+    <div class="link-toma-acciones">
+      <button type="button" class="btn-secundario btn-copiar-link">Copiar link</button>
+      <a class="btn-secundario btn-wsp-link" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(`Toma de inventario ${titulo}: ${url}`)}">Enviar por WhatsApp</a>
+    </div>`;
+  cont.querySelector('.link-toma-input').addEventListener('focus', (e) => e.target.select());
+  cont.querySelector('.btn-copiar-link').addEventListener('click', async (e) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      e.target.textContent = 'Copiado ✓';
+    } catch (err) {
+      cont.querySelector('.link-toma-input').select();
+      e.target.textContent = 'Selecciona y copia (Ctrl+C)';
+    }
+    setTimeout(() => (e.target.textContent = 'Copiar link'), 2000);
+  });
 }
 
 function bindTomasEspeciales() {

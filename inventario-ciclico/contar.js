@@ -213,6 +213,7 @@ function abrirEspecial(tipo) {
     filas = borrador.filas;
   }
   espState.filas = filas;
+  espState.abiertos = new Set();
   document.getElementById('especial-titulo').textContent = datos.titulo;
   document.getElementById('especial-subtitulo').textContent = 'Anota la cantidad real. Lote y ubicación vienen del sistema — cámbialos solo si son distintos.';
   renderEspecial();
@@ -221,33 +222,80 @@ function abrirEspecial(tipo) {
   document.getElementById('especial-formulario').scrollIntoView({ behavior: 'smooth' });
 }
 
+const sumaNum = (arr) => arr.reduce((s, v) => s + (Number(v) || 0), 0);
+
+function resumenGrupoHTML(filas) {
+  const totalSistema = sumaNum(filas.map((f) => f.cantidadSistema));
+  const contadas = filas.filter((f) => f.cantidadFisica !== '' && f.cantidadFisica !== null);
+  const um = esc(filas[0].um);
+  if (contadas.length === 0) {
+    return `<span class="grupo-real grupo-real-vacio">Real: —</span><span class="grupo-sistema">Sistema: ${fmtNum(totalSistema, 2)} ${um}</span>`;
+  }
+  const totalReal = sumaNum(contadas.map((f) => f.cantidadFisica));
+  const dif = totalReal - totalSistema;
+  const claseDif = Math.abs(dif) < 1e-9 ? 'dif-ok' : 'dif-mal';
+  return `<span class="grupo-real">Real: ${fmtNum(totalReal, 2)} ${um}</span><span class="grupo-sistema">Sistema: ${fmtNum(totalSistema, 2)} · <span class="${claseDif}">Dif: ${dif > 0 ? '+' : ''}${fmtNum(dif, 2)}</span></span>`;
+}
+
+function filaLoteHTML(f, i) {
+  return `<div class="lote-fila${f.agregada ? ' lote-fila-nueva' : ''}">
+    <div class="lote-fila-cab">
+      <span class="lote-fila-sistema">Lote <strong>${esc(f.loteSistema) || 'nuevo'}</strong> · Stock: <strong>${fmtNum(f.cantidadSistema, 2)} ${esc(f.um)}</strong> · Ubic.: <strong>${esc(f.ubicacionSistema) || '—'}</strong></span>
+      ${f.agregada ? `<button type="button" class="btn-quitar-fila" data-i="${i}">Quitar</button>` : ''}
+    </div>
+    <div class="fila-especial-campos">
+      <label>Cantidad real<input type="number" inputmode="decimal" step="0.01" data-i="${i}" data-campo="cantidadFisica" value="${esc(f.cantidadFisica)}" placeholder="0" /></label>
+      <label>Lote<input type="text" data-i="${i}" data-campo="loteFisico" value="${esc(f.loteFisico)}" placeholder="—" /></label>
+      <label>Ubicación<input type="text" data-i="${i}" data-campo="ubicacionFisica" value="${esc(f.ubicacionFisica)}" placeholder="—" /></label>
+    </div>
+  </div>`;
+}
+
 function renderEspecial() {
   const lista = document.getElementById('lista-especial');
-  lista.innerHTML = espState.filas
-    .map(
-      (f, i) => `<div class="fila-especial${f.agregada ? ' fila-especial-nueva' : ''}">
-      <div class="fila-especial-cab">
-        <span class="fila-conteo-material">${esc(f.material)}</span>
-        ${f.agregada ? `<button type="button" class="btn-quitar-fila" data-i="${i}">Quitar</button>` : ''}
-      </div>
-      <div class="fila-especial-desc">${esc(f.descripcion)}</div>
-      <div class="fila-especial-sistema">
-        Sistema: <strong>${fmtNum(f.cantidadSistema, 2)} ${esc(f.um)}</strong>
-        · Lote: <strong>${esc(f.loteSistema) || '—'}</strong>
-        · Ubic.: <strong>${esc(f.ubicacionSistema) || '—'}</strong>
-      </div>
-      <div class="fila-especial-campos">
-        <label>Cantidad real<input type="number" inputmode="decimal" step="0.01" data-i="${i}" data-campo="cantidadFisica" value="${esc(f.cantidadFisica)}" placeholder="0" /></label>
-        <label>Lote<input type="text" data-i="${i}" data-campo="loteFisico" value="${esc(f.loteFisico)}" placeholder="—" /></label>
-        <label>Ubicación<input type="text" data-i="${i}" data-campo="ubicacionFisica" value="${esc(f.ubicacionFisica)}" placeholder="—" /></label>
-      </div>
-    </div>`
-    )
+  if (!espState.abiertos) espState.abiertos = new Set();
+  // agrupar por material conservando el índice real de cada fila
+  const grupos = new Map();
+  espState.filas.forEach((f, i) => {
+    if (!grupos.has(f.material)) grupos.set(f.material, []);
+    grupos.get(f.material).push(i);
+  });
+  lista.innerHTML = [...grupos.entries()]
+    .map(([material, indices]) => {
+      const filas = indices.map((i) => espState.filas[i]);
+      const abierto = espState.abiertos.has(material);
+      return `<div class="grupo-material${abierto ? ' abierto' : ''}" data-material="${esc(material)}">
+        <button type="button" class="grupo-cab" data-material="${esc(material)}">
+          <span class="chevron">▸</span>
+          <span class="grupo-info"><span class="fila-conteo-material">${esc(material)}</span><span class="grupo-desc">${esc(filas[0].descripcion)}</span></span>
+          <span class="grupo-totales">${resumenGrupoHTML(filas)}</span>
+        </button>
+        <div class="grupo-cuerpo">
+          ${indices.map((i) => filaLoteHTML(espState.filas[i], i)).join('')}
+          <button type="button" class="btn-secundario btn-agregar-lote" data-material="${esc(material)}">+ Agregar lote</button>
+        </div>
+      </div>`;
+    })
     .join('');
+
+  lista.querySelectorAll('.grupo-cab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const m = btn.dataset.material;
+      const cont = btn.closest('.grupo-material');
+      if (espState.abiertos.has(m)) espState.abiertos.delete(m); else espState.abiertos.add(m);
+      cont.classList.toggle('abierto', espState.abiertos.has(m));
+    });
+  });
   lista.querySelectorAll('input[data-campo]').forEach((inp) => {
     inp.addEventListener('input', () => {
-      espState.filas[Number(inp.dataset.i)][inp.dataset.campo] = inp.value;
+      const f = espState.filas[Number(inp.dataset.i)];
+      f[inp.dataset.campo] = inp.value;
       guardarBorrador(espState.tipo, espState.filas);
+      if (inp.dataset.campo === 'cantidadFisica') {
+        const grupo = inp.closest('.grupo-material');
+        const filasGrupo = espState.filas.filter((x) => x.material === f.material);
+        grupo.querySelector('.grupo-totales').innerHTML = resumenGrupoHTML(filasGrupo);
+      }
     });
   });
   lista.querySelectorAll('.btn-quitar-fila').forEach((btn) => {
@@ -257,28 +305,20 @@ function renderEspecial() {
       renderEspecial();
     });
   });
+  lista.querySelectorAll('.btn-agregar-lote').forEach((btn) => {
+    btn.addEventListener('click', () => agregarLoteAMaterial(btn.dataset.material));
+  });
 }
 
-function agregarFilaEspecial() {
-  const datos = espState.datos[espState.tipo];
-  if (!datos) return;
-  // materiales distintos de esta categoría
-  const materiales = [];
-  const vistos = new Set();
-  datos.items.forEach((it) => { if (!vistos.has(it.material)) { vistos.add(it.material); materiales.push(it); } });
-  let elegido = materiales[0];
-  if (materiales.length > 1) {
-    const opciones = materiales.map((m, i) => `${i + 1}) ${m.material} — ${m.descripcion}`).join('\n');
-    const resp = prompt(`¿Para qué material es la fila nueva? Escribe el número:\n${opciones}`);
-    const idx = Number(resp) - 1;
-    if (!(idx >= 0 && idx < materiales.length)) return;
-    elegido = materiales[idx];
-  }
+function agregarLoteAMaterial(material) {
+  const base = espState.filas.find((f) => f.material === material);
+  if (!base) return;
   espState.filas.push({
-    id: `nueva|${Date.now()}`, material: elegido.material, descripcion: elegido.descripcion, um: elegido.um || '',
-    almacen: elegido.almacen || '', loteSistema: '', ubicacionSistema: '', cantidadSistema: 0,
-    cantidadFisica: '', loteFisico: '', ubicacionFisica: elegido.ubicacion || '', agregada: true,
+    id: `nueva|${Date.now()}`, material, descripcion: base.descripcion, um: base.um,
+    almacen: base.almacen, loteSistema: '', ubicacionSistema: '', cantidadSistema: 0,
+    cantidadFisica: '', loteFisico: '', ubicacionFisica: base.ubicacionSistema || '', agregada: true,
   });
+  espState.abiertos.add(material);
   guardarBorrador(espState.tipo, espState.filas);
   renderEspecial();
 }
@@ -330,8 +370,10 @@ async function guardarEspecial() {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-guardar-conteo').addEventListener('click', guardarConteo);
-  document.getElementById('btn-especial-agregar').addEventListener('click', agregarFilaEspecial);
   document.getElementById('btn-especial-guardar').addEventListener('click', guardarEspecial);
-  cargarEspeciales();
+  cargarEspeciales().then(() => {
+    const t = new URLSearchParams(location.search).get('tipo');
+    if (t && espState.datos[t]) abrirEspecial(t);
+  });
   cargarProgramaParaContar();
 });
