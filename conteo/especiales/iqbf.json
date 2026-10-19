@@ -1,7 +1,7 @@
 {
   "tipo": "iqbf",
   "titulo": "IQBF (Insumos Químicos)",
-  "generadoEn": "2026-10-19T21:22:36.394Z",
+  "generadoEn": "2026-10-19T20:24:52.451Z",
   "items": [
     {
       "id": "10200045|L001|I.Q.B.F.|1-2545",
@@ -63,5 +63,7 @@
       "um": "L",
       "cantidadSistema": 7
     }
-  ]
+  ],
+  "completadoEn": "2026-10-19T21:23:40.006Z",
+  "completadoPor": "Luis Rafael"
 }
