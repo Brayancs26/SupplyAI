@@ -960,23 +960,35 @@
             iguales a la plantilla original.
           </p>
         </div>
+        <p class="panel-sub" style="padding: 0 20px;">
+          <strong>Enviar a toma de inventario</strong> publica las filas de esa categoría (código, descripción, lote, cantidad y ubicación del MB52)
+          para que el personal las cuente desde el celular en
+          <a href="inventario-ciclico/index.html" target="_blank" style="color:var(--cyan)">Contar Inventario</a>, anotando la cantidad, el lote y la ubicación reales.
+          Estas categorías se cuentan por separado y no entran en las zonas.
+        </p>
         <div class="reportes-grid">
           <div class="reporte-card">
             <h3>Combustibles</h3>
             <p class="reporte-card-desc">Petróleo Industrial R500 y Diesel — hojas R500 y DIESEL de la plantilla.</p>
             <button type="button" id="btn-reporte-combustibles" class="btn-continuar">Descargar Reporte de Combustibles</button>
+            <button type="button" class="btn-secundario btn-toma" data-toma="combustibles" style="margin-top:8px; width:100%;">Enviar a toma de inventario</button>
+            <p class="reporte-card-estado" id="estado-toma-combustibles"></p>
             <p class="reporte-card-estado" id="estado-reporte-combustibles"></p>
           </div>
           <div class="reporte-card">
             <h3>Balones de Gases</h3>
             <p class="reporte-card-desc">Propano 45kg, Propano 10kg, GLP 15kg y Oxígeno 10m³ — una fila por lote, igual que tu plantilla.</p>
             <button type="button" id="btn-reporte-gases" class="btn-continuar">Descargar Reporte de Gases</button>
+            <button type="button" class="btn-secundario btn-toma" data-toma="gases" style="margin-top:8px; width:100%;">Enviar a toma de inventario</button>
+            <p class="reporte-card-estado" id="estado-toma-gases"></p>
             <p class="reporte-card-estado" id="estado-reporte-gases"></p>
           </div>
           <div class="reporte-card">
             <h3>IQBF (Insumos Químicos)</h3>
             <p class="reporte-card-desc">Hidróxido de Sodio, Ácido Sulfúrico, Hexano y MEK Aditivo — una fila por lote, en L001 / I.Q.B.F.</p>
             <button type="button" id="btn-reporte-iqbf" class="btn-continuar">Descargar Reporte IQBF</button>
+            <button type="button" class="btn-secundario btn-toma" data-toma="iqbf" style="margin-top:8px; width:100%;">Enviar a toma de inventario</button>
+            <p class="reporte-card-estado" id="estado-toma-iqbf"></p>
             <p class="reporte-card-estado" id="estado-reporte-iqbf"></p>
           </div>
         </div>
