@@ -1,0 +1,27 @@
+{
+  "tipo": "combustibles",
+  "titulo": "Combustible",
+  "generadoEn": "2026-10-19T22:57:53.541Z",
+  "items": [
+    {
+      "id": "30000527|L001|TKMOLLENDO|",
+      "material": "30000527",
+      "descripcion": "PETROLEO DIESEL B5 S50 PD TASA",
+      "almacen": "L001",
+      "lote": "",
+      "ubicacion": "TKMOLLENDO",
+      "um": "GLN",
+      "cantidadSistema": 53305.94
+    },
+    {
+      "id": "30000528|L001|PLANTA|",
+      "material": "30000528",
+      "descripcion": "PETROLEO INDUSTRIAL NRO.500",
+      "almacen": "L001",
+      "lote": "",
+      "ubicacion": "PLANTA",
+      "um": "GLN",
+      "cantidadSistema": 110575.46
+    }
+  ]
+}
