@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-10-15T15:55:53.358Z",
+  "publicadoEn": "2026-10-19T16:18:53.992Z",
   "totalMaterialesParaReordenar": 263,
   "materialesParaReordenar": [
     {
@@ -133,9 +133,9 @@
       "descripcion": "ROPA AGUA CASAC.JEBE DOBLE FAZ T/M",
       "clasificacion": "Baja Rotación",
       "stock": 9,
-      "rop": 2,
+      "rop": 3,
       "riesgo": "AMARILLO",
-      "coberturaDias": 992.9999999999999
+      "coberturaDias": 390.59999999999997
     },
     {
       "material": "32005052",
@@ -1146,15 +1146,6 @@
       "coberturaDias": 0
     },
     {
-      "material": "32004942",
-      "descripcion": "POLO ALGO.M/LARG.CUELLO ALTO AZUL T/L",
-      "clasificacion": "Mediana Rotación",
-      "stock": 5,
-      "rop": 8,
-      "riesgo": "ROJO",
-      "coberturaDias": 68.95833333333333
-    },
-    {
       "material": "32005163",
       "descripcion": "SOPORTE P/LAPTOP NEXSTAND",
       "clasificacion": "Baja Rotación",
@@ -1510,7 +1501,7 @@
       "descripcion": "ROPA AGUA CASAC.JEBE DOBLE FAZ T/L",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 5,
+      "rop": 3,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1519,7 +1510,7 @@
       "descripcion": "ROPA AGUA CASAC.JEBE DOBL FAZ A:32022265",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 13,
+      "rop": 6,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2116,6 +2107,15 @@
       "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
+    },
+    {
+      "material": "32004943",
+      "descripcion": "POLO ALGO.M/LARG.CUELLO ALTO AZUL T/M",
+      "clasificacion": "Mediana Rotación",
+      "stock": 19,
+      "rop": 3,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 824.6
     },
     {
       "material": "31009839",
