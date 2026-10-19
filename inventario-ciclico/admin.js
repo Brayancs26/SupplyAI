@@ -22,6 +22,38 @@ function bindTabs() {
   });
 }
 
+// ---------------- ESTADO DE INVENTARIOS ENVIADOS ----------------
+const TIPOS_ENVIO = [
+  { tipo: 'combustibles', titulo: 'Combustible' },
+  { tipo: 'gases', titulo: 'Balones de Gases' },
+  { tipo: 'iqbf', titulo: 'IQBF (Insumos Químicos)' },
+];
+const fmtFechaHora = (iso) => (iso ? new Date(iso).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : '—');
+
+async function cargarEstadoEnvios() {
+  const tbody = document.getElementById('tabla-estado-envios-body');
+  const filas = await Promise.all(
+    TIPOS_ENVIO.map(async (t) => {
+      try { return { ...t, datos: await GitHubSync.leerJSONPublico(`conteo/especiales/${t.tipo}.json`) }; }
+      catch (e) { return { ...t, datos: null }; }
+    })
+  );
+  tbody.innerHTML = filas
+    .map(({ titulo, datos }) => {
+      if (!datos) return `<tr><td>${titulo}</td><td class="num">—</td><td>—</td><td><span class="chip-estado chip-gris">Sin enviar</span></td><td>—</td><td>—</td></tr>`;
+      const terminado = !!datos.completadoEn;
+      return `<tr>
+        <td>${titulo}</td>
+        <td class="num">${(datos.items || []).length}</td>
+        <td>${fmtFechaHora(datos.generadoEn)}</td>
+        <td><span class="chip-estado ${terminado ? 'chip-verde' : 'chip-amarillo'}">${terminado ? 'Terminado' : 'Pendiente de contar'}</span></td>
+        <td>${terminado ? fmtFechaHora(datos.completadoEn) : '—'}</td>
+        <td>${terminado ? datos.completadoPor || '—' : '—'}</td>
+      </tr>`;
+    })
+    .join('');
+}
+
 // ---------------- RESULTADOS ----------------
 async function cargarResultados() {
   const estado = document.getElementById('estado-resultados');
@@ -33,6 +65,7 @@ async function cargarResultados() {
     const conteos = await GitHubSync.leerVariosJSON(archivos);
     state.resultados = conteos;
     renderResultados(conteos);
+    cargarEstadoEnvios();
     estado.className = 'estado-publicar ok';
     estado.textContent = `✓ ${conteos.length} conteo(s) encontrados.`;
   } catch (err) {
@@ -121,5 +154,6 @@ function bindConfig() {
 document.addEventListener('DOMContentLoaded', () => {
   bindTabs();
   bindConfig();
+  cargarEstadoEnvios();
   document.getElementById('btn-cargar-resultados').addEventListener('click', cargarResultados);
 });

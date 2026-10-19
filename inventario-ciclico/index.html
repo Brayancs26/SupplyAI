@@ -31,7 +31,7 @@
 
 <main class="main-angosto">
 
-  <div class="panel" id="panel-especiales">
+  <div class="panel" id="panel-especiales" style="display:none">
     <div class="panel-header">
       <h2>Toma por categoría</h2>
       <p class="panel-sub">Combustible, gases e insumos químicos se cuentan aparte. Elige una categoría, anota la cantidad real y corrige lote o ubicación si no coinciden.</p>
@@ -56,10 +56,17 @@
     </div>
   </div>
 
-  <div class="panel" id="panel-sin-programa">
+  <div class="panel" id="panel-sin-programa" style="display:none">
     <div class="panel-header">
       <h2>Cargando el programa de conteo…</h2>
       <p class="panel-sub" id="estado-programa">Un momento.</p>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-nada-pendiente" style="display:none">
+    <div class="panel-header">
+      <h2 id="nada-titulo">No tienes inventarios pendientes</h2>
+      <p class="panel-sub" id="nada-sub">Cuando se te envíe uno nuevo, aparecerá aquí.</p>
     </div>
   </div>
 
@@ -98,9 +105,7 @@
 
 </main>
 
-<footer class="footer-simple">
-  <a href="admin.html">Panel de administración</a>
-</footer>
+
 
 </body>
 </html>

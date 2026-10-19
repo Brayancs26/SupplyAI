@@ -28,17 +28,20 @@ async function cargarProgramaParaContar() {
   try {
     const programa = await GitHubSync.leerJSONPublico(GitHubSync.RUTA_PROGRAMA);
     if (!programa) {
-      estadoTexto.textContent = 'Todavía no hay un programa por zonas publicado — avísale al administrador. (La toma por categoría de arriba sí está disponible.)';
+      state.hayPrograma = false;
+      actualizarVistaVacia();
       return;
     }
+    state.hayPrograma = true;
     state.programa = programa;
-    document.getElementById('panel-sin-programa').style.display = 'none';
     document.getElementById('contar-contenido').style.display = 'block';
+    actualizarVistaVacia();
     mostrarSemanaActual();
     poblarSelectorZonas();
   } catch (err) {
     console.error(err);
-    estadoTexto.textContent = 'Error leyendo el programa: ' + err.message;
+    state.hayPrograma = false;
+    actualizarVistaVacia();
   }
 }
 
@@ -172,26 +175,35 @@ function borrarBorrador(tipo) {
 
 async function cargarEspeciales() {
   const cont = document.getElementById('especiales-botones');
-  cont.innerHTML = '<p class="muted">Buscando…</p>';
   const resultados = await Promise.all(
     TIPOS_ESPECIALES.map(async (t) => {
       try { return { ...t, datos: await GitHubSync.leerJSONPublico(`conteo/especiales/${t.tipo}.json`) }; }
       catch (e) { return { ...t, datos: null }; }
     })
   );
-  cont.innerHTML = resultados
+  // Solo se muestran las tomas enviadas que aún no se terminaron
+  const pendientes = resultados.filter((r) => r.datos && (r.datos.items || []).length > 0 && !r.datos.completadoEn);
+  espState.pendientes = pendientes.length;
+  pendientes.forEach((r) => (espState.datos[r.tipo] = r.datos));
+  cont.innerHTML = pendientes
     .map((r) => {
-      if (!r.datos || !(r.datos.items || []).length) {
-        return `<button type="button" class="btn-zona" disabled style="opacity:.5">${r.titulo}<span>Sin datos — el administrador debe enviarlos</span></button>`;
-      }
-      espState.datos[r.tipo] = r.datos;
       const cuando = r.datos.generadoEn ? new Date(r.datos.generadoEn).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : '';
-      return `<button type="button" class="btn-zona" data-tipo="${r.tipo}">${r.titulo}<span>${r.datos.items.length} filas · datos del ${cuando}</span></button>`;
+      return `<button type="button" class="btn-zona" data-tipo="${r.tipo}">${r.titulo}<span>${r.datos.items.length} filas · enviado ${cuando}</span></button>`;
     })
     .join('');
+  document.getElementById('panel-especiales').style.display = pendientes.length ? 'block' : 'none';
   cont.querySelectorAll('.btn-zona[data-tipo]').forEach((btn) => {
     btn.addEventListener('click', () => abrirEspecial(btn.dataset.tipo));
   });
+  actualizarVistaVacia();
+}
+
+// Muestra "nada pendiente" solo si no hay tomas por categoría ni programa por zonas
+function actualizarVistaVacia() {
+  if (state.hayPrograma === undefined || espState.pendientes === undefined) return;
+  const vacio = !state.hayPrograma && espState.pendientes === 0;
+  const panel = document.getElementById('panel-nada-pendiente');
+  if (panel && !panel.dataset.fijo) panel.style.display = vacio ? 'block' : 'none';
 }
 
 function filaEspecialDesdeItem(it) {
@@ -356,9 +368,23 @@ async function guardarEspecial() {
       { zona: titulo, categoria: tipo, fecha, contadoPor: contadoPor || null, items },
       `Toma de inventario ${titulo} — ${fecha}`
     );
+    // Marca la toma como terminada: deja de aparecer para el operario y el admin la ve "Terminado"
+    await GitHubSync.escribirJSON(
+      `conteo/especiales/${tipo}.json`,
+      { ...espState.datos[tipo], completadoEn: new Date().toISOString(), completadoPor: contadoPor || null },
+      `Toma terminada — ${titulo}`
+    );
     borrarBorrador(tipo);
-    estado.className = 'estado-publicar ok';
-    estado.textContent = '✓ Guardado — gracias.';
+    delete espState.datos[tipo];
+    espState.tipo = null;
+    document.getElementById('especial-formulario').style.display = 'none';
+    const panel = document.getElementById('panel-nada-pendiente');
+    document.getElementById('nada-titulo').textContent = `✓ ${titulo} guardado — gracias`;
+    document.getElementById('nada-sub').textContent = 'Tu conteo ya quedó registrado.';
+    panel.dataset.fijo = '1';
+    panel.style.display = 'block';
+    await cargarEspeciales();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (err) {
     console.error(err);
     estado.className = 'estado-publicar error';
