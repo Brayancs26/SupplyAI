@@ -97,13 +97,125 @@ function construirFilasToma(tipo, mb52Rows) {
   return [...filas.values()].sort((a, b) => a.material.localeCompare(b.material) || a.lote.localeCompare(b.lote));
 }
 
-function actualizarCelda(ws, direccion, nuevaCelda) {
-  const existente = ws[direccion] || {};
-  ws[direccion] = { ...existente, ...nuevaCelda };
-  delete ws[direccion].w; // texto formateado cacheado — que Excel lo recalcule al abrir
+// ============================================================
+// Escritura DIRECTA sobre el XML de la plantilla (JSZip): así se conservan
+// idénticos el formato, bordes, colores, anchos, fórmulas y firmas del
+// documento original. (SheetJS gratuito pierde los estilos al guardar.)
+// ============================================================
+const NS_XLSX = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+
+function indiceColumna(letras) {
+  let n = 0;
+  for (const ch of letras) n = n * 26 + (ch.charCodeAt(0) - 64);
+  return n;
+}
+function partirReferencia(ref) {
+  const m = /^([A-Z]+)(\d+)$/.exec(ref);
+  return { col: m[1], fila: Number(m[2]) };
+}
+function serialExcel(fecha) {
+  return Math.round((Date.UTC(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()) - Date.UTC(1899, 11, 30)) / 86400000);
 }
 
-// ---------------- COMBUSTIBLES ----------------
+async function abrirPlantillaZip(url) {
+  if (typeof JSZip === 'undefined') throw new Error('Falta la librería JSZip (vendor/jszip.min.js).');
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`No se pudo cargar la plantilla (${url}).`);
+  return JSZip.loadAsync(await resp.arrayBuffer());
+}
+
+async function rutaDeHoja(zip, nombreHoja) {
+  const wb = new DOMParser().parseFromString(await zip.file('xl/workbook.xml').async('string'), 'application/xml');
+  const hoja = [...wb.getElementsByTagName('sheet')].find((s) => s.getAttribute('name') === nombreHoja);
+  if (!hoja) throw new Error(`La plantilla no tiene una hoja llamada "${nombreHoja}".`);
+  const rid = hoja.getAttribute('r:id') || hoja.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id');
+  const rels = new DOMParser().parseFromString(await zip.file('xl/_rels/workbook.xml.rels').async('string'), 'application/xml');
+  const rel = [...rels.getElementsByTagName('Relationship')].find((x) => x.getAttribute('Id') === rid);
+  let destino = rel.getAttribute('Target');
+  destino = destino.startsWith('/') ? destino.slice(1) : 'xl/' + destino.replace(/^\.\//, '');
+  return destino;
+}
+
+/** Escribe un valor en una celda conservando su estilo (atributo s). tipo: 'n' | 's' | 'vacio' */
+function ponerCelda(doc, ref, tipo, valor) {
+  const { col, fila } = partirReferencia(ref);
+  const data = doc.getElementsByTagName('sheetData')[0];
+  let rowEl = [...data.getElementsByTagName('row')].find((r) => Number(r.getAttribute('r')) === fila);
+  if (!rowEl) {
+    rowEl = doc.createElementNS(NS_XLSX, 'row');
+    rowEl.setAttribute('r', String(fila));
+    const siguiente = [...data.getElementsByTagName('row')].find((r) => Number(r.getAttribute('r')) > fila);
+    data.insertBefore(rowEl, siguiente || null);
+  }
+  let cel = [...rowEl.getElementsByTagName('c')].find((c) => c.getAttribute('r') === ref);
+  if (!cel) {
+    cel = doc.createElementNS(NS_XLSX, 'c');
+    cel.setAttribute('r', ref);
+    const sig = [...rowEl.getElementsByTagName('c')].find((c) => indiceColumna(partirReferencia(c.getAttribute('r')).col) > indiceColumna(col));
+    rowEl.insertBefore(cel, sig || null);
+  }
+  while (cel.firstChild) cel.removeChild(cel.firstChild);
+  cel.removeAttribute('t');
+  if (tipo === 'n') {
+    const v = doc.createElementNS(NS_XLSX, 'v');
+    v.textContent = String(valor);
+    cel.appendChild(v);
+  } else if (tipo === 's') {
+    cel.setAttribute('t', 'inlineStr');
+    const is = doc.createElementNS(NS_XLSX, 'is');
+    const t = doc.createElementNS(NS_XLSX, 't');
+    t.setAttribute('xml:space', 'preserve');
+    t.textContent = String(valor);
+    is.appendChild(t);
+    cel.appendChild(is);
+  }
+}
+
+/** edits: [{ hoja, celdas: [{ ref, tipo, valor }] }] */
+async function aplicarEdicionesYDescargar(zip, edits, nombreArchivo) {
+  for (const ed of edits) {
+    const ruta = await rutaDeHoja(zip, ed.hoja);
+    const doc = new DOMParser().parseFromString(await zip.file(ruta).async('string'), 'application/xml');
+    ed.celdas.forEach((c) => ponerCelda(doc, c.ref, c.tipo, c.valor));
+    zip.file(ruta, new XMLSerializer().serializeToString(doc));
+  }
+  const blob = await zip.generateAsync({
+    type: 'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    compression: 'DEFLATE',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nombreArchivo;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+// ---------------- Conteo del operario (toma por categoría) ----------------
+async function leerUltimoConteoEspecial(tipo) {
+  if (!window.GitHubSync) return null;
+  try {
+    const archivos = await GitHubSync.listarCarpeta(GitHubSync.RUTA_RESULTADOS);
+    const prefijo = `ESPECIAL-${tipo.toUpperCase()}_`;
+    const candidatos = archivos.filter((f) => f.name.startsWith(prefijo)).sort((a, b) => b.name.localeCompare(a.name));
+    if (!candidatos.length) return null;
+    return await GitHubSync.leerJSONFresco(`${GitHubSync.RUTA_RESULTADOS}/${candidatos[0].name}`);
+  } catch (e) {
+    console.warn('No se pudo leer el conteo del operario:', e);
+    return null;
+  }
+}
+
+function infoConteo(conteo) {
+  if (!conteo) return null;
+  const contados = (conteo.items || []).filter((it) => it.cantidadFisica !== null && it.cantidadFisica !== undefined).length;
+  return { contados, contadoPor: conteo.contadoPor || null, fecha: conteo.fecha || null };
+}
+
+// ---------------- COMBUSTIBLES (1 fila agregada por material) ----------------
 function agregarStockPorMaterialL001(mb52Rows, material) {
   let stock = 0;
   let valor = 0;
@@ -119,29 +231,37 @@ function agregarStockPorMaterialL001(mb52Rows, material) {
 }
 
 async function generarReporteCombustibles(mb52Rows) {
-  const resp = await fetch('templates/plantilla_combustibles.xlsx');
-  if (!resp.ok) throw new Error('No se pudo cargar la plantilla de combustibles.');
-  const buffer = await resp.arrayBuffer();
-  const wb = XLSX.read(new Uint8Array(buffer), { type: 'array', cellStyles: true, cellDates: true });
-
+  const zip = await abrirPlantillaZip('templates/plantilla_combustibles.xlsx');
+  const conteo = await leerUltimoConteoEspecial('combustibles');
   const hoy = new Date();
   const encontrados = [];
+  const edits = [];
 
   FUENTES_COMBUSTIBLE.forEach((fuente) => {
-    const ws = wb.Sheets[fuente.sheet];
-    if (!ws) return;
     const { stock, costoUnitario, descripcion } = agregarStockPorMaterialL001(mb52Rows, fuente.material);
+    const celdas = [
+      { ref: 'E6', tipo: 'n', valor: serialExcel(hoy) },
+      { ref: 'I9', tipo: 'n', valor: stock },
+      { ref: 'N9', tipo: 'n', valor: costoUnitario },
+    ];
+    if (descripcion) celdas.push({ ref: 'G9', tipo: 's', valor: descripcion });
 
-    actualizarCelda(ws, 'E6', { t: 'd', v: hoy });
-    actualizarCelda(ws, 'I9', { t: 'n', v: stock });
-    actualizarCelda(ws, 'N9', { t: 'n', v: costoUnitario });
-    if (descripcion) actualizarCelda(ws, 'G9', { t: 's', v: descripcion });
-
+    // Lo que contó el operario para este combustible
+    const items = conteo ? (conteo.items || []).filter((it) => it.material === fuente.material && it.cantidadFisica !== null && it.cantidadFisica !== undefined) : [];
+    if (items.length) {
+      const total = items.reduce((a, it) => a + (Number(it.cantidadFisica) || 0), 0);
+      celdas.push({ ref: 'K9', tipo: 'n', valor: total });
+      const lotes = [...new Set(items.map((it) => (it.loteFisico || '').trim()).filter(Boolean))];
+      if (lotes.length) celdas.push({ ref: 'L9', tipo: 's', valor: lotes.join(', ') });
+      const ubic = [...new Set(items.filter((it) => it.ubicacionFisica && it.ubicacionFisica !== it.ubicacionSistema).map((it) => it.ubicacionFisica))];
+      if (ubic.length) celdas.push({ ref: 'R9', tipo: 's', valor: `Ubicación física: ${ubic.join(', ')}` });
+    }
+    edits.push({ hoja: fuente.sheet, celdas });
     encontrados.push({ hoja: fuente.sheet, material: fuente.material, stock, encontrado: stock > 0 || descripcion });
   });
 
-  const fechaArchivo = hoy.toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `Inventario_Combustibles_${fechaArchivo}.xlsx`, { cellStyles: true });
+  await aplicarEdicionesYDescargar(zip, edits, `Inventario_Combustibles_${hoy.toISOString().slice(0, 10)}.xlsx`);
+  encontrados.conteo = infoConteo(conteo);
   return encontrados;
 }
 
@@ -159,54 +279,106 @@ function filtrarLotesMB52(mb52Rows, config) {
   });
 }
 
-async function generarReportePorLotes(mb52Rows, config, nombreArchivoSalida) {
-  const resp = await fetch(config.archivo);
-  if (!resp.ok) throw new Error(`No se pudo cargar la plantilla (${config.archivo}).`);
-  const buffer = await resp.arrayBuffer();
-  const wb = XLSX.read(new Uint8Array(buffer), { type: 'array', cellStyles: true, cellDates: true });
-  const ws = wb.Sheets[config.hoja];
-  if (!ws) throw new Error(`La plantilla no tiene una hoja llamada "${config.hoja}".`);
-
+async function generarReportePorLotes(mb52Rows, config, tipo, nombreArchivoSalida) {
+  const zip = await abrirPlantillaZip(config.archivo);
+  const conteo = await leerUltimoConteoEspecial(tipo);
   const lotes = filtrarLotesMB52(mb52Rows, config);
+
+  // costo unitario promedio por material (para filas agregadas por el operario)
+  const costoPorMaterial = {};
+  lotes.forEach((l) => {
+    const m = String(l['Material']).trim();
+    const c = costoPorMaterial[m] || { stock: 0, valor: 0 };
+    c.stock += Number(l['Libre utilización']) || 0;
+    c.valor += Number(l['Valor libre util.']) || 0;
+    costoPorMaterial[m] = c;
+  });
+  const infoMaterial = {};
+  mb52Rows.forEach((row) => {
+    const m = String(row['Material'] || '').trim();
+    if (config.materiales.includes(m) && !infoMaterial[m]) {
+      infoMaterial[m] = { descripcion: row['Texto breve de material'] || '', um: row['Unidad medida base'] || '' };
+    }
+  });
+
+  // Conteo del operario indexado por material|lote|ubicación del sistema
+  const conteoItems = conteo ? (conteo.items || []) : [];
+  const usados = new Set();
+  const clave = (m, l, u) => `${m}|${(l || '').trim()}|${(u || '').trim()}`;
+  const indice = new Map();
+  conteoItems.forEach((it, i) => {
+    if (!it.agregada) indice.set(clave(it.material, it.loteSistema, it.ubicacionSistema), i);
+  });
+
+  const filas = lotes.map((lote) => {
+    const material = String(lote['Material']).trim();
+    const loteSap = String(lote['Lote'] || '').trim();
+    const ubic = String(lote['Ubicación'] || '').trim();
+    const idx = indice.get(clave(material, loteSap, ubic));
+    let conteoFila = null;
+    if (idx !== undefined) { usados.add(idx); conteoFila = conteoItems[idx]; }
+    const stock = Number(lote['Libre utilización']) || 0;
+    const valor = Number(lote['Valor libre util.']) || 0;
+    return {
+      almacen: String(lote['Almacén'] || '').trim(), ubicacion: ubic, material,
+      descripcion: lote['Texto breve de material'] || '', um: lote['Unidad medida base'] || '',
+      cantidadSap: stock, loteSap, costo: stock > 0 ? valor / stock : 0, conteo: conteoFila,
+    };
+  });
+  // Filas del conteo que no existen en el MB52 (lotes agregados por el operario)
+  conteoItems.forEach((it, i) => {
+    if (usados.has(i) || it.cantidadFisica === null || it.cantidadFisica === undefined) return;
+    const c = costoPorMaterial[it.material];
+    const inf = infoMaterial[it.material] || {};
+    filas.push({
+      almacen: it.almacen || 'L001', ubicacion: it.ubicacionFisica || it.ubicacionSistema || '', material: it.material,
+      descripcion: it.descripcion || inf.descripcion || '', um: it.um || inf.um || '',
+      cantidadSap: 0, loteSap: (it.loteSistema || '').trim(), costo: c && c.stock > 0 ? c.valor / c.stock : 0, conteo: it, agregada: true,
+    });
+  });
+
   const capacidad = config.filaFin - config.filaInicio + 1;
-  if (lotes.length > capacidad) {
-    throw new Error(
-      `Encontré ${lotes.length} lotes pero la plantilla solo tiene espacio para ${capacidad} filas — avísame para ampliarla.`
-    );
+  if (filas.length > capacidad) {
+    throw new Error(`Encontré ${filas.length} filas pero la plantilla solo tiene espacio para ${capacidad} — avísame para ampliarla.`);
   }
 
   const hoy = new Date();
-  actualizarCelda(ws, 'E6', { t: 'd', v: hoy });
-
-  lotes.forEach((lote, i) => {
-    const fila = config.filaInicio + i;
-    const stock = Number(lote['Libre utilización']) || 0;
-    const valor = Number(lote['Valor libre util.']) || 0;
-    const costoUnitario = stock > 0 ? valor / stock : 0;
-
-    actualizarCelda(ws, `C${fila}`, { t: 's', v: 'TMAT' });
-    actualizarCelda(ws, `D${fila}`, { t: 's', v: String(lote['Almacén'] || '').trim() });
-    actualizarCelda(ws, `E${fila}`, { t: 's', v: String(lote['Ubicación'] || '').trim() });
-    actualizarCelda(ws, `F${fila}`, { t: 'n', v: Number(lote['Material']) });
-    actualizarCelda(ws, `G${fila}`, { t: 's', v: lote['Texto breve de material'] || '' });
-    actualizarCelda(ws, `H${fila}`, { t: 's', v: lote['Unidad medida base'] || '' });
-    actualizarCelda(ws, `I${fila}`, { t: 'n', v: stock });
-    actualizarCelda(ws, `J${fila}`, { t: 's', v: String(lote['Lote'] || '').trim() });
-    actualizarCelda(ws, `N${fila}`, { t: 'n', v: costoUnitario });
-    // K (Cantidad Física) y L (Lote Físico) quedan en blanco — se llenan a mano tras el conteo.
+  const celdas = [{ ref: 'E6', tipo: 'n', valor: serialExcel(hoy) }];
+  filas.forEach((f, i) => {
+    const n = config.filaInicio + i;
+    celdas.push(
+      { ref: `C${n}`, tipo: 's', valor: 'TMAT' },
+      { ref: `D${n}`, tipo: 's', valor: f.almacen },
+      { ref: `E${n}`, tipo: 's', valor: f.ubicacion },
+      { ref: `F${n}`, tipo: 'n', valor: Number(f.material) },
+      { ref: `G${n}`, tipo: 's', valor: f.descripcion },
+      { ref: `H${n}`, tipo: 's', valor: f.um },
+      { ref: `I${n}`, tipo: 'n', valor: f.cantidadSap },
+      { ref: `J${n}`, tipo: 's', valor: f.loteSap },
+      { ref: `N${n}`, tipo: 'n', valor: f.costo }
+    );
+    const c = f.conteo;
+    if (c && c.cantidadFisica !== null && c.cantidadFisica !== undefined) {
+      celdas.push({ ref: `K${n}`, tipo: 'n', valor: Number(c.cantidadFisica) });
+      const loteFis = String(c.loteFisico || '').trim();
+      if (loteFis) celdas.push({ ref: `L${n}`, tipo: 's', valor: loteFis });
+      const notas = [];
+      if (c.ubicacionFisica && c.ubicacionFisica !== c.ubicacionSistema && !f.agregada) notas.push(`Ubicación física: ${c.ubicacionFisica}`);
+      if (f.agregada) notas.push('Lote no registrado en SAP (agregado por el operario)');
+      if (notas.length) celdas.push({ ref: `R${n}`, tipo: 's', valor: notas.join(' · ') });
+    }
   });
 
-  const fechaArchivo = hoy.toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `${nombreArchivoSalida}_${fechaArchivo}.xlsx`, { cellStyles: true });
-  return { totalLotes: lotes.length, capacidad };
+  await aplicarEdicionesYDescargar(zip, [{ hoja: config.hoja, celdas }], `${nombreArchivoSalida}_${hoy.toISOString().slice(0, 10)}.xlsx`);
+  return { totalLotes: filas.length, capacidad, conteo: infoConteo(conteo) };
 }
 
 async function generarReporteGases(mb52Rows) {
-  return generarReportePorLotes(mb52Rows, CONFIG_GASES, 'Inventario_Balones_Gases');
+  return generarReportePorLotes(mb52Rows, CONFIG_GASES, 'gases', 'Inventario_Balones_Gases');
 }
 
 async function generarReporteIQBF(mb52Rows) {
-  return generarReportePorLotes(mb52Rows, CONFIG_IQBF, 'Inventario_IQBF');
+  return generarReportePorLotes(mb52Rows, CONFIG_IQBF, 'iqbf', 'Inventario_IQBF');
 }
 
 window.ReportesInventario = {

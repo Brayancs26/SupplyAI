@@ -410,6 +410,7 @@ async function guardarEspecial() {
     material: f.material,
     descripcion: f.descripcion,
     almacen: f.almacen,
+    um: f.um,
     cantidadSistema: f.cantidadSistema,
     cantidadFisica: f.cantidadFisica === '' ? null : Number(f.cantidadFisica),
     loteSistema: f.loteSistema,

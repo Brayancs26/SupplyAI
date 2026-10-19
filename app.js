@@ -2090,6 +2090,12 @@ function exportarExcel() {
 
 // ---------------- INIT ----------------
 // ---------------- REPORTES DE INVENTARIO ----------------
+function textoConteoReporte(conteo, soloUno) {
+  if (!conteo || !conteo.contados) return 'Aún no hay conteo del operario: completa la Cantidad Física a mano y firma.';
+  const quien = conteo.contadoPor ? ` por ${conteo.contadoPor}` : '';
+  return `Incluye lo contado${quien} (${conteo.fecha || ''}): cantidad y lote físicos ya están en el reporte. Revisa y firma.`;
+}
+
 function bindBotonReporte(botonId, estadoId, generador) {
   document.getElementById(botonId).addEventListener('click', async () => {
     const estado = document.getElementById(estadoId);
@@ -2108,10 +2114,10 @@ function bindBotonReporte(botonId, estadoId, generador) {
         const sinStock = resultado.filter((r) => !r.encontrado);
         estado.textContent = sinStock.length > 0
           ? `Descargado — sin stock en MB52 para: ${sinStock.map((r) => r.hoja).join(', ')}.`
-          : 'Descargado ✓ — completa la Cantidad Física a mano y firma.';
+          : 'Descargado ✓ — ' + textoConteoReporte(resultado.conteo, true);
         estado.className = 'reporte-card-estado ' + (sinStock.length > 0 ? 'reporte-estado-alerta' : 'reporte-estado-ok');
       } else {
-        estado.textContent = `Descargado ✓ — ${resultado.totalLotes} lotes encontrados. Completa la Cantidad Física a mano y firma.`;
+        estado.textContent = `Descargado ✓ — ${resultado.totalLotes} filas. ` + textoConteoReporte(resultado.conteo, false);
         estado.className = 'reporte-card-estado reporte-estado-ok';
       }
     } catch (err) {
