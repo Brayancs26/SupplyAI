@@ -31,6 +31,16 @@
 
 <main class="main-angosto">
 
+  <div class="panel" id="panel-nombre" style="display:none">
+    <div class="panel-header">
+      <h2>¿Quién va a contar?</h2>
+      <p class="panel-sub" id="nombre-ayuda">Escribe tu nombre para poder empezar. Es obligatorio.</p>
+    </div>
+    <div style="padding: 0 20px 18px;">
+      <input type="text" id="input-nombre-contador" placeholder="Tu nombre y apellido" autocomplete="name" />
+    </div>
+  </div>
+
   <div class="panel" id="panel-especiales" style="display:none">
     <div class="panel-header">
       <h2>Toma por categoría</h2>
@@ -44,9 +54,6 @@
       <div class="panel-header">
         <h2 id="especial-titulo">—</h2>
         <p class="panel-sub" id="especial-subtitulo"></p>
-      </div>
-      <div style="padding: 0 20px 14px;">
-        <input type="text" id="input-especial-contado-por" placeholder="Tu nombre (opcional)" />
       </div>
       <div id="lista-especial"></div>
       <div class="acciones-publicar" style="padding: 16px 20px; flex-direction: column; align-items: stretch;">
@@ -89,9 +96,6 @@
         <div class="panel-header">
           <h2 id="zona-titulo">—</h2>
           <p class="panel-sub" id="zona-subtitulo"></p>
-        </div>
-        <div style="padding: 0 20px 14px;">
-          <input type="text" id="input-contado-por" placeholder="Tu nombre (opcional)" />
         </div>
         <div id="lista-conteo-movil"></div>
         <div class="acciones-publicar" style="padding: 16px 20px; flex-direction: column; align-items: stretch;">

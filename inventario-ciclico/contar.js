@@ -17,6 +17,38 @@ function hoyISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
+// ---------------- NOMBRE DEL CONTADOR (obligatorio) ----------------
+const CLAVE_NOMBRE = 'contador_nombre';
+function nombreContador() {
+  const el = document.getElementById('input-nombre-contador');
+  return el ? el.value.trim() : '';
+}
+/** Devuelve true si ya hay nombre; si no, avisa, marca el campo y sube hasta él. */
+function requerirNombre() {
+  if (nombreContador().length >= 2) return true;
+  const el = document.getElementById('input-nombre-contador');
+  const ayuda = document.getElementById('nombre-ayuda');
+  el.classList.add('input-error');
+  ayuda.textContent = 'Primero escribe tu nombre — sin nombre no puedes contar.';
+  ayuda.classList.add('texto-error');
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.focus();
+  return false;
+}
+function iniciarCampoNombre() {
+  const el = document.getElementById('input-nombre-contador');
+  try { el.value = localStorage.getItem(CLAVE_NOMBRE) || ''; } catch (e) { /* sin storage */ }
+  el.addEventListener('input', () => {
+    try { localStorage.setItem(CLAVE_NOMBRE, el.value.trim()); } catch (e) { /* sin storage */ }
+    if (el.value.trim().length >= 2) {
+      el.classList.remove('input-error');
+      const ayuda = document.getElementById('nombre-ayuda');
+      ayuda.textContent = 'Escribe tu nombre para poder empezar. Es obligatorio.';
+      ayuda.classList.remove('texto-error');
+    }
+  });
+}
+
 function setEstadoCarga(on, mensaje) {
   const overlay = document.getElementById('loading-overlay');
   overlay.style.display = on ? 'flex' : 'none';
@@ -83,6 +115,12 @@ function mostrarFormularioConteo(zonaNombre) {
     contenedor.style.display = 'none';
     return;
   }
+  if (!requerirNombre()) {
+    const sel = document.getElementById('selector-zona');
+    if (sel) sel.value = '';
+    contenedor.style.display = 'none';
+    return;
+  }
   const zona = state.programa.zonas.find((z) => z.zona === zonaNombre);
   if (!zona) return;
   state.zonaSeleccionada = zona;
@@ -111,6 +149,7 @@ function mostrarFormularioConteo(zonaNombre) {
 async function guardarConteo() {
   const zona = state.zonaSeleccionada;
   if (!zona) return;
+  if (!requerirNombre()) return;
   const estado = document.getElementById('estado-guardar-conteo');
   const boton = document.getElementById('btn-guardar-conteo');
 
@@ -128,7 +167,7 @@ async function guardarConteo() {
   estado.textContent = 'Guardando…';
 
   const fecha = hoyISO();
-  const contadoPor = document.getElementById('input-contado-por').value.trim();
+  const contadoPor = nombreContador();
   const ruta = `${GitHubSync.RUTA_RESULTADOS}/${CicloEngine.slugZona(zona.zona)}_${fecha}.json`;
 
   try {
@@ -204,6 +243,7 @@ function actualizarVistaVacia() {
   const vacio = !state.hayPrograma && espState.pendientes === 0;
   const panel = document.getElementById('panel-nada-pendiente');
   if (panel && !panel.dataset.fijo) panel.style.display = vacio ? 'block' : 'none';
+  document.getElementById('panel-nombre').style.display = vacio ? 'none' : 'block';
 }
 
 function filaEspecialDesdeItem(it) {
@@ -218,6 +258,7 @@ function filaEspecialDesdeItem(it) {
 function abrirEspecial(tipo) {
   const datos = espState.datos[tipo];
   if (!datos) return;
+  if (!requerirNombre()) return;
   espState.tipo = tipo;
   let filas = datos.items.map(filaEspecialDesdeItem);
   const borrador = leerBorrador(tipo);
@@ -292,6 +333,7 @@ function renderEspecial() {
 
   lista.querySelectorAll('.grupo-cab').forEach((btn) => {
     btn.addEventListener('click', () => {
+      if (!requerirNombre()) return;
       const m = btn.dataset.material;
       const cont = btn.closest('.grupo-material');
       if (espState.abiertos.has(m)) espState.abiertos.delete(m); else espState.abiertos.add(m);
@@ -338,6 +380,7 @@ function agregarLoteAMaterial(material) {
 async function guardarEspecial() {
   const tipo = espState.tipo;
   if (!tipo) return;
+  if (!requerirNombre()) return;
   const estado = document.getElementById('estado-especial-guardar');
   const boton = document.getElementById('btn-especial-guardar');
   const titulo = espState.datos[tipo].titulo;
@@ -361,7 +404,7 @@ async function guardarEspecial() {
   estado.className = 'estado-publicar';
   estado.textContent = 'Guardando…';
   const fecha = hoyISO();
-  const contadoPor = document.getElementById('input-especial-contado-por').value.trim();
+  const contadoPor = nombreContador();
   try {
     await GitHubSync.escribirJSON(
       `${GitHubSync.RUTA_RESULTADOS}/ESPECIAL-${tipo.toUpperCase()}_${fecha}.json`,
@@ -395,6 +438,7 @@ async function guardarEspecial() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  iniciarCampoNombre();
   document.getElementById('btn-guardar-conteo').addEventListener('click', guardarConteo);
   document.getElementById('btn-especial-guardar').addEventListener('click', guardarEspecial);
   cargarEspeciales().then(() => {
