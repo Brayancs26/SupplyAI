@@ -1,0 +1,67 @@
+{
+  "tipo": "iqbf",
+  "titulo": "IQBF (Insumos Químicos)",
+  "generadoEn": "2026-10-19T19:40:59.279Z",
+  "items": [
+    {
+      "id": "10200045|L001|I.Q.B.F.|1-2545",
+      "material": "10200045",
+      "descripcion": "HIDROXIDO SODIO 98 25KG SAC EM BR-000078",
+      "almacen": "L001",
+      "lote": "1-2545",
+      "ubicacion": "I.Q.B.F.",
+      "um": "KG",
+      "cantidadSistema": 4925
+    },
+    {
+      "id": "10200045|L001|I.Q.B.F.|LQP2010326",
+      "material": "10200045",
+      "descripcion": "HIDROXIDO SODIO 98 25KG SAC EM BR-000078",
+      "almacen": "L001",
+      "lote": "LQP2010326",
+      "ubicacion": "I.Q.B.F.",
+      "um": "KG",
+      "cantidadSistema": 6675
+    },
+    {
+      "id": "31008189|L001|I.Q.B.F.|C-IND-T-01",
+      "material": "31008189",
+      "descripcion": "ACIDO SULFURICO IND 20KG BID - 000046",
+      "almacen": "L001",
+      "lote": "C-IND-T-01",
+      "ubicacion": "I.Q.B.F.",
+      "um": "KG",
+      "cantidadSistema": 20
+    },
+    {
+      "id": "31010949|L001|I.Q.B.F.|C08W62",
+      "material": "31010949",
+      "descripcion": "HEXANO PA 4L FRC - 000073",
+      "almacen": "L001",
+      "lote": "C08W62",
+      "ubicacion": "I.Q.B.F.",
+      "um": "L",
+      "cantidadSistema": 8
+    },
+    {
+      "id": "31011665|L001|I.Q.B.F.|29122025",
+      "material": "31011665",
+      "descripcion": "MEK ADITIVO TECNICO 5191 1L BOT - 000034",
+      "almacen": "L001",
+      "lote": "29122025",
+      "ubicacion": "I.Q.B.F.",
+      "um": "L",
+      "cantidadSistema": 2
+    },
+    {
+      "id": "31011665|L001|I.Q.B.F.|30072025",
+      "material": "31011665",
+      "descripcion": "MEK ADITIVO TECNICO 5191 1L BOT - 000034",
+      "almacen": "L001",
+      "lote": "30072025",
+      "ubicacion": "I.Q.B.F.",
+      "um": "L",
+      "cantidadSistema": 7
+    }
+  ]
+}
