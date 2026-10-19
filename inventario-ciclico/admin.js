@@ -44,6 +44,15 @@ async function cargarResultados() {
   }
 }
 
+// Muestra "sistema → físico" solo cuando cambió; "—" si no hay dato (conteos por zona no lo traen)
+function cambioTexto(sistema, fisico) {
+  const s = sistema || '';
+  const f = fisico === undefined || fisico === null ? s : fisico;
+  if (!s && !f) return '—';
+  if (s === f) return s || '—';
+  return `<strong>${s || '—'} → ${f || '—'}</strong>`;
+}
+
 function renderResultados(conteos) {
   const filas = [];
   conteos.forEach((c) => {
@@ -64,7 +73,7 @@ function renderResultados(conteos) {
 
   const tbody = document.getElementById('tabla-resultados-body');
   if (filas.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" class="muted centrado">Todavía no hay conteos guardados.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="muted centrado">Todavía no hay conteos guardados.</td></tr>';
     return;
   }
   tbody.innerHTML = filas
@@ -76,6 +85,8 @@ function renderResultados(conteos) {
       <td>${f.contadoPor}</td>
       <td>${f.material}</td>
       <td class="desc">${f.descripcion}</td>
+      <td>${cambioTexto(f.loteSistema, f.loteFisico)}</td>
+      <td>${cambioTexto(f.ubicacionSistema, f.ubicacionFisica)}</td>
       <td class="num">${fmtNum(f.cantidadSistema, 2)}</td>
       <td class="num">${fmtNum(f.cantidadFisica, 2)}</td>
       <td class="num">${f.diferencia > 0 ? '+' : ''}${fmtNum(f.diferencia, 2)}</td>
