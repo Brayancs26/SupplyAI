@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-10-19T19:38:48.730Z",
-  "totalMaterialesParaReordenar": 264,
+  "publicadoEn": "2026-10-19T19:40:56.283Z",
+  "totalMaterialesParaReordenar": 263,
   "materialesParaReordenar": [
     {
       "material": "32004359",
@@ -213,10 +213,10 @@
       "material": "32003790",
       "descripcion": "CAJA AGUA ENV.DESCARTABLE 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 44,
+      "stock": 33,
       "rop": 79,
       "riesgo": "ROJO",
-      "coberturaDias": 20.970482361411086
+      "coberturaDias": 15.727861771058315
     },
     {
       "material": "32005434",
@@ -987,9 +987,9 @@
       "material": "32003586",
       "descripcion": "BLUSA OXFORD M/LARG.C/LOG.CELESTE T/M",
       "clasificacion": "Baja Rotación",
-      "stock": 1,
+      "stock": 0,
       "rop": 0,
-      "riesgo": "AMARILLO",
+      "riesgo": "ROJO",
       "coberturaDias": null
     },
     {
@@ -2118,15 +2118,6 @@
       "coberturaDias": 0
     },
     {
-      "material": "32004943",
-      "descripcion": "POLO ALGO.M/LARG.CUELLO ALTO AZUL T/M",
-      "clasificacion": "Mediana Rotación",
-      "stock": 19,
-      "rop": 3,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 824.6
-    },
-    {
       "material": "31009839",
       "descripcion": "DISCO DESBASTE 1/4\"X7/8\"X7\"",
       "clasificacion": "Baja Rotación",
@@ -2398,14 +2389,14 @@
   ],
   "stockHarinaPescado": [
     {
-      "material": "50003970",
-      "descripcion": "HARINA C TAILANDIA",
-      "stock": 77.2
-    },
-    {
       "material": "50003916",
       "descripcion": "HARINA NC. FFA",
       "stock": 50
+    },
+    {
+      "material": "50003970",
+      "descripcion": "HARINA C TAILANDIA",
+      "stock": 45.2
     },
     {
       "material": "50003967",
@@ -2454,8 +2445,8 @@
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1087080,
-    "ppttUSD": 276836,
+    "almacenUSD": 1086922,
+    "ppttUSD": 227243,
     "pctVencido": 0.71
   }
 }
