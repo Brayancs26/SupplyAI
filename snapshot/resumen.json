@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-10-19T16:18:53.992Z",
-  "totalMaterialesParaReordenar": 263,
+  "publicadoEn": "2026-10-19T16:20:17.123Z",
+  "totalMaterialesParaReordenar": 264,
   "materialesParaReordenar": [
     {
       "material": "32004359",
@@ -213,19 +213,19 @@
       "material": "32003790",
       "descripcion": "CAJA AGUA ENV.DESCARTABLE 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 46,
+      "stock": 44,
       "rop": 79,
       "riesgo": "ROJO",
-      "coberturaDias": 21.92368610511159
+      "coberturaDias": 20.970482361411086
     },
     {
       "material": "32005434",
       "descripcion": "DESINCRUSTANTE LIQUIDO ACIDO GL",
       "clasificacion": "Baja Rotación",
-      "stock": 2,
+      "stock": 1,
       "rop": 5,
       "riesgo": "ROJO",
-      "coberturaDias": 31.523809523809526
+      "coberturaDias": 15.761904761904763
     },
     {
       "material": "31008471",
@@ -375,10 +375,10 @@
       "material": "31013867",
       "descripcion": "SOLDADURA INOX.AW E308L-16 2.50MM",
       "clasificacion": "Alta Rotación",
-      "stock": 5.5,
+      "stock": 5,
       "rop": 6,
       "riesgo": "ROJO",
-      "coberturaDias": 27.82043935052531
+      "coberturaDias": 25.29130850047755
     },
     {
       "material": "32005020",
@@ -456,10 +456,10 @@
       "material": "32022256",
       "descripcion": "GUANTE NITRI. 13 T/M (08)",
       "clasificacion": "Baja Rotación",
-      "stock": 66,
+      "stock": 64,
       "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 3360.923076923077
+      "coberturaDias": 3259.0769230769233
     },
     {
       "material": "20000546",
@@ -528,10 +528,10 @@
       "material": "31013843",
       "descripcion": "SILICONA CARTUCHO TRANSP.",
       "clasificacion": "Alta Rotación",
-      "stock": 6,
+      "stock": 5,
       "rop": 10,
       "riesgo": "ROJO",
-      "coberturaDias": 29.86466165413534
+      "coberturaDias": 24.887218045112782
     },
     {
       "material": "31014281",
@@ -750,6 +750,15 @@
       "coberturaDias": 1463.3684210526314
     },
     {
+      "material": "32005352",
+      "descripcion": "TRAJE DESCARTABLE AMARILLO QUIMICOS T/L",
+      "clasificacion": "Baja Rotación",
+      "stock": 2,
+      "rop": 2,
+      "riesgo": "ROJO",
+      "coberturaDias": 49.03703703703704
+    },
+    {
       "material": "32004469",
       "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
       "clasificacion": "Alta Rotación",
@@ -798,10 +807,10 @@
       "material": "32004344",
       "descripcion": "GEL ALCOHOL 60-70° X 1 LT C/VALV.",
       "clasificacion": "Baja Rotación",
-      "stock": 2,
+      "stock": 1,
       "rop": 2,
       "riesgo": "ROJO",
-      "coberturaDias": 110.33333333333333
+      "coberturaDias": 55.166666666666664
     },
     {
       "material": "31013255",
@@ -1162,6 +1171,15 @@
       "rop": 10,
       "riesgo": "ROJO",
       "coberturaDias": 0
+    },
+    {
+      "material": "31009823",
+      "descripcion": "DISCO CORTE INOX.1/8\"X7/8\"X7\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 2,
+      "rop": 3,
+      "riesgo": "ROJO",
+      "coberturaDias": 45.6551724137931
     },
     {
       "material": "31009836",
@@ -1947,15 +1965,6 @@
       "coberturaDias": 772.3333333333333
     },
     {
-      "material": "32004076",
-      "descripcion": "CUCHILLO COCINERO M/PP.10\"",
-      "clasificacion": "Baja Rotación",
-      "stock": 11,
-      "rop": 2,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 910.25
-    },
-    {
       "material": "32004244",
       "descripcion": "FILTRO P/PARTICULAS 7093 P-100 3M",
       "clasificacion": "Baja Rotación",
@@ -2391,7 +2400,7 @@
     {
       "material": "50003970",
       "descripcion": "HARINA C TAILANDIA",
-      "stock": 159.2
+      "stock": 77.2
     },
     {
       "material": "50003916",
@@ -2445,8 +2454,8 @@
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1091426,
-    "ppttUSD": 403917,
+    "almacenUSD": 1087080,
+    "ppttUSD": 276836,
     "pctVencido": 0.71
   }
 }
