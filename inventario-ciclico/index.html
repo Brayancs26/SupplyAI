@@ -3,130 +3,106 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Administración · Inventario Cíclico · SupplyMind</title>
+<title>Contar Inventario · SupplyMind</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css" />
 <script src="engine.js" defer></script>
 <script src="github-sync.js" defer></script>
-<script src="admin.js" defer></script>
+<script src="contar.js" defer></script>
 </head>
-<body>
+<body class="pagina-contar">
 
 <div id="loading-overlay" style="display:none">
   <div class="loader-content">
     <div class="pulse-dot"></div>
-    <p id="loading-msg">Trabajando…</p>
+    <p id="loading-msg">Cargando…</p>
   </div>
 </div>
 
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <img src="assets/logo-supplymind.png" alt="SupplyMind" class="brand-logo" />
-      <span class="brand-mark">L001</span>
-      <div>
-        <h1>INVENTARIO CÍCLICO <span class="accent">· Admin</span></h1>
-        <p class="brand-sub">Ver resultados de conteo, configurar GitHub</p>
-      </div>
-    </div>
-    <div style="display:flex; gap:10px;">
-      <a href="index.html" class="btn-volver-inicio">Ir a Contar</a>
-      <a href="../index.html" class="btn-volver-inicio">← Inicio</a>
-    </div>
+<header class="topbar-simple">
+  <img src="assets/logo-supplymind.png" alt="SupplyMind" class="brand-logo" />
+  <span class="brand-mark">L001</span>
+  <div>
+    <h1>Contar Inventario</h1>
+    <p class="brand-sub">Almacén Matarani</p>
   </div>
 </header>
 
-<nav class="tabs">
-  <button class="tab-btn active" data-tab="resultados">Resultados</button>
-  <button class="tab-btn" data-tab="config">Configuración</button>
-</nav>
+<main class="main-angosto">
 
-<main>
+  <div class="panel" id="panel-especiales">
+    <div class="panel-header">
+      <h2>Toma por categoría</h2>
+      <p class="panel-sub">Combustible, gases e insumos químicos se cuentan aparte. Elige una categoría, anota la cantidad real y corrige lote o ubicación si no coinciden.</p>
+    </div>
+    <div id="especiales-botones" class="zonas-botones" style="padding: 0 20px 18px;"></div>
+  </div>
 
-  <p class="panel-sub" style="padding: 16px 4px 0;">
-    ¿Buscas "Programar" (definir zonas y generar el ciclo)? Se movió a la pestaña
-    <strong>"Reportes de Inventario"</strong> de <a href="../abastecimiento.html" style="color:var(--cyan)">Abastecimiento</a>.
-  </p>
-
-  <!-- ===================== RESULTADOS ===================== -->
-  <section id="tab-resultados" class="tab-panel active">
+  <div id="especial-formulario" style="display:none">
     <div class="panel">
       <div class="panel-header">
-        <h2>Resultados de conteo</h2>
-        <p class="panel-sub">Lee todos los conteos guardados en <code>conteo/resultados/</code> del repositorio.</p>
+        <h2 id="especial-titulo">—</h2>
+        <p class="panel-sub" id="especial-subtitulo"></p>
       </div>
-      <div class="acciones-publicar" style="padding: 0 20px 18px;">
-        <button type="button" id="btn-cargar-resultados" class="btn-continuar">Actualizar resultados</button>
-        <span id="estado-resultados" class="estado-publicar"></span>
+      <div style="padding: 0 20px 14px;">
+        <input type="text" id="input-especial-contado-por" placeholder="Tu nombre (opcional)" />
+      </div>
+      <div id="lista-especial"></div>
+      <div style="padding: 4px 20px 6px;">
+        <button type="button" id="btn-especial-agregar" class="btn-secundario">+ Agregar lote / fila</button>
+      </div>
+      <div class="acciones-publicar" style="padding: 16px 20px; flex-direction: column; align-items: stretch;">
+        <button type="button" id="btn-especial-guardar" class="btn-continuar btn-grande">Guardar toma</button>
+        <span id="estado-especial-guardar" class="estado-publicar" style="margin-top: 10px;"></span>
       </div>
     </div>
+  </div>
 
-    <div class="kpi-grid" id="kpi-resultados" style="display:none;">
-      <div class="kpi-card">
-        <span class="kpi-label">Conteos registrados</span>
-        <span class="kpi-value" id="kpi-total-conteos">—</span>
-      </div>
-      <div class="kpi-card">
-        <span class="kpi-label">Materiales contados</span>
-        <span class="kpi-value" id="kpi-total-materiales">—</span>
-      </div>
-      <div class="kpi-card kpi-rojo">
-        <span class="kpi-label">Con diferencia &gt; 10%</span>
-        <span class="kpi-value" id="kpi-con-diferencia">—</span>
-      </div>
+  <div class="panel" id="panel-sin-programa">
+    <div class="panel-header">
+      <h2>Cargando el programa de conteo…</h2>
+      <p class="panel-sub" id="estado-programa">Un momento.</p>
+    </div>
+  </div>
+
+  <div id="contar-contenido" style="display:none">
+
+    <div class="panel semana-actual-card">
+      <span class="semana-label">Semana <span id="semana-actual-valor">—</span> del ciclo</span>
+      <div id="zonas-esta-semana-botones" class="zonas-botones"></div>
     </div>
 
     <div class="panel">
-      <div class="table-wrap tall">
-        <table>
-          <thead>
-            <tr>
-              <th>Zona</th><th>Fecha</th><th>Contado por</th><th>Material</th><th>Descripción</th>
-              <th class="num">Sistema</th><th class="num">Físico</th><th class="num">Diferencia</th><th class="num">%</th>
-            </tr>
-          </thead>
-          <tbody id="tabla-resultados-body"></tbody>
-        </table>
+      <p class="panel-sub" style="padding: 16px 20px 4px;">¿Vas a contar otra zona (no de esta semana)?</p>
+      <div style="padding: 0 20px 18px;">
+        <select id="selector-zona"></select>
       </div>
     </div>
-  </section>
 
-  <!-- ===================== CONFIGURACIÓN ===================== -->
-  <section id="tab-config" class="tab-panel">
-    <div class="panel panel-form">
-      <div class="panel-header">
-        <h2>Configuración de GitHub</h2>
-        <p class="panel-sub">
-          Ya no hace falta configurar nada por dispositivo — leer y guardar pasan por un Worker que guarda el
-          token de forma segura. Esto funciona automático desde cualquier navegador o celular.
-        </p>
+    <div id="conteo-formulario" style="display:none">
+      <div class="panel">
+        <div class="panel-header">
+          <h2 id="zona-titulo">—</h2>
+          <p class="panel-sub" id="zona-subtitulo"></p>
+        </div>
+        <div style="padding: 0 20px 14px;">
+          <input type="text" id="input-contado-por" placeholder="Tu nombre (opcional)" />
+        </div>
+        <div id="lista-conteo-movil"></div>
+        <div class="acciones-publicar" style="padding: 16px 20px; flex-direction: column; align-items: stretch;">
+          <button type="button" id="btn-guardar-conteo" class="btn-continuar btn-grande">Guardar conteo</button>
+          <span id="estado-guardar-conteo" class="estado-publicar" style="margin-top: 10px;"></span>
+        </div>
       </div>
-      <form id="form-github">
-        <label>Usuario/organización de GitHub
-          <input type="text" id="input-gh-owner" placeholder="tu-usuario" />
-        </label>
-        <label>Nombre del repositorio
-          <input type="text" id="input-gh-repo" placeholder="SupplyAI" />
-        </label>
-        <label>Rama
-          <input type="text" id="input-gh-branch" placeholder="main" value="main" />
-        </label>
-        <button type="submit">Guardar configuración</button>
-        <span class="guardado-msg" id="guardado-gh-msg">Guardado ✓</span>
-      </form>
-      <p class="datos-info">
-        Estos 3 campos ya se detectan solos casi siempre — solo tócalos si algún día cambias el repositorio o la
-        rama. El token vive únicamente en el Worker (nunca en el navegador ni en el código de la página) — si
-        necesitas cambiarlo, se hace desde el panel de Cloudflare, no desde aquí.
-      </p>
     </div>
-  </section>
+
+  </div>
 
 </main>
 
-<footer>
-  Almacén L001 (Matarani) · El programa y los conteos se guardan en el repositorio de GitHub
+<footer class="footer-simple">
+  <a href="admin.html">Panel de administración</a>
 </footer>
 
 </body>
