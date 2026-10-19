@@ -34,21 +34,27 @@ async function cargarEstadoEnvios() {
   const tbody = document.getElementById('tabla-estado-envios-body');
   const filas = await Promise.all(
     TIPOS_ENVIO.map(async (t) => {
-      try { return { ...t, datos: await GitHubSync.leerJSONPublico(`conteo/especiales/${t.tipo}.json`) }; }
-      catch (e) { return { ...t, datos: null }; }
+      try {
+        const [datos, estado] = await Promise.all([
+          GitHubSync.leerJSONPublico(`conteo/especiales/${t.tipo}.json`),
+          GitHubSync.leerJSONPublico(`conteo/especiales/${t.tipo}_estado.json`).catch(() => null),
+        ]);
+        return { ...t, datos, estado };
+      } catch (e) { return { ...t, datos: null, estado: null }; }
     })
   );
   tbody.innerHTML = filas
-    .map(({ titulo, datos }) => {
+    .map(({ titulo, datos, estado }) => {
       if (!datos) return `<tr><td>${titulo}</td><td class="num">—</td><td>—</td><td><span class="chip-estado chip-gris">Sin enviar</span></td><td>—</td><td>—</td></tr>`;
-      const terminado = !!datos.completadoEn;
+      const hecho = estado && estado.generadoEn === datos.generadoEn ? estado : datos.completadoEn ? datos : null;
+      const terminado = !!hecho;
       return `<tr>
         <td>${titulo}</td>
         <td class="num">${(datos.items || []).length}</td>
         <td>${fmtFechaHora(datos.generadoEn)}</td>
         <td><span class="chip-estado ${terminado ? 'chip-verde' : 'chip-amarillo'}">${terminado ? 'Terminado' : 'Pendiente de contar'}</span></td>
-        <td>${terminado ? fmtFechaHora(datos.completadoEn) : '—'}</td>
-        <td>${terminado ? datos.completadoPor || '—' : '—'}</td>
+        <td>${terminado ? fmtFechaHora(hecho.completadoEn) : '—'}</td>
+        <td>${terminado ? hecho.completadoPor || '—' : '—'}</td>
       </tr>`;
     })
     .join('');

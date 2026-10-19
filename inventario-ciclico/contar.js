@@ -212,16 +212,36 @@ function borrarBorrador(tipo) {
   try { localStorage.removeItem(claveBorrador(tipo)); } catch (e) { /* sin storage */ }
 }
 
+// Una toma se considera terminada si hay un "estado" con el mismo envío (generadoEn),
+// o si este celular ya la guardó (por si GitHub aún no refleja el cambio).
+function terminadaLocal(tipo, generadoEn) {
+  try { return localStorage.getItem(`toma_terminada_${tipo}`) === String(generadoEn); } catch (e) { return false; }
+}
+function marcarTerminadaLocal(tipo, generadoEn) {
+  try { localStorage.setItem(`toma_terminada_${tipo}`, String(generadoEn)); } catch (e) { /* sin storage */ }
+}
+
 async function cargarEspeciales() {
   const cont = document.getElementById('especiales-botones');
   const resultados = await Promise.all(
     TIPOS_ESPECIALES.map(async (t) => {
-      try { return { ...t, datos: await GitHubSync.leerJSONPublico(`conteo/especiales/${t.tipo}.json`) }; }
-      catch (e) { return { ...t, datos: null }; }
+      try {
+        const [datos, estado] = await Promise.all([
+          GitHubSync.leerJSONPublico(`conteo/especiales/${t.tipo}.json`),
+          GitHubSync.leerJSONPublico(`conteo/especiales/${t.tipo}_estado.json`).catch(() => null),
+        ]);
+        return { ...t, datos, estado };
+      } catch (e) { return { ...t, datos: null, estado: null }; }
     })
   );
   // Solo se muestran las tomas enviadas que aún no se terminaron
-  const pendientes = resultados.filter((r) => r.datos && (r.datos.items || []).length > 0 && !r.datos.completadoEn);
+  const pendientes = resultados.filter(
+    (r) =>
+      r.datos && (r.datos.items || []).length > 0 &&
+      !r.datos.completadoEn &&
+      !(r.estado && r.estado.generadoEn === r.datos.generadoEn) &&
+      !terminadaLocal(r.tipo, r.datos.generadoEn)
+  );
   espState.pendientes = pendientes.length;
   pendientes.forEach((r) => (espState.datos[r.tipo] = r.datos));
   cont.innerHTML = pendientes
@@ -258,6 +278,7 @@ function filaEspecialDesdeItem(it) {
 function abrirEspecial(tipo) {
   const datos = espState.datos[tipo];
   if (!datos) return;
+  if (terminadaLocal(tipo, datos.generadoEn)) { cargarEspeciales(); return; }
   if (!requerirNombre()) return;
   espState.tipo = tipo;
   let filas = datos.items.map(filaEspecialDesdeItem);
@@ -411,15 +432,19 @@ async function guardarEspecial() {
       { zona: titulo, categoria: tipo, fecha, contadoPor: contadoPor || null, items },
       `Toma de inventario ${titulo} — ${fecha}`
     );
-    // Marca la toma como terminada: deja de aparecer para el operario y el admin la ve "Terminado"
+    // Marca la toma como terminada (archivo aparte, para no pisar un envío nuevo del administrador)
+    const generadoEn = espState.datos[tipo].generadoEn;
+    marcarTerminadaLocal(tipo, generadoEn);
     await GitHubSync.escribirJSON(
-      `conteo/especiales/${tipo}.json`,
-      { ...espState.datos[tipo], completadoEn: new Date().toISOString(), completadoPor: contadoPor || null },
+      `conteo/especiales/${tipo}_estado.json`,
+      { generadoEn, completadoEn: new Date().toISOString(), completadoPor: contadoPor || null },
       `Toma terminada — ${titulo}`
     );
     borrarBorrador(tipo);
     delete espState.datos[tipo];
     espState.tipo = null;
+    espState.filas = [];
+    document.getElementById('lista-especial').innerHTML = '';
     document.getElementById('especial-formulario').style.display = 'none';
     const panel = document.getElementById('panel-nada-pendiente');
     document.getElementById('nada-titulo').textContent = `✓ ${titulo} guardado — gracias`;
