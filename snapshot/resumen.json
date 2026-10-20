@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-10-19T23:08:08.014Z",
-  "totalMaterialesParaReordenar": 263,
+  "publicadoEn": "2026-10-20T13:53:35.991Z",
+  "totalMaterialesParaReordenar": 264,
   "materialesParaReordenar": [
     {
       "material": "32004359",
@@ -748,6 +748,15 @@
       "rop": 2,
       "riesgo": "AMARILLO",
       "coberturaDias": 1463.3684210526314
+    },
+    {
+      "material": "34004337",
+      "descripcion": "GASKET #0007-3620-750",
+      "clasificacion": "Baja Rotación",
+      "stock": 2,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "32005352",
@@ -2293,7 +2302,7 @@
       "descripcion": "GASKET #529628 01",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
