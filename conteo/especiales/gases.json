@@ -1,0 +1,217 @@
+{
+  "tipo": "gases",
+  "titulo": "Balones de Gases",
+  "generadoEn": "2026-10-21T17:55:18.985Z",
+  "items": [
+    {
+      "id": "20000669|L001|3.01.1.01|COSTAGAS",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L001",
+      "lote": "COSTAGAS",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 8
+    },
+    {
+      "id": "20000669|L004|3.01.1.01|LIMAGAS",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L004",
+      "lote": "LIMAGAS",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 6
+    },
+    {
+      "id": "20000669|L004|3.01.1.01|LLAMAGAS",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L004",
+      "lote": "LLAMAGAS",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 2
+    },
+    {
+      "id": "20000669|L004|3.01.1.01|PECSA",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L004",
+      "lote": "PECSA",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000669|L004|3.01.1.01|PRIMAX",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L004",
+      "lote": "PRIMAX",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 7
+    },
+    {
+      "id": "20000669|L001|3.01.1.01|SOLGAS",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L001",
+      "lote": "SOLGAS",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 6
+    },
+    {
+      "id": "20000669|L004|3.01.1.01|SOLGAS",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L004",
+      "lote": "SOLGAS",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 20
+    },
+    {
+      "id": "20000670|L004|3.01.1.01|SOLGAS",
+      "material": "20000670",
+      "descripcion": "BOTELLA ENV.GAS PROPANO 10KG",
+      "almacen": "L004",
+      "lote": "SOLGAS",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 20
+    },
+    {
+      "id": "20000671|L001|3.01.1.04|SOLGAS",
+      "material": "20000671",
+      "descripcion": "BOTELLA ENV.GAS GLP 15KG",
+      "almacen": "L001",
+      "lote": "SOLGAS",
+      "ubicacion": "3.01.1.04",
+      "um": "UN",
+      "cantidadSistema": 39
+    },
+    {
+      "id": "20000671|L004|3.01.1.04|SOLGAS",
+      "material": "20000671",
+      "descripcion": "BOTELLA ENV.GAS GLP 15KG",
+      "almacen": "L004",
+      "lote": "SOLGAS",
+      "ubicacion": "3.01.1.04",
+      "um": "UN",
+      "cantidadSistema": 7
+    },
+    {
+      "id": "20000699|L001|3.01.1.02|L1513344",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "L001",
+      "lote": "L1513344",
+      "ubicacion": "3.01.1.02",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000699|L001|3.01.1.02|L155985",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "L001",
+      "lote": "L155985",
+      "ubicacion": "3.01.1.02",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000699|L001|3.01.1.02|L1572995",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "L001",
+      "lote": "L1572995",
+      "ubicacion": "3.01.1.02",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000699|L001|3.01.1.02|L1790199",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "L001",
+      "lote": "L1790199",
+      "ubicacion": "3.01.1.02",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000699|L001|3.01.1.02|L2899694",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "L001",
+      "lote": "L2899694",
+      "ubicacion": "3.01.1.02",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000699|L001|3.01.1.02|L8759",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "L001",
+      "lote": "L8759",
+      "ubicacion": "3.01.1.02",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000699|L001|3.01.1.02|L9509",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "L001",
+      "lote": "L9509",
+      "ubicacion": "3.01.1.02",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000699|L001|3.01.1.02|LEL8190",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "L001",
+      "lote": "LEL8190",
+      "ubicacion": "3.01.1.02",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000699|L001|3.01.1.02|P968102",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "L001",
+      "lote": "P968102",
+      "ubicacion": "3.01.1.02",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000699|L001|3.01.1.02|Y5284146",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "L001",
+      "lote": "Y5284146",
+      "ubicacion": "3.01.1.02",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000699|L001|3.01.1.02|Y8250144",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "L001",
+      "lote": "Y8250144",
+      "ubicacion": "3.01.1.02",
+      "um": "UN",
+      "cantidadSistema": 1
+    }
+  ]
+}
