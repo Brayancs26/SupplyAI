@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-10-21T20:31:14.189Z",
   "contador": "Luis Rafael",
-  "actualizadoEn": "2026-10-21T20:35:12.021Z",
+  "actualizadoEn": "2026-10-21T20:36:23.966Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -278,7 +278,7 @@
       "cantidadSistema": 6,
       "loteSistema": "LIMAGAS",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "",
+      "cantidadFisica": "6",
       "loteFisico": "LIMAGAS",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -292,7 +292,7 @@
       "cantidadSistema": 2,
       "loteSistema": "LLAMAGAS",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "",
+      "cantidadFisica": "2",
       "loteFisico": "LLAMAGAS",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -306,7 +306,7 @@
       "cantidadSistema": 1,
       "loteSistema": "PECSA",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "PECSA",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -320,7 +320,7 @@
       "cantidadSistema": 7,
       "loteSistema": "PRIMAX",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "",
+      "cantidadFisica": "7",
       "loteFisico": "PRIMAX",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
