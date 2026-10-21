@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-10-21T20:31:14.189Z",
   "contador": "Luis Rafael",
-  "actualizadoEn": "2026-10-21T20:37:20.845Z",
+  "actualizadoEn": "2026-10-21T20:39:06.423Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -446,7 +446,7 @@
       "cantidadSistema": 2,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "CHATA",
-      "cantidadFisica": "",
+      "cantidadFisica": "2",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "CHATA",
       "agregada": false
@@ -460,7 +460,7 @@
       "cantidadSistema": 1,
       "loteSistema": "LG1790129",
       "ubicacionSistema": "CHATA",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "LG1790129",
       "ubicacionFisica": "CHATA",
       "agregada": false
