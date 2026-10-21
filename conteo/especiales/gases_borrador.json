@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-10-21T20:31:14.189Z",
   "contador": "Luis Rafael",
-  "actualizadoEn": "2026-10-21T20:35:02.024Z",
+  "actualizadoEn": "2026-10-21T20:35:12.021Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -250,7 +250,7 @@
       "cantidadSistema": 2,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "",
+      "cantidadFisica": "2",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -264,7 +264,7 @@
       "cantidadSistema": 2,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "MONTACARGA",
-      "cantidadFisica": "",
+      "cantidadFisica": "2",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "MONTACARGA",
       "agregada": false
