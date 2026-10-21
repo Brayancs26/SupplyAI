@@ -171,6 +171,56 @@ function ponerCelda(doc, ref, tipo, valor) {
   }
 }
 
+
+/**
+ * Amplía una hoja de la plantilla insertando `extra` filas de datos (copias de la fila anterior
+ * a la última) y desplaza hacia abajo todo lo que viene después: totales, fórmulas, celdas
+ * combinadas, firmas y el área de impresión. Así la plantilla crece sin perder formato.
+ */
+async function ampliarPlantilla(zip, nombreHoja, filaFin, extra) {
+  if (extra <= 0) return;
+  const ruta = await rutaDeHoja(zip, nombreHoja);
+  let xml = await zip.file(ruta).async('string');
+  const refRe = /(?<![A-Za-z0-9_$.])(\$?[A-Z]{1,3}\$?)(\d+)(?![\d(A-Za-z_])/g;
+  const mapFormula = (f, fn) => f.replace(refRe, (m, col, fila) => col + fn(Number(fila)));
+  const desplazar = (n) => (n >= filaFin ? n + extra : n);
+
+  const ini = xml.indexOf('<sheetData>') + '<sheetData>'.length;
+  const fin = xml.indexOf('</sheetData>');
+  const filasXml = xml.slice(ini, fin).match(/<row\b[^>]*?(?:\/>|>[\s\S]*?<\/row>)/g) || [];
+  const reescribir = (rowXml, nuevoNum, mapaFila) =>
+    rowXml
+      .replace(/(<row\b[^>]*?\br=")\d+(")/, `$1${nuevoNum}$2`)
+      .replace(/(<c\b[^>]*?\br="[A-Z]+)\d+(")/g, `$1${nuevoNum}$2`)
+      .replace(/<f>([\s\S]*?)<\/f>/g, (m, f) => `<f>${mapFormula(f, mapaFila)}</f>`);
+  const numDe = (r) => Number(/<row\b[^>]*?\br="(\d+)"/.exec(r)[1]);
+
+  const plantilla = filasXml.find((r) => numDe(r) === filaFin - 1);
+  if (!plantilla) throw new Error('No encontré la fila modelo de la plantilla para ampliarla.');
+  const salida = [];
+  filasXml.forEach((r) => {
+    const n = numDe(r);
+    if (n === filaFin) {
+      for (let k = 0; k < extra; k++) {
+        const nuevo = filaFin + k;
+        salida.push(reescribir(plantilla, nuevo, (x) => (x === filaFin - 1 ? nuevo : desplazar(x))));
+      }
+    }
+    salida.push(reescribir(r, desplazar(n), (x) => desplazar(x)));
+  });
+  xml = xml.slice(0, ini) + salida.join('') + xml.slice(fin);
+  // celdas combinadas y dimensión
+  xml = xml.replace(/<mergeCell ref="([^"]+)"\/>/g, (m, ref) => `<mergeCell ref="${mapFormula(ref, desplazar)}"/>`);
+  xml = xml.replace(/<dimension ref="([^"]+)"\/>/, (m, ref) => `<dimension ref="${mapFormula(ref, desplazar)}"/>`);
+  zip.file(ruta, xml);
+  // área de impresión
+  const wbRuta = 'xl/workbook.xml';
+  let wb = await zip.file(wbRuta).async('string');
+  wb = wb.replace(/(<definedName name="_xlnm\.Print_Area"[^>]*>)([^<]*)(<\/definedName>)/g, (m, a, ref, c) =>
+    ref.includes(nombreHoja) ? a + mapFormula(ref, desplazar) + c : m);
+  zip.file(wbRuta, wb);
+}
+
 /** edits: [{ hoja, celdas: [{ ref, tipo, valor }] }] */
 async function aplicarEdicionesYDescargar(zip, edits, nombreArchivo) {
   for (const ed of edits) {
@@ -337,13 +387,19 @@ async function generarReportePorLotes(mb52Rows, config, tipo, nombreArchivoSalid
     });
   });
 
-  const capacidad = config.filaFin - config.filaInicio + 1;
+  let capacidad = config.filaFin - config.filaInicio + 1;
   if (filas.length > capacidad) {
-    throw new Error(`Encontré ${filas.length} filas pero la plantilla solo tiene espacio para ${capacidad} — avísame para ampliarla.`);
+    // más filas que espacio: la plantilla se amplía sola (conserva formato, totales y firmas)
+    await ampliarPlantilla(zip, config.hoja, config.filaFin, filas.length - capacidad);
+    capacidad = filas.length;
   }
 
   const hoy = new Date();
   const celdas = [{ ref: 'E6', tipo: 'n', valor: serialExcel(hoy) }];
+  if (!config.almacenes) {
+    const alms = [...new Set(filas.map((f) => f.almacen).filter(Boolean))].sort();
+    celdas.push({ ref: 'M6', tipo: 's', valor: alms.join(', ') });
+  }
   filas.forEach((f, i) => {
     const n = config.filaInicio + i;
     celdas.push(
