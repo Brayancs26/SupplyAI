@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-10-21T20:31:14.189Z",
   "contador": "Luis Rafael",
-  "actualizadoEn": "2026-10-21T20:34:01.197Z",
+  "actualizadoEn": "2026-10-21T20:34:12.518Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -54,7 +54,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L1513344",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "11",
+      "cantidadFisica": "1",
       "loteFisico": "L1513344",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
