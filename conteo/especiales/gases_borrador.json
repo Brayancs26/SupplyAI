@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-10-21T20:31:14.189Z",
   "contador": "Luis Rafael",
-  "actualizadoEn": "2026-10-21T20:33:34.611Z",
+  "actualizadoEn": "2026-10-21T20:34:01.197Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -82,7 +82,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L1572995",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "L1572995",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -96,7 +96,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L1790199",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "L1790199",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -110,7 +110,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L2899694",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "L2899694",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -124,7 +124,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L8759",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "L8759",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -138,7 +138,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L9509",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "L9509",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -152,7 +152,7 @@
       "cantidadSistema": 1,
       "loteSistema": "LEL8190",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "LEL8190",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -166,7 +166,7 @@
       "cantidadSistema": 1,
       "loteSistema": "P968102",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "P968102",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -180,7 +180,7 @@
       "cantidadSistema": 1,
       "loteSistema": "Y5284146",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "Y5284146",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -194,7 +194,7 @@
       "cantidadSistema": 1,
       "loteSistema": "Y8250144",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "Y8250144",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
