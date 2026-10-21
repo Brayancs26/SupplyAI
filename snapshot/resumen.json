@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-10-21T19:21:51.834Z",
+  "publicadoEn": "2026-10-21T20:26:47.338Z",
   "totalMaterialesParaReordenar": 264,
   "materialesParaReordenar": [
     {
@@ -2454,7 +2454,7 @@
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1083751,
+    "almacenUSD": 1083679,
     "ppttUSD": 205546,
     "pctVencido": 0.69
   }
