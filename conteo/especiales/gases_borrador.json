@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-10-21T20:31:14.189Z",
   "contador": "Luis Rafael",
-  "actualizadoEn": "2026-10-21T20:34:12.518Z",
+  "actualizadoEn": "2026-10-21T20:34:25.541Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -208,7 +208,7 @@
       "cantidadSistema": 1,
       "loteSistema": "COSTA GAS",
       "ubicacionSistema": "PLANTA",
-      "cantidadFisica": "",
+      "cantidadFisica": "14",
       "loteFisico": "COSTA GAS",
       "ubicacionFisica": "PLANTA",
       "agregada": false
