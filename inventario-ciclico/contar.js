@@ -262,8 +262,8 @@ async function cargarEspeciales() {
     TIPOS_ESPECIALES.map(async (t) => {
       try {
         const [datos, estado] = await Promise.all([
-          GitHubSync.leerJSONPublico(`conteo/especiales/${t.tipo}.json`),
-          GitHubSync.leerJSONPublico(`conteo/especiales/${t.tipo}_estado.json`).catch(() => null),
+          GitHubSync.leerJSONFresco(`conteo/especiales/${t.tipo}.json`),
+          GitHubSync.leerJSONFresco(`conteo/especiales/${t.tipo}_estado.json`).catch(() => null),
         ]);
         return { ...t, datos, estado };
       } catch (e) { return { ...t, datos: null, estado: null }; }
@@ -604,6 +604,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (t) { iniciarModoVer(t); return; }
   }
   iniciarCampoNombre();
+  const btnAct = document.getElementById('btn-actualizar-pendientes');
+  if (btnAct) btnAct.addEventListener('click', async () => {
+    btnAct.disabled = true; btnAct.textContent = 'Buscando…';
+    try { await cargarEspeciales(); } finally { btnAct.disabled = false; btnAct.textContent = 'Buscar inventarios nuevos'; }
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && !espState.tipo) cargarEspeciales();
+  });
   document.getElementById('btn-guardar-conteo').addEventListener('click', guardarConteo);
   document.getElementById('btn-especial-guardar').addEventListener('click', guardarEspecial);
   cargarEspeciales().then(() => {
