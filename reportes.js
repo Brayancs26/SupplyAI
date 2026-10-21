@@ -24,7 +24,7 @@ const CONFIG_GASES = {
   archivo: 'templates/plantilla_gases.xlsx',
   hoja: 'GASES',
   materiales: ['20000669', '20000670', '20000671', '20000699'],
-  almacenes: ['L001', 'L004'],
+  almacenes: null, // todos los almacenes (L001, L002, L004, PI04, PI05…): se cuenta todo el stock
   ubicacionExacta: null, // la ubicación varía por lote, no filtra por eso
   filaInicio: 9,
   filaFin: 38,
@@ -74,7 +74,7 @@ function construirFilasToma(tipo, mb52Rows) {
     const almacen = String(row['Almacén'] || '').trim();
     const ubicacion = String(row['Ubicación'] || '').trim();
     if (!cfg.materiales.includes(material)) return;
-    if (!cfg.almacenes.includes(almacen)) return;
+    if (cfg.almacenes && !cfg.almacenes.includes(almacen)) return;
     if (cfg.ubicacionExacta && ubicacion !== cfg.ubicacionExacta) return;
     const stock = Number(row['Libre utilización']) || 0;
     if (!cfg.incluirStockCero && stock <= 0) return;
@@ -94,7 +94,7 @@ function construirFilasToma(tipo, mb52Rows) {
     }
     filas.get(id).cantidadSistema += stock;
   });
-  return [...filas.values()].sort((a, b) => a.material.localeCompare(b.material) || a.lote.localeCompare(b.lote));
+  return [...filas.values()].sort((a, b) => a.almacen.localeCompare(b.almacen) || a.material.localeCompare(b.material) || a.lote.localeCompare(b.lote));
 }
 
 // ============================================================
@@ -272,7 +272,7 @@ function filtrarLotesMB52(mb52Rows, config) {
     const almacen = String(row['Almacén'] || '').trim();
     const ubicacion = String(row['Ubicación'] || '').trim();
     if (!config.materiales.includes(material)) return false;
-    if (!config.almacenes.includes(almacen)) return false;
+    if (config.almacenes && !config.almacenes.includes(almacen)) return false;
     if (config.ubicacionExacta && ubicacion !== config.ubicacionExacta) return false;
     const stock = Number(row['Libre utilización']) || 0;
     return stock > 0; // no listamos lotes en cero
@@ -304,17 +304,17 @@ async function generarReportePorLotes(mb52Rows, config, tipo, nombreArchivoSalid
   // Conteo del operario indexado por material|lote|ubicación del sistema
   const conteoItems = conteo ? (conteo.items || []) : [];
   const usados = new Set();
-  const clave = (m, l, u) => `${m}|${(l || '').trim()}|${(u || '').trim()}`;
+  const clave = (a, m, l, u) => `${(a || '').trim()}|${m}|${(l || '').trim()}|${(u || '').trim()}`;
   const indice = new Map();
   conteoItems.forEach((it, i) => {
-    if (!it.agregada) indice.set(clave(it.material, it.loteSistema, it.ubicacionSistema), i);
+    if (!it.agregada) indice.set(clave(it.almacen, it.material, it.loteSistema, it.ubicacionSistema), i);
   });
 
   const filas = lotes.map((lote) => {
     const material = String(lote['Material']).trim();
     const loteSap = String(lote['Lote'] || '').trim();
     const ubic = String(lote['Ubicación'] || '').trim();
-    const idx = indice.get(clave(material, loteSap, ubic));
+    const idx = indice.get(clave(String(lote['Almacén'] || '').trim(), material, loteSap, ubic));
     let conteoFila = null;
     if (idx !== undefined) { usados.add(idx); conteoFila = conteoItems[idx]; }
     const stock = Number(lote['Libre utilización']) || 0;

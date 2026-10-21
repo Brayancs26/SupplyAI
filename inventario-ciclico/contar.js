@@ -288,6 +288,7 @@ function abrirEspecial(tipo) {
   }
   espState.filas = filas;
   espState.abiertos = new Set();
+  espState.almacenesAbiertos = new Set();
   document.getElementById('especial-titulo').textContent = datos.titulo;
   document.getElementById('especial-subtitulo').textContent = 'Anota la cantidad real. Lote y ubicación vienen del sistema — cámbialos solo si son distintos.';
   renderEspecial();
@@ -325,37 +326,74 @@ function filaLoteHTML(f, i) {
   </div>`;
 }
 
+function claveGrupo(f) { return `${f.almacen || ''}|${f.material}`; }
+
+function progresoAlmacen(indices) {
+  const contados = indices.filter((i) => String(espState.filas[i].cantidadFisica).trim() !== '').length;
+  return `${contados}/${indices.length} lotes contados`;
+}
+
 function renderEspecial() {
   const lista = document.getElementById('lista-especial');
   if (!espState.abiertos) espState.abiertos = new Set();
-  // agrupar por material conservando el índice real de cada fila
-  const grupos = new Map();
+  if (!espState.almacenesAbiertos) espState.almacenesAbiertos = new Set();
+  // almacén → material → índices reales de fila
+  const almacenes = new Map();
   espState.filas.forEach((f, i) => {
-    if (!grupos.has(f.material)) grupos.set(f.material, []);
-    grupos.get(f.material).push(i);
+    const alm = f.almacen || 'Sin almacén';
+    if (!almacenes.has(alm)) almacenes.set(alm, new Map());
+    const mats = almacenes.get(alm);
+    const k = claveGrupo(f);
+    if (!mats.has(k)) mats.set(k, []);
+    mats.get(k).push(i);
   });
-  lista.innerHTML = [...grupos.entries()]
-    .map(([material, indices]) => {
-      const filas = indices.map((i) => espState.filas[i]);
-      const abierto = espState.abiertos.has(material);
-      return `<div class="grupo-material${abierto ? ' abierto' : ''}" data-material="${esc(material)}">
-        <button type="button" class="grupo-cab" data-material="${esc(material)}">
+  const unSoloAlmacen = almacenes.size === 1;
+  lista.innerHTML = [...almacenes.entries()]
+    .sort((x, y) => x[0].localeCompare(y[0]))
+    .map(([alm, mats]) => {
+      const todos = [...mats.values()].flat();
+      const abiertoAlm = unSoloAlmacen || espState.almacenesAbiertos.has(alm);
+      const grupos = [...mats.entries()]
+        .map(([k, indices]) => {
+          const filas = indices.map((i) => espState.filas[i]);
+          const abierto = espState.abiertos.has(k);
+          const material = filas[0].material;
+          return `<div class="grupo-material${abierto ? ' abierto' : ''}" data-clave="${esc(k)}">
+        <button type="button" class="grupo-cab" data-clave="${esc(k)}">
           <span class="chevron">▸</span>
           <span class="grupo-info"><span class="fila-conteo-material">${esc(material)}</span><span class="grupo-desc">${esc(filas[0].descripcion)}</span></span>
           <span class="grupo-totales">${resumenGrupoHTML(filas)}</span>
         </button>
         <div class="grupo-cuerpo">
           ${indices.map((i) => filaLoteHTML(espState.filas[i], i)).join('')}
-          <button type="button" class="btn-secundario btn-agregar-lote" data-material="${esc(material)}">+ Agregar lote</button>
+          <button type="button" class="btn-secundario btn-agregar-lote" data-clave="${esc(k)}">+ Agregar lote</button>
         </div>
+      </div>`;
+        })
+        .join('');
+      return `<div class="grupo-almacen${abiertoAlm ? ' abierto' : ''}" data-almacen="${esc(alm)}">
+        <button type="button" class="almacen-cab" data-almacen="${esc(alm)}">
+          <span class="chevron">▸</span>
+          <span class="almacen-nombre">Almacén ${esc(alm)}</span>
+          <span class="almacen-info">${mats.size} material${mats.size === 1 ? '' : 'es'} · ${progresoAlmacen(todos)}</span>
+        </button>
+        <div class="almacen-cuerpo">${grupos}</div>
       </div>`;
     })
     .join('');
 
+  lista.querySelectorAll('.almacen-cab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (!requerirNombre()) return;
+      const a = btn.dataset.almacen;
+      if (espState.almacenesAbiertos.has(a)) espState.almacenesAbiertos.delete(a); else espState.almacenesAbiertos.add(a);
+      btn.closest('.grupo-almacen').classList.toggle('abierto', espState.almacenesAbiertos.has(a));
+    });
+  });
   lista.querySelectorAll('.grupo-cab').forEach((btn) => {
     btn.addEventListener('click', () => {
       if (!requerirNombre()) return;
-      const m = btn.dataset.material;
+      const m = btn.dataset.clave;
       const cont = btn.closest('.grupo-material');
       if (espState.abiertos.has(m)) espState.abiertos.delete(m); else espState.abiertos.add(m);
       cont.classList.toggle('abierto', espState.abiertos.has(m));
@@ -368,8 +406,12 @@ function renderEspecial() {
       guardarBorrador(espState.tipo, espState.filas);
       if (inp.dataset.campo === 'cantidadFisica') {
         const grupo = inp.closest('.grupo-material');
-        const filasGrupo = espState.filas.filter((x) => x.material === f.material);
+        const k = claveGrupo(f);
+        const filasGrupo = espState.filas.filter((x) => claveGrupo(x) === k);
         grupo.querySelector('.grupo-totales').innerHTML = resumenGrupoHTML(filasGrupo);
+        const alm = inp.closest('.grupo-almacen');
+        const idxAlm = espState.filas.map((x, i) => i).filter((i) => (espState.filas[i].almacen || 'Sin almacén') === (f.almacen || 'Sin almacén'));
+        alm.querySelector('.almacen-info').textContent = `${new Set(idxAlm.map((i) => claveGrupo(espState.filas[i]))).size} material${new Set(idxAlm.map((i) => claveGrupo(espState.filas[i]))).size === 1 ? '' : 'es'} · ${progresoAlmacen(idxAlm)}`;
       }
     });
   });
@@ -381,19 +423,21 @@ function renderEspecial() {
     });
   });
   lista.querySelectorAll('.btn-agregar-lote').forEach((btn) => {
-    btn.addEventListener('click', () => agregarLoteAMaterial(btn.dataset.material));
+    btn.addEventListener('click', () => agregarLoteAMaterial(btn.dataset.clave));
   });
 }
 
-function agregarLoteAMaterial(material) {
-  const base = espState.filas.find((f) => f.material === material);
+function agregarLoteAMaterial(clave) {
+  const base = espState.filas.find((f) => claveGrupo(f) === clave);
   if (!base) return;
+  const material = base.material;
   espState.filas.push({
     id: `nueva|${Date.now()}`, material, descripcion: base.descripcion, um: base.um,
     almacen: base.almacen, loteSistema: '', ubicacionSistema: '', cantidadSistema: 0,
     cantidadFisica: '', loteFisico: '', ubicacionFisica: base.ubicacionSistema || '', agregada: true,
   });
-  espState.abiertos.add(material);
+  espState.abiertos.add(clave);
+  espState.almacenesAbiertos && espState.almacenesAbiertos.add(base.almacen || 'Sin almacén');
   guardarBorrador(espState.tipo, espState.filas);
   renderEspecial();
 }
