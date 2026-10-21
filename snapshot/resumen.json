@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-10-20T15:32:24.393Z",
+  "publicadoEn": "2026-10-21T17:54:49.710Z",
   "totalMaterialesParaReordenar": 264,
   "materialesParaReordenar": [
     {
@@ -475,9 +475,9 @@
       "descripcion": "PRECINTO SEGUR.MCLP GRABADO QR 180X800MM",
       "clasificacion": "Baja Rotación",
       "stock": 340,
-      "rop": 77,
+      "rop": 4,
       "riesgo": "AMARILLO",
-      "coberturaDias": 900.3199999999999
+      "coberturaDias": 18445
     },
     {
       "material": "30000377",
