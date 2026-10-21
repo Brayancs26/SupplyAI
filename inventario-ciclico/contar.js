@@ -25,6 +25,7 @@ function nombreContador() {
 }
 /** Devuelve true si ya hay nombre; si no, avisa, marca el campo y sube hasta él. */
 function requerirNombre() {
+  if (MODO_VER) return true;
   if (nombreContador().length >= 2) return true;
   const el = document.getElementById('input-nombre-contador');
   const ayuda = document.getElementById('nombre-ayuda');
@@ -207,7 +208,41 @@ function leerBorrador(tipo) {
 }
 function guardarBorrador(tipo, filas) {
   try { localStorage.setItem(claveBorrador(tipo), JSON.stringify({ fecha: hoyISO(), filas })); } catch (e) { /* sin storage */ }
+  programarSubidaEnVivo(tipo);
 }
+
+// ---- Seguimiento en vivo: el avance del operario se sube a GitHub (con pausa de unos segundos
+// entre cambios) para que el administrador lo vea desde otro dispositivo con el enlace "&ver=1".
+const MODO_VER = new URLSearchParams(location.search).get('ver') === '1';
+let temporizadorEnVivo = null;
+let ultimaSubidaEnVivo = '';
+function programarSubidaEnVivo(tipo) {
+  if (MODO_VER) return;
+  clearTimeout(temporizadorEnVivo);
+  temporizadorEnVivo = setTimeout(() => subirEnVivo(tipo), 5000);
+}
+async function subirEnVivo(tipo) {
+  const datos = espState.datos[tipo];
+  if (MODO_VER || !datos || espState.tipo !== tipo) return;
+  const filas = espState.filas.map((f) => ({
+    id: f.id, material: f.material, descripcion: f.descripcion, um: f.um, almacen: f.almacen,
+    cantidadSistema: f.cantidadSistema, loteSistema: f.loteSistema, ubicacionSistema: f.ubicacionSistema,
+    cantidadFisica: f.cantidadFisica, loteFisico: f.loteFisico, ubicacionFisica: f.ubicacionFisica, agregada: !!f.agregada,
+  }));
+  const firma = JSON.stringify(filas);
+  if (firma === ultimaSubidaEnVivo) return;
+  try {
+    await GitHubSync.escribirJSON(
+      `conteo/especiales/${tipo}_borrador.json`,
+      { generadoEn: datos.generadoEn, contador: nombreContador() || null, actualizadoEn: new Date().toISOString(), filas },
+      `Avance en vivo — ${datos.titulo}`
+    );
+    ultimaSubidaEnVivo = firma;
+  } catch (e) { console.warn('No se pudo subir el avance en vivo', e); }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden' && espState.tipo && !MODO_VER) { clearTimeout(temporizadorEnVivo); subirEnVivo(espState.tipo); }
+});
 function borrarBorrador(tipo) {
   try { localStorage.removeItem(claveBorrador(tipo)); } catch (e) { /* sin storage */ }
 }
@@ -507,7 +542,67 @@ async function guardarEspecial() {
   }
 }
 
+// ---------------- MODO VER (administrador, solo lectura, en vivo) ----------------
+function textoHace(iso) {
+  if (!iso) return '—';
+  const seg = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+  if (seg < 60) return `hace ${seg} s`;
+  if (seg < 3600) return `hace ${Math.round(seg / 60)} min`;
+  return new Date(iso).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
+}
+
+async function iniciarModoVer(tipo) {
+  document.body.classList.add('modo-ver');
+  const banner = document.getElementById('banner-ver');
+  banner.style.display = 'block';
+  ['panel-nombre', 'panel-especiales', 'panel-sin-programa', 'panel-nada-pendiente'].forEach((id) => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
+  const datos = espState.datos[tipo] || (await GitHubSync.leerJSONPublico(`conteo/especiales/${tipo}.json`).catch(() => null));
+  if (!datos || !(datos.items || []).length) {
+    banner.innerHTML = '<strong>Vista en vivo</strong><span>No hay una toma enviada para esta categoría.</span>';
+    return;
+  }
+  espState.datos[tipo] = datos;
+  espState.tipo = tipo;
+  espState.filas = datos.items.map(filaEspecialDesdeItem);
+  espState.abiertos = new Set();
+  espState.almacenesAbiertos = new Set();
+  document.getElementById('especial-titulo').textContent = datos.titulo;
+  document.getElementById('especial-subtitulo').textContent = 'Vista del administrador — solo lectura. Se actualiza sola cada pocos segundos.';
+  document.getElementById('especial-formulario').style.display = 'block';
+
+  async function refrescar() {
+    try {
+      const [borr, estado] = await Promise.all([
+        GitHubSync.leerJSONPublico(`conteo/especiales/${tipo}_borrador.json`).catch(() => null),
+        GitHubSync.leerJSONPublico(`conteo/especiales/${tipo}_estado.json`).catch(() => null),
+      ]);
+      const terminada = estado && estado.generadoEn === datos.generadoEn;
+      let msg;
+      if (borr && borr.generadoEn === datos.generadoEn && Array.isArray(borr.filas)) {
+        espState.filas = borr.filas;
+        const contados = borr.filas.filter((f) => String(f.cantidadFisica).trim() !== '').length;
+        msg = `Contando: <strong>${esc(borr.contador || 'sin nombre')}</strong> · ${contados}/${borr.filas.length} filas con cantidad · último cambio ${textoHace(borr.actualizadoEn)}`;
+      } else {
+        msg = 'El operario aún no ha anotado nada.';
+      }
+      if (terminada) msg = `✓ <strong>Toma terminada</strong> por ${esc(estado.completadoPor || 'el operario')}. ` + msg;
+      banner.innerHTML = `<strong>Vista en vivo — solo lectura</strong><span>${msg}</span>`;
+      renderEspecial();
+      document.querySelectorAll('#lista-especial input').forEach((i) => { i.disabled = true; });
+      document.querySelectorAll('#lista-especial .btn-agregar-lote, #lista-especial .btn-quitar-fila').forEach((b) => b.remove());
+    } catch (e) { console.warn(e); }
+  }
+  await refrescar();
+  setInterval(refrescar, 10000);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  if (MODO_VER) {
+    const t = new URLSearchParams(location.search).get('tipo');
+    if (t) { iniciarModoVer(t); return; }
+  }
   iniciarCampoNombre();
   document.getElementById('btn-guardar-conteo').addEventListener('click', guardarConteo);
   document.getElementById('btn-especial-guardar').addEventListener('click', guardarEspecial);
