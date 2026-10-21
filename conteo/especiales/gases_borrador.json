@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-10-21T20:31:14.189Z",
   "contador": "Luis Rafael",
-  "actualizadoEn": "2026-10-21T20:37:08.157Z",
+  "actualizadoEn": "2026-10-21T20:37:20.845Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -376,7 +376,7 @@
       "cantidadSistema": 4,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "",
+      "cantidadFisica": "4",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
@@ -390,7 +390,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L2310285",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "",
+      "cantidadFisica": "4",
       "loteFisico": "L2310285",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
