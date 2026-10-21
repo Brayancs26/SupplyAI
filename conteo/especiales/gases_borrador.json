@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-10-21T20:31:14.189Z",
   "contador": "Luis Rafael",
-  "actualizadoEn": "2026-10-21T20:34:25.541Z",
+  "actualizadoEn": "2026-10-21T20:35:02.024Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -208,7 +208,7 @@
       "cantidadSistema": 1,
       "loteSistema": "COSTA GAS",
       "ubicacionSistema": "PLANTA",
-      "cantidadFisica": "14",
+      "cantidadFisica": "1",
       "loteFisico": "COSTA GAS",
       "ubicacionFisica": "PLANTA",
       "agregada": false
@@ -222,7 +222,7 @@
       "cantidadSistema": 2,
       "loteSistema": "COSTAGAS",
       "ubicacionSistema": "PLANTA",
-      "cantidadFisica": "",
+      "cantidadFisica": "2",
       "loteFisico": "COSTAGAS",
       "ubicacionFisica": "PLANTA",
       "agregada": false
@@ -236,7 +236,7 @@
       "cantidadSistema": 11,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "PLANTA",
-      "cantidadFisica": "",
+      "cantidadFisica": "11",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "PLANTA",
       "agregada": false
