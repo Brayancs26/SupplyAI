@@ -1,7 +1,7 @@
 {
   "tipo": "gases",
   "titulo": "Balones de Gases",
-  "generadoEn": "2026-10-21T17:55:18.985Z",
+  "generadoEn": "2026-10-21T19:21:59.832Z",
   "items": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -14,46 +14,6 @@
       "cantidadSistema": 8
     },
     {
-      "id": "20000669|L004|3.01.1.01|LIMAGAS",
-      "material": "20000669",
-      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
-      "almacen": "L004",
-      "lote": "LIMAGAS",
-      "ubicacion": "3.01.1.01",
-      "um": "UN",
-      "cantidadSistema": 6
-    },
-    {
-      "id": "20000669|L004|3.01.1.01|LLAMAGAS",
-      "material": "20000669",
-      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
-      "almacen": "L004",
-      "lote": "LLAMAGAS",
-      "ubicacion": "3.01.1.01",
-      "um": "UN",
-      "cantidadSistema": 2
-    },
-    {
-      "id": "20000669|L004|3.01.1.01|PECSA",
-      "material": "20000669",
-      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
-      "almacen": "L004",
-      "lote": "PECSA",
-      "ubicacion": "3.01.1.01",
-      "um": "UN",
-      "cantidadSistema": 1
-    },
-    {
-      "id": "20000669|L004|3.01.1.01|PRIMAX",
-      "material": "20000669",
-      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
-      "almacen": "L004",
-      "lote": "PRIMAX",
-      "ubicacion": "3.01.1.01",
-      "um": "UN",
-      "cantidadSistema": 7
-    },
-    {
       "id": "20000669|L001|3.01.1.01|SOLGAS",
       "material": "20000669",
       "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
@@ -64,26 +24,6 @@
       "cantidadSistema": 6
     },
     {
-      "id": "20000669|L004|3.01.1.01|SOLGAS",
-      "material": "20000669",
-      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
-      "almacen": "L004",
-      "lote": "SOLGAS",
-      "ubicacion": "3.01.1.01",
-      "um": "UN",
-      "cantidadSistema": 20
-    },
-    {
-      "id": "20000670|L004|3.01.1.01|SOLGAS",
-      "material": "20000670",
-      "descripcion": "BOTELLA ENV.GAS PROPANO 10KG",
-      "almacen": "L004",
-      "lote": "SOLGAS",
-      "ubicacion": "3.01.1.01",
-      "um": "UN",
-      "cantidadSistema": 20
-    },
-    {
       "id": "20000671|L001|3.01.1.04|SOLGAS",
       "material": "20000671",
       "descripcion": "BOTELLA ENV.GAS GLP 15KG",
@@ -92,16 +32,6 @@
       "ubicacion": "3.01.1.04",
       "um": "UN",
       "cantidadSistema": 39
-    },
-    {
-      "id": "20000671|L004|3.01.1.04|SOLGAS",
-      "material": "20000671",
-      "descripcion": "BOTELLA ENV.GAS GLP 15KG",
-      "almacen": "L004",
-      "lote": "SOLGAS",
-      "ubicacion": "3.01.1.04",
-      "um": "UN",
-      "cantidadSistema": 7
     },
     {
       "id": "20000699|L001|3.01.1.02|L1513344",
@@ -210,6 +140,186 @@
       "almacen": "L001",
       "lote": "Y8250144",
       "ubicacion": "3.01.1.02",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000669|L002|PLANTA|COSTA GAS",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L002",
+      "lote": "COSTA GAS",
+      "ubicacion": "PLANTA",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000669|L002|PLANTA|SOLGAS",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L002",
+      "lote": "SOLGAS",
+      "ubicacion": "PLANTA",
+      "um": "UN",
+      "cantidadSistema": 12
+    },
+    {
+      "id": "20000670|L002|3.01.1.01|SOLGAS",
+      "material": "20000670",
+      "descripcion": "BOTELLA ENV.GAS PROPANO 10KG",
+      "almacen": "L002",
+      "lote": "SOLGAS",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 2
+    },
+    {
+      "id": "20000671|L002|MONTACARGA|SOLGAS",
+      "material": "20000671",
+      "descripcion": "BOTELLA ENV.GAS GLP 15KG",
+      "almacen": "L002",
+      "lote": "SOLGAS",
+      "ubicacion": "MONTACARGA",
+      "um": "UN",
+      "cantidadSistema": 2
+    },
+    {
+      "id": "20000669|L004|3.01.1.01|LIMAGAS",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L004",
+      "lote": "LIMAGAS",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 6
+    },
+    {
+      "id": "20000669|L004|3.01.1.01|LLAMAGAS",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L004",
+      "lote": "LLAMAGAS",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 2
+    },
+    {
+      "id": "20000669|L004|3.01.1.01|PECSA",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L004",
+      "lote": "PECSA",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000669|L004|3.01.1.01|PRIMAX",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L004",
+      "lote": "PRIMAX",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 7
+    },
+    {
+      "id": "20000669|L004|3.01.1.01|SOLGAS",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L004",
+      "lote": "SOLGAS",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 20
+    },
+    {
+      "id": "20000670|L004|3.01.1.01|SOLGAS",
+      "material": "20000670",
+      "descripcion": "BOTELLA ENV.GAS PROPANO 10KG",
+      "almacen": "L004",
+      "lote": "SOLGAS",
+      "ubicacion": "3.01.1.01",
+      "um": "UN",
+      "cantidadSistema": 20
+    },
+    {
+      "id": "20000671|L004|3.01.1.04|SOLGAS",
+      "material": "20000671",
+      "descripcion": "BOTELLA ENV.GAS GLP 15KG",
+      "almacen": "L004",
+      "lote": "SOLGAS",
+      "ubicacion": "3.01.1.04",
+      "um": "UN",
+      "cantidadSistema": 7
+    },
+    {
+      "id": "20000669|PI04|TALLER MEC|SOLGAS",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "PI04",
+      "lote": "SOLGAS",
+      "ubicacion": "TALLER MEC",
+      "um": "UN",
+      "cantidadSistema": 4
+    },
+    {
+      "id": "20000699|PI04|TALLER MEC|L2310285",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "PI04",
+      "lote": "L2310285",
+      "ubicacion": "TALLER MEC",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000699|PI04|TALLER MEC|L657821",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "PI04",
+      "lote": "L657821",
+      "ubicacion": "TALLER MEC",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000699|PI04|TALLER MEC|LEN1013",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "PI04",
+      "lote": "LEN1013",
+      "ubicacion": "TALLER MEC",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000699|PI04|TALLER MEC|Y7724074",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "PI04",
+      "lote": "Y7724074",
+      "ubicacion": "TALLER MEC",
+      "um": "UN",
+      "cantidadSistema": 1
+    },
+    {
+      "id": "20000669|PI05|CHATA|SOLGAS",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "PI05",
+      "lote": "SOLGAS",
+      "ubicacion": "CHATA",
+      "um": "UN",
+      "cantidadSistema": 2
+    },
+    {
+      "id": "20000699|PI05|CHATA|LG1790129",
+      "material": "20000699",
+      "descripcion": "BOTELLA ENV. OXIGENO 10M3",
+      "almacen": "PI05",
+      "lote": "LG1790129",
+      "ubicacion": "CHATA",
       "um": "UN",
       "cantidadSistema": 1
     }
