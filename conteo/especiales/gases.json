@@ -1,7 +1,7 @@
 {
   "tipo": "gases",
   "titulo": "Balones de Gases",
-  "generadoEn": "2026-10-21T19:21:59.832Z",
+  "generadoEn": "2026-10-21T20:27:01.829Z",
   "items": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -11,7 +11,7 @@
       "lote": "COSTAGAS",
       "ubicacion": "3.01.1.01",
       "um": "UN",
-      "cantidadSistema": 8
+      "cantidadSistema": 6
     },
     {
       "id": "20000669|L001|3.01.1.01|SOLGAS",
@@ -31,7 +31,7 @@
       "lote": "SOLGAS",
       "ubicacion": "3.01.1.04",
       "um": "UN",
-      "cantidadSistema": 39
+      "cantidadSistema": 31
     },
     {
       "id": "20000699|L001|3.01.1.02|L1513344",
@@ -154,6 +154,16 @@
       "cantidadSistema": 1
     },
     {
+      "id": "20000669|L002|PLANTA|COSTAGAS",
+      "material": "20000669",
+      "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
+      "almacen": "L002",
+      "lote": "COSTAGAS",
+      "ubicacion": "PLANTA",
+      "um": "UN",
+      "cantidadSistema": 2
+    },
+    {
       "id": "20000669|L002|PLANTA|SOLGAS",
       "material": "20000669",
       "descripcion": "BOTELLA DE GAS PROPANO X 45 KG.(ENVASE)",
@@ -161,7 +171,7 @@
       "lote": "SOLGAS",
       "ubicacion": "PLANTA",
       "um": "UN",
-      "cantidadSistema": 12
+      "cantidadSistema": 11
     },
     {
       "id": "20000670|L002|3.01.1.01|SOLGAS",
@@ -231,7 +241,7 @@
       "lote": "SOLGAS",
       "ubicacion": "3.01.1.01",
       "um": "UN",
-      "cantidadSistema": 20
+      "cantidadSistema": 21
     },
     {
       "id": "20000670|L004|3.01.1.01|SOLGAS",
@@ -251,7 +261,7 @@
       "lote": "SOLGAS",
       "ubicacion": "3.01.1.04",
       "um": "UN",
-      "cantidadSistema": 7
+      "cantidadSistema": 15
     },
     {
       "id": "20000669|PI04|TALLER MEC|SOLGAS",
