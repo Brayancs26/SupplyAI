@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-10-21T17:54:49.710Z",
+  "publicadoEn": "2026-10-21T17:55:12.069Z",
   "totalMaterialesParaReordenar": 264,
   "materialesParaReordenar": [
     {
@@ -87,10 +87,10 @@
       "material": "31009821",
       "descripcion": "DISCO CORTE INOX.1/8\"X7/8\"X4 1/2\"",
       "clasificacion": "Alta Rotación",
-      "stock": 145,
+      "stock": 141,
       "rop": 8,
       "riesgo": "AMARILLO",
-      "coberturaDias": 603.7106918238994
+      "coberturaDias": 587.0566037735849
     },
     {
       "material": "31010191",
@@ -150,10 +150,10 @@
       "material": "32005402",
       "descripcion": "WYPALL ROLLO BLANCO X-80",
       "clasificacion": "Alta Rotación",
-      "stock": 107,
+      "stock": 106,
       "rop": 10,
       "riesgo": "AMARILLO",
-      "coberturaDias": 485.16438356164383
+      "coberturaDias": 480.63013698630135
     },
     {
       "material": "32008505",
@@ -213,10 +213,10 @@
       "material": "32003790",
       "descripcion": "CAJA AGUA ENV.DESCARTABLE 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 33,
+      "stock": 28,
       "rop": 79,
       "riesgo": "ROJO",
-      "coberturaDias": 15.727861771058315
+      "coberturaDias": 13.344852411807056
     },
     {
       "material": "32005434",
@@ -225,7 +225,7 @@
       "stock": 1,
       "rop": 5,
       "riesgo": "ROJO",
-      "coberturaDias": 15.761904761904763
+      "coberturaDias": 173.38095238095238
     },
     {
       "material": "31008471",
@@ -333,7 +333,7 @@
       "stock": 50,
       "rop": 320,
       "riesgo": "ROJO",
-      "coberturaDias": 16.249386352479135
+      "coberturaDias": 22.74914089347079
     },
     {
       "material": "31012390",
@@ -375,10 +375,10 @@
       "material": "31013867",
       "descripcion": "SOLDADURA INOX.AW E308L-16 2.50MM",
       "clasificacion": "Alta Rotación",
-      "stock": 5,
+      "stock": 2,
       "rop": 6,
       "riesgo": "ROJO",
-      "coberturaDias": 25.29130850047755
+      "coberturaDias": 10.11652340019102
     },
     {
       "material": "32005020",
@@ -387,7 +387,7 @@
       "stock": 1,
       "rop": 2,
       "riesgo": "ROJO",
-      "coberturaDias": 110.33333333333333
+      "coberturaDias": 330.99999999999994
     },
     {
       "material": "32006122",
@@ -783,7 +783,7 @@
       "stock": 0,
       "rop": 6,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 249.81132075471697
     },
     {
       "material": "32005491",
@@ -792,7 +792,7 @@
       "stock": 3,
       "rop": 6,
       "riesgo": "ROJO",
-      "coberturaDias": 31.523809523809526
+      "coberturaDias": 241.6825396825397
     },
     {
       "material": "32005361",
@@ -2405,7 +2405,7 @@
     {
       "material": "50003970",
       "descripcion": "HARINA C TAILANDIA",
-      "stock": 45.2
+      "stock": 31.2
     },
     {
       "material": "50003967",
@@ -2454,8 +2454,8 @@
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1086922,
-    "ppttUSD": 227243,
-    "pctVencido": 0.71
+    "almacenUSD": 1083751,
+    "ppttUSD": 205546,
+    "pctVencido": 0.69
   }
 }
