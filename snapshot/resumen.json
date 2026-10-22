@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-10-22T15:22:51.665Z",
+  "publicadoEn": "2026-10-22T15:23:01.834Z",
   "totalMaterialesParaReordenar": 264,
   "materialesParaReordenar": [
     {
@@ -771,10 +771,10 @@
       "material": "32004469",
       "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
       "clasificacion": "Alta Rotación",
-      "stock": 883,
+      "stock": 877,
       "rop": 169,
       "riesgo": "AMARILLO",
-      "coberturaDias": 302.5600414078675
+      "coberturaDias": 300.5041407867495
     },
     {
       "material": "32004575",
@@ -2398,14 +2398,14 @@
   ],
   "stockHarinaPescado": [
     {
+      "material": "50003970",
+      "descripcion": "HARINA C TAILANDIA",
+      "stock": 70
+    },
+    {
       "material": "50003916",
       "descripcion": "HARINA NC. FFA",
       "stock": 50
-    },
-    {
-      "material": "50003970",
-      "descripcion": "HARINA C TAILANDIA",
-      "stock": 31.2
     },
     {
       "material": "50003967",
@@ -2454,8 +2454,8 @@
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1083679,
-    "ppttUSD": 205546,
+    "almacenUSD": 1083641,
+    "ppttUSD": 265677,
     "pctVencido": 0.69
   }
 }
