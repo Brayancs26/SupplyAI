@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-10-26T18:56:16.614Z",
+  "publicadoEn": "2026-10-27T14:25:58.528Z",
   "totalMaterialesParaReordenar": 264,
   "materialesParaReordenar": [
     {
@@ -538,9 +538,9 @@
       "descripcion": "THINNER ACRILIC.PREMIUM 3L",
       "clasificacion": "Baja Rotación",
       "stock": 10,
-      "rop": 1,
+      "rop": 5,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1324
+      "coberturaDias": null
     },
     {
       "material": "31015361",
@@ -1114,9 +1114,9 @@
       "descripcion": "PINT.ZINC PRIMER 910 GRIS 3COM+CAT 1GL",
       "clasificacion": "Baja Rotación",
       "stock": 5,
-      "rop": 8,
-      "riesgo": "ROJO",
-      "coberturaDias": 100.3030303030303
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "32003569",
@@ -2257,9 +2257,9 @@
       "descripcion": "PINT.LATEX BLANCO AM COLORS",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 4,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "31015314",
@@ -2275,7 +2275,7 @@
       "descripcion": "BROCHA NY. 1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 2,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2284,7 +2284,7 @@
       "descripcion": "DILUYENTE JET ECOPOXY 90",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 13,
+      "rop": 8,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
