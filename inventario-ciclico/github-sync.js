@@ -51,9 +51,14 @@ async function leerJSONPublico(ruta) {
   const cfg = configEfectiva();
   if (!cfg.owner || !cfg.repo) throw new Error('No se detectó el repositorio (usuario/repo).');
   const url = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${ruta}?_=${Date.now()}`;
-  const res = await fetch(url, { cache: 'no-store' });
-  if (!res.ok) return null;
-  return res.json();
+  // si GitHub tarda más de 4 s, seguimos sin esa lectura en vez de dejar la página esperando
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), 4000);
+  try {
+    const res = await fetch(url, { cache: 'no-store', signal: ctl.signal });
+    if (!res.ok) return null;
+    return await res.json();
+  } finally { clearTimeout(t); }
 }
 
 /**

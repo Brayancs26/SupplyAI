@@ -329,6 +329,7 @@ function recalcularConClasificacionesActuales() {
 }
 
 async function calcularTodo() {
+  const t0 = performance.now();
   setEstadoCarga(true, 'Calculando estacionalidad y SS/ROP/EOQ…');
   // pequeño respiro para que el navegador pinte el overlay antes de bloquear el hilo
   await new Promise((r) => setTimeout(r, 50));
@@ -337,9 +338,11 @@ async function calcularTodo() {
     recalcularConClasificacionesActuales();
     calcularAlertasClasificacion();
 
+    const t1 = performance.now();
     mostrarDashboard();
     renderTodo();
-    publicarSnapshotParaWhatsApp(); // en segundo plano, no bloquea — si falla, no interrumpe nada
+    console.info(`[SupplyMind] cálculo ${Math.round(t1 - t0)} ms · pintado ${Math.round(performance.now() - t1)} ms`);
+    setTimeout(() => publicarSnapshotParaWhatsApp(), 8000); // en segundo plano y sin competir con la carga
   } catch (err) {
     console.error(err);
     alert('Error calculando: ' + err.message);
