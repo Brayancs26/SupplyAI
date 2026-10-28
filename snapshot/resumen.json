@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-10-27T14:25:58.528Z",
+  "publicadoEn": "2026-10-28T15:24:29.506Z",
   "totalMaterialesParaReordenar": 264,
   "materialesParaReordenar": [
     {
@@ -2248,7 +2248,7 @@
       "descripcion": "GRASA LGHP 2 SKF",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 3,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
