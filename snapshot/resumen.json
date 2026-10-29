@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-10-29T13:30:47.959Z",
+  "publicadoEn": "2026-10-29T13:33:19.701Z",
   "totalMaterialesParaReordenar": 264,
   "materialesParaReordenar": [
     {
@@ -33,10 +33,10 @@
       "material": "32008169",
       "descripcion": "JALADOR AGUA JEBE P/PISO VERDE 550MM",
       "clasificacion": "Baja Rotación",
-      "stock": 21,
+      "stock": 20,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 4634
+      "coberturaDias": 4413.333333333333
     },
     {
       "material": "33040389",
@@ -46,15 +46,6 @@
       "rop": 8,
       "riesgo": "ROJO",
       "coberturaDias": 147.11111111111111
-    },
-    {
-      "material": "30000383",
-      "descripcion": "ACEITE M-MOBILGARD 412 MOBIL 55GL",
-      "clasificacion": "Baja Rotación",
-      "stock": 70,
-      "rop": 5,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 2317
     },
     {
       "material": "30000506",
@@ -129,6 +120,15 @@
       "coberturaDias": 1410.5
     },
     {
+      "material": "32004396",
+      "descripcion": "GUANTE POLI-ALGO.P/MANIO. T/L(9)",
+      "clasificacion": "Alta Rotación",
+      "stock": 27,
+      "rop": 28,
+      "riesgo": "ROJO",
+      "coberturaDias": 51.068571428571424
+    },
+    {
       "material": "32005051",
       "descripcion": "ROPA AGUA CASAC.JEBE DOBLE FAZ T/M",
       "clasificacion": "Baja Rotación",
@@ -150,10 +150,10 @@
       "material": "32005402",
       "descripcion": "WYPALL ROLLO BLANCO X-80",
       "clasificacion": "Alta Rotación",
-      "stock": 106,
+      "stock": 97,
       "rop": 10,
       "riesgo": "AMARILLO",
-      "coberturaDias": 480.63013698630135
+      "coberturaDias": 439.8219178082192
     },
     {
       "material": "32008505",
@@ -195,10 +195,10 @@
       "material": "33032008",
       "descripcion": "ELEM.FILTRO PETR./SEP.AGUA RACOR 2020SM",
       "clasificacion": "Baja Rotación",
-      "stock": 86,
+      "stock": 62,
       "rop": 22,
       "riesgo": "AMARILLO",
-      "coberturaDias": 345.04242424242426
+      "coberturaDias": 248.75151515151515
     },
     {
       "material": "31012485",
@@ -210,22 +210,31 @@
       "coberturaDias": 992.9999999999999
     },
     {
+      "material": "31009310",
+      "descripcion": "CHISPERO TRES PIEDRAS P/OXICORTE",
+      "clasificacion": "Mediana Rotación",
+      "stock": 1,
+      "rop": 2,
+      "riesgo": "ROJO",
+      "coberturaDias": 47.285714285714285
+    },
+    {
       "material": "32003790",
       "descripcion": "CAJA AGUA ENV.DESCARTABLE 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 28,
+      "stock": 52,
       "rop": 79,
       "riesgo": "ROJO",
-      "coberturaDias": 13.344852411807056
+      "coberturaDias": 24.783297336213103
     },
     {
       "material": "32005434",
       "descripcion": "DESINCRUSTANTE LIQUIDO ACIDO GL",
       "clasificacion": "Baja Rotación",
-      "stock": 1,
+      "stock": 5,
       "rop": 5,
       "riesgo": "ROJO",
-      "coberturaDias": 173.38095238095238
+      "coberturaDias": 78.80952380952381
     },
     {
       "material": "31008471",
@@ -330,7 +339,7 @@
       "material": "31012348",
       "descripcion": "PERNO HEX.INOX.1/2\"X2\"",
       "clasificacion": "Mediana Rotación",
-      "stock": 50,
+      "stock": 70,
       "rop": 320,
       "riesgo": "ROJO",
       "coberturaDias": 22.74914089347079
@@ -375,19 +384,10 @@
       "material": "31013867",
       "descripcion": "SOLDADURA INOX.AW E308L-16 2.50MM",
       "clasificacion": "Alta Rotación",
-      "stock": 2,
+      "stock": 0,
       "rop": 6,
       "riesgo": "ROJO",
-      "coberturaDias": 10.11652340019102
-    },
-    {
-      "material": "32005020",
-      "descripcion": "REMOVEDOR SARRO DUKTO",
-      "clasificacion": "Baja Rotación",
-      "stock": 1,
-      "rop": 2,
-      "riesgo": "ROJO",
-      "coberturaDias": 330.99999999999994
+      "coberturaDias": 0
     },
     {
       "material": "32006122",
@@ -438,19 +438,19 @@
       "material": "32022265",
       "descripcion": "ROPA AGUA CASAC.JEBE DOBLE FAZ FLO T/L",
       "clasificacion": "Baja Rotación",
-      "stock": 67,
+      "stock": 40,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 14539
+      "coberturaDias": 8680
     },
     {
       "material": "32022274",
       "descripcion": "ROPA AGUA PANT.JEBE DOBLE FAZ T/M",
       "clasificacion": "Baja Rotación",
-      "stock": 81,
+      "stock": 18,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 17874
+      "coberturaDias": 3971.9999999999995
     },
     {
       "material": "32022256",
@@ -726,10 +726,10 @@
       "material": "32022278",
       "descripcion": "ROPA AGUA PANT.JEBE DOBLE FAZ T/XL",
       "clasificacion": "Baja Rotación",
-      "stock": 303,
+      "stock": 42,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 7163.785714285714
+      "coberturaDias": 993
     },
     {
       "material": "32024575",
@@ -771,28 +771,19 @@
       "material": "32004469",
       "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
       "clasificacion": "Alta Rotación",
-      "stock": 877,
+      "stock": 835,
       "rop": 169,
       "riesgo": "AMARILLO",
-      "coberturaDias": 300.5041407867495
+      "coberturaDias": 286.1128364389234
     },
     {
-      "material": "32004575",
-      "descripcion": "LIMPIADOR DESINFECTANTE LIQUIDO GL",
-      "clasificacion": "Mediana Rotación",
-      "stock": 0,
-      "rop": 6,
-      "riesgo": "ROJO",
-      "coberturaDias": 249.81132075471697
-    },
-    {
-      "material": "32005491",
-      "descripcion": "BOLSA P/BASURA NEGRO 140L PQTE.100UN",
-      "clasificacion": "Mediana Rotación",
-      "stock": 3,
-      "rop": 6,
-      "riesgo": "ROJO",
-      "coberturaDias": 241.6825396825397
+      "material": "32005500",
+      "descripcion": "PAPEL TOALLA HJ.SIMPLE AIRFLEX 200MT",
+      "clasificacion": "Alta Rotación",
+      "stock": 181,
+      "rop": 59,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 140.33518312985572
     },
     {
       "material": "32005361",
@@ -849,6 +840,15 @@
       "coberturaDias": 0
     },
     {
+      "material": "33059393",
+      "descripcion": "PILA ALCALINA TIPO AAA",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 6,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
       "material": "34002480",
       "descripcion": "CARBON SELLO ROTULA P/JUNTA ROTAT.4\"",
       "clasificacion": "Baja Rotación",
@@ -888,10 +888,10 @@
       "material": "32008167",
       "descripcion": "JALADOR AGUA JEBE P/PISO AZUL 550MM",
       "clasificacion": "Baja Rotación",
-      "stock": 18,
+      "stock": 17,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 2979
+      "coberturaDias": 2813.5
     },
     {
       "material": "32003905",
@@ -1977,10 +1977,10 @@
       "material": "32004244",
       "descripcion": "FILTRO P/PARTICULAS 7093 P-100 3M",
       "clasificacion": "Baja Rotación",
-      "stock": 22,
+      "stock": 21,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 2427.333333333333
+      "coberturaDias": 2317
     },
     {
       "material": "32004610",
@@ -2400,11 +2400,16 @@
     {
       "material": "50003970",
       "descripcion": "HARINA C TAILANDIA",
-      "stock": 70
+      "stock": 104.55
     },
     {
       "material": "50003916",
       "descripcion": "HARINA NC. FFA",
+      "stock": 50
+    },
+    {
+      "material": "50003939",
+      "descripcion": "HARINA STEAM DRIED STANDAR <65",
       "stock": 50
     },
     {
@@ -2418,6 +2423,11 @@
       "stock": 14
     },
     {
+      "material": "50003971",
+      "descripcion": "HARINA D STANDARD",
+      "stock": 11.7
+    },
+    {
       "material": "50003969",
       "descripcion": "HARINA B PRIME",
       "stock": 7.85
@@ -2426,36 +2436,11 @@
       "material": "50003935",
       "descripcion": "HARINA SCRAP",
       "stock": 1.79
-    },
-    {
-      "material": "50003971",
-      "descripcion": "HARINA D STANDARD",
-      "stock": 1.7
-    },
-    {
-      "material": "50006015",
-      "descripcion": "BLOQUEO PREVENTIVO",
-      "stock": 1
-    },
-    {
-      "material": "50003915",
-      "descripcion": "HOMOGENIZACION POR BAJA CALIDAD",
-      "stock": 0.39999999999999997
-    },
-    {
-      "material": "50003913",
-      "descripcion": "HARINA NC. HUMEDAD POR LLUVIA",
-      "stock": 0.1
-    },
-    {
-      "material": "50003902",
-      "descripcion": "HARINA NC. ANTIGUEDAD >4/6 MESES",
-      "stock": 0.05
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1083641,
-    "ppttUSD": 265677,
-    "pctVencido": 0.69
+    "almacenUSD": 949073,
+    "ppttUSD": 397534,
+    "pctVencido": 0.55
   }
 }
