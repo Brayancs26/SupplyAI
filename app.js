@@ -659,6 +659,7 @@ function grupoDeHarina(descripcion) {
   if (/\bNC\b|BLOQUEO|CALIDAD/.test(d)) return 'HARINA NC';
   if (/\bHARINA\s+E\b/.test(d)) return 'HARINA CALIDAD E';
   if (/\bHARINA\s+[A-D]\b/.test(d)) return 'HARINA COMERCIAL';
+  if (/STEAM\s+DRIED/.test(d)) return 'HARINA COMERCIAL';
   return 'OTROS';
 }
 
