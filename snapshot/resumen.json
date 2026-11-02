@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-11-02T13:36:35.298Z",
+  "publicadoEn": "2026-11-02T13:41:47.450Z",
   "totalMaterialesParaReordenar": 264,
   "materialesParaReordenar": [
     {
@@ -222,10 +222,10 @@
       "material": "32003790",
       "descripcion": "CAJA AGUA ENV.DESCARTABLE 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 52,
+      "stock": 37,
       "rop": 79,
       "riesgo": "ROJO",
-      "coberturaDias": 24.783297336213103
+      "coberturaDias": 17.634269258459323
     },
     {
       "material": "32005434",
@@ -309,6 +309,15 @@
       "coberturaDias": 30.553846153846152
     },
     {
+      "material": "31012991",
+      "descripcion": "PICOTA 12\"X24MM",
+      "clasificacion": "Baja Rotación",
+      "stock": 4,
+      "rop": 4,
+      "riesgo": "ROJO",
+      "coberturaDias": 94.57142857142857
+    },
+    {
       "material": "32005600",
       "descripcion": "RESPIRADOR MEDIA CARA REUSABLE 3M T/L",
       "clasificacion": "Mediana Rotación",
@@ -379,15 +388,6 @@
       "rop": 486,
       "riesgo": "ROJO",
       "coberturaDias": 34.71227042853341
-    },
-    {
-      "material": "31013867",
-      "descripcion": "SOLDADURA INOX.AW E308L-16 2.50MM",
-      "clasificacion": "Alta Rotación",
-      "stock": 0,
-      "rop": 6,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
     },
     {
       "material": "32006122",
@@ -525,15 +525,6 @@
       "coberturaDias": 0
     },
     {
-      "material": "31013843",
-      "descripcion": "SILICONA CARTUCHO TRANSP.",
-      "clasificacion": "Alta Rotación",
-      "stock": 5,
-      "rop": 10,
-      "riesgo": "ROJO",
-      "coberturaDias": 24.887218045112782
-    },
-    {
       "material": "31014281",
       "descripcion": "THINNER ACRILIC.PREMIUM 3L",
       "clasificacion": "Baja Rotación",
@@ -550,6 +541,15 @@
       "rop": 1,
       "riesgo": "AMARILLO",
       "coberturaDias": 2068.75
+    },
+    {
+      "material": "31015445",
+      "descripcion": "TIZA P/MARCAR METALES (CALDERERO)",
+      "clasificacion": "Alta Rotación",
+      "stock": 0,
+      "rop": 3,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
     },
     {
       "material": "31015544",
@@ -577,6 +577,15 @@
       "rop": 4,
       "riesgo": "AMARILLO",
       "coberturaDias": 304.1621621621622
+    },
+    {
+      "material": "31032189",
+      "descripcion": "CINTA AISLANTE PVC 19MMX20MTX0.15MM",
+      "clasificacion": "Baja Rotación",
+      "stock": 33,
+      "rop": 4,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 840.2307692307693
     },
     {
       "material": "32003567",
@@ -762,10 +771,10 @@
       "material": "32005352",
       "descripcion": "TRAJE DESCARTABLE AMARILLO QUIMICOS T/L",
       "clasificacion": "Baja Rotación",
-      "stock": 2,
+      "stock": 0,
       "rop": 2,
       "riesgo": "ROJO",
-      "coberturaDias": 49.03703703703704
+      "coberturaDias": 0
     },
     {
       "material": "32004469",
@@ -807,10 +816,10 @@
       "material": "32004344",
       "descripcion": "GEL ALCOHOL 60-70° X 1 LT C/VALV.",
       "clasificacion": "Baja Rotación",
-      "stock": 1,
+      "stock": 0,
       "rop": 2,
       "riesgo": "ROJO",
-      "coberturaDias": 55.166666666666664
+      "coberturaDias": 0
     },
     {
       "material": "31013255",
@@ -836,15 +845,6 @@
       "clasificacion": "Mediana Rotación",
       "stock": 0,
       "rop": 2,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "33059393",
-      "descripcion": "PILA ALCALINA TIPO AAA",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 6,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2031,10 +2031,10 @@
       "material": "32005531",
       "descripcion": "CINTA MASKING TAPE 1\"X55YDS",
       "clasificacion": "Baja Rotación",
-      "stock": 7,
+      "stock": 37,
       "rop": 41,
       "riesgo": "ROJO",
-      "coberturaDias": 14.711111111111112
+      "coberturaDias": 77.75873015873016
     },
     {
       "material": "32005537",
@@ -2220,10 +2220,10 @@
       "material": "32005353",
       "descripcion": "TRAJE DESCARTABLE BLANCO P/PINTADO T/L",
       "clasificacion": "Mediana Rotación",
-      "stock": 30,
+      "stock": 28,
       "rop": 36,
       "riesgo": "ROJO",
-      "coberturaDias": 42.80172413793103
+      "coberturaDias": 39.94827586206896
     },
     {
       "material": "33041869",
@@ -2238,10 +2238,10 @@
       "material": "32022252",
       "descripcion": "GUANTE NITRI. 13 T/L (09)",
       "clasificacion": "Baja Rotación",
-      "stock": 31,
+      "stock": 30,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1578.6153846153848
+      "coberturaDias": 1527.6923076923076
     },
     {
       "material": "30000470",
@@ -2439,8 +2439,8 @@
     }
   ],
   "valorizacion": {
-    "almacenUSD": 949073,
+    "almacenUSD": 949594,
     "ppttUSD": 397534,
-    "pctVencido": 0.55
+    "pctVencido": 0.63
   }
 }
