@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-10-29T16:05:02.939Z",
+  "publicadoEn": "2026-11-02T13:36:35.298Z",
   "totalMaterialesParaReordenar": 264,
   "materialesParaReordenar": [
     {
@@ -61,9 +61,9 @@
       "descripcion": "AQA 3700 ENV.21KG 5GL",
       "clasificacion": "Baja Rotación",
       "stock": 105,
-      "rop": 17,
+      "rop": 31,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1655
+      "coberturaDias": 361.66666666666663
     },
     {
       "material": "31009337",
@@ -1105,9 +1105,9 @@
       "descripcion": "PINT.ESMTE.TRAFICO AMARILLO CPP",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "31013183",
@@ -1366,9 +1366,9 @@
       "descripcion": "BOTIN AMARILLO P/AC KEVL T-40 A:32009306",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 0,
+      "rop": 2,
       "riesgo": "ROJO",
-      "coberturaDias": null
+      "coberturaDias": 0
     },
     {
       "material": "32003648",
@@ -2232,7 +2232,7 @@
       "stock": 0,
       "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "32022252",
