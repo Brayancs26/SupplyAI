@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-11-02T20:51:15.975Z",
-  "totalMaterialesParaReordenar": 264,
+  "publicadoEn": "2026-11-05T15:38:31.291Z",
+  "totalMaterialesParaReordenar": 266,
   "materialesParaReordenar": [
     {
       "material": "32004359",
@@ -39,13 +39,22 @@
       "coberturaDias": 4413.333333333333
     },
     {
+      "material": "32008682",
+      "descripcion": "BANDERA PERUANA P/RM 1.80MTX1.10MT",
+      "clasificacion": "Baja Rotación",
+      "stock": 21,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 4557
+    },
+    {
       "material": "33040389",
       "descripcion": "FILTRO PETR.SEP.AGUA P550690 DONALDSON",
       "clasificacion": "Baja Rotación",
       "stock": 6,
-      "rop": 8,
-      "riesgo": "ROJO",
-      "coberturaDias": 147.11111111111111
+      "rop": 3,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "30000506",
@@ -120,13 +129,13 @@
       "coberturaDias": 1410.5
     },
     {
-      "material": "32004396",
-      "descripcion": "GUANTE POLI-ALGO.P/MANIO. T/L(9)",
-      "clasificacion": "Alta Rotación",
-      "stock": 27,
-      "rop": 28,
-      "riesgo": "ROJO",
-      "coberturaDias": 51.068571428571424
+      "material": "32003920",
+      "descripcion": "CASCO POLIET.SEGUR.C/LOG.ROJO",
+      "clasificacion": "Mediana Rotación",
+      "stock": 9,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 976.5
     },
     {
       "material": "32005051",
@@ -171,25 +180,7 @@
       "stock": 10,
       "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 662
-    },
-    {
-      "material": "33032741",
-      "descripcion": "FILTER AS ENGINE OIL 1R-0726",
-      "clasificacion": "Baja Rotación",
-      "stock": 8,
-      "rop": 3,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 353.06666666666666
-    },
-    {
-      "material": "33033113",
-      "descripcion": "FILTRO PETR.751-18100 LISTER",
-      "clasificacion": "Baja Rotación",
-      "stock": 8,
-      "rop": 2,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 882.6666666666666
+      "coberturaDias": 723.3333333333333
     },
     {
       "material": "33032008",
@@ -216,7 +207,7 @@
       "stock": 1,
       "rop": 2,
       "riesgo": "ROJO",
-      "coberturaDias": 47.285714285714285
+      "coberturaDias": 54.25
     },
     {
       "material": "32003790",
@@ -286,7 +277,7 @@
       "descripcion": "CARETA AUTO-OSCURECIBLEA P/SOLDAR",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -322,7 +313,7 @@
       "descripcion": "RESPIRADOR MEDIA CARA REUSABLE 3M T/L",
       "clasificacion": "Mediana Rotación",
       "stock": 0,
-      "rop": 2,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -331,7 +322,7 @@
       "descripcion": "KIT LENTES SEGUR.TRANSP.SOLUS 1000",
       "clasificacion": "Mediana Rotación",
       "stock": 0,
-      "rop": 2,
+      "rop": 3,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -390,6 +381,15 @@
       "coberturaDias": 34.71227042853341
     },
     {
+      "material": "32004387",
+      "descripcion": "GUANTE NITRI.DESECHABLE 6MM T/M",
+      "clasificacion": "Mediana Rotación",
+      "stock": 250,
+      "rop": 282,
+      "riesgo": "ROJO",
+      "coberturaDias": 51.666666666666664
+    },
+    {
       "material": "32006122",
       "descripcion": "GUANTES LATEX BLANCO C-5 T-L",
       "clasificacion": "Baja Rotación",
@@ -412,7 +412,7 @@
       "descripcion": "RESPIRADOR DESCARTABLE POLVO N95 8210",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 8,
+      "rop": 17,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -421,7 +421,7 @@
       "descripcion": "RESPIRADOR P/VAP.ORG.-HUMOS R95",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 14,
+      "rop": 18,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -430,7 +430,7 @@
       "descripcion": "GUANTE QUIRURGICO NITRI. 4MM T/L",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 95,
+      "rop": 140,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -637,18 +637,18 @@
       "descripcion": "GUANTE CUERO CROMO REF.P/MANIO.T/L(10.5)",
       "clasificacion": "Mediana Rotación",
       "stock": 91,
-      "rop": 17,
+      "rop": 10,
       "riesgo": "AMARILLO",
-      "coberturaDias": 573.7333333333332
+      "coberturaDias": 658.2333333333332
     },
     {
-      "material": "32005034",
-      "descripcion": "RESPIRADOR PROTECCION KN95 TARUO MASK",
-      "clasificacion": "Baja Rotación",
-      "stock": 120,
-      "rop": 14,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 945.7142857142858
+      "material": "32004376",
+      "descripcion": "GUANTE NEOPRENE P/SOLVENTES 14\"",
+      "clasificacion": "Mediana Rotación",
+      "stock": 4,
+      "rop": 4,
+      "riesgo": "ROJO",
+      "coberturaDias": 96.44444444444444
     },
     {
       "material": "32005548",
@@ -664,7 +664,7 @@
       "descripcion": "MASCARA CARA COMPL.T/M 6800 3M",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 2,
+      "rop": 5,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -673,7 +673,7 @@
       "descripcion": "RESPIRADOR MEDIA CARA REUSABLE 3M T/M",
       "clasificacion": "Mediana Rotación",
       "stock": 0,
-      "rop": 3,
+      "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -691,7 +691,7 @@
       "descripcion": "LENTE SEGUR.OSCU.SECUREFIT 402X 3M",
       "clasificacion": "Alta Rotación",
       "stock": 0,
-      "rop": 23,
+      "rop": 16,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -700,7 +700,7 @@
       "descripcion": "LENTE SEGUR.TRANSP.SECUREFIT 401X 3M",
       "clasificacion": "Alta Rotación",
       "stock": 0,
-      "rop": 32,
+      "rop": 24,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -727,7 +727,7 @@
       "descripcion": "GUANTE QUIRURGICO NITRI.4MM T/M",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 142,
+      "rop": 280,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -745,7 +745,7 @@
       "descripcion": "CARTUCHO MULTIGAS VAP.6006 3M",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 9,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -768,6 +768,15 @@
       "coberturaDias": null
     },
     {
+      "material": "32005595",
+      "descripcion": "ESCARPIN CUERO P/SOLDAR STD",
+      "clasificacion": "Baja Rotación",
+      "stock": 10,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
+    },
+    {
       "material": "32005352",
       "descripcion": "TRAJE DESCARTABLE AMARILLO QUIMICOS T/L",
       "clasificacion": "Baja Rotación",
@@ -784,6 +793,15 @@
       "rop": 169,
       "riesgo": "AMARILLO",
       "coberturaDias": 286.1128364389234
+    },
+    {
+      "material": "32004360",
+      "descripcion": "GUANTE CUERO CR.FUEGO T/18\"",
+      "clasificacion": "Mediana Rotación",
+      "stock": 16,
+      "rop": 2,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 496
     },
     {
       "material": "32005500",
@@ -1092,13 +1110,13 @@
       "coberturaDias": 0
     },
     {
-      "material": "33032818",
-      "descripcion": "FILTRO ACEITE P550335/P551251 DONALDSON",
+      "material": "33033111",
+      "descripcion": "FILTRO PETR.RE62420 JHON DEERE",
       "clasificacion": "Baja Rotación",
       "stock": 2,
-      "rop": 8,
+      "rop": 3,
       "riesgo": "ROJO",
-      "coberturaDias": 49.03703703703704
+      "coberturaDias": 108.5
     },
     {
       "material": "31013016",
@@ -1402,7 +1420,7 @@
       "descripcion": "CUCHARA MESA HOTELERO 510-1 FACUSA",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 9,
+      "rop": 8,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1411,16 +1429,16 @@
       "descripcion": "CUCHILLO CARNICERO M/WT.12\"TRAMONTINA",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 2,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "32004074",
       "descripcion": "CUCHILLO CARNICERO M/WT. 8\"TRAMONTINA",
       "clasificacion": "Mediana Rotación",
       "stock": 0,
-      "rop": 3,
+      "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1434,31 +1452,13 @@
       "coberturaDias": 0
     },
     {
-      "material": "32004400",
-      "descripcion": "GUANTE TEJIDO ALGO.PVC T/XL(10)SHOWA 660",
-      "clasificacion": "Baja Rotación",
-      "stock": 10,
-      "rop": 0,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 6620
-    },
-    {
-      "material": "32005029",
-      "descripcion": "REPUESTO PULVERIZADOR",
-      "clasificacion": "Baja Rotación",
-      "stock": 3,
-      "rop": 5,
-      "riesgo": "ROJO",
-      "coberturaDias": 86.34782608695652
-    },
-    {
       "material": "32005354",
       "descripcion": "TRAJE DESCARTABLE BLANCO P/PINTADO T/XL",
       "clasificacion": "Mediana Rotación",
       "stock": 32,
-      "rop": 40,
+      "rop": 74,
       "riesgo": "ROJO",
-      "coberturaDias": 75.38790035587188
+      "coberturaDias": 28
     },
     {
       "material": "32005482",
@@ -1479,8 +1479,8 @@
       "coberturaDias": 0
     },
     {
-      "material": "33032964",
-      "descripcion": "FILTRO COMBUSTIB.FF5488 CUMMINS",
+      "material": "33032096",
+      "descripcion": "ELEM.FILTRO AIRE 757-27890",
       "clasificacion": "Baja Rotación",
       "stock": 1,
       "rop": 0,
@@ -1519,9 +1519,9 @@
       "descripcion": "GUANTE CROMO REF.EXT.AMARILLO T/L(10.5)",
       "clasificacion": "Baja Rotación",
       "stock": 41,
-      "rop": 3,
+      "rop": 5,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1507.888888888889
+      "coberturaDias": 684.3846153846154
     },
     {
       "material": "32005050",
@@ -1627,9 +1627,9 @@
       "descripcion": "TOALLA FELPA C/LOG.TASA BLANCO 40X60CM",
       "clasificacion": "Baja Rotación",
       "stock": 29,
-      "rop": 3,
+      "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1371.2857142857142
+      "coberturaDias": null
     },
     {
       "material": "32000727",
@@ -1672,7 +1672,7 @@
       "descripcion": "JUGUETE 0 - 1 AÑOS UNISEX",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 3,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1681,9 +1681,9 @@
       "descripcion": "TAPER RECT.C/TA. 2KG",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 4,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "33032136",
@@ -1969,9 +1969,18 @@
       "descripcion": "CASCO POLIET.SEGUR.C/LOG.NARANJA",
       "clasificacion": "Baja Rotación",
       "stock": 56,
-      "rop": 10,
+      "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 772.3333333333333
+      "coberturaDias": 2430.4
+    },
+    {
+      "material": "32004076",
+      "descripcion": "CUCHILLO COCINERO M/PP.10\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 9,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 976.5
     },
     {
       "material": "32004244",
@@ -1980,7 +1989,7 @@
       "stock": 21,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 2317
+      "coberturaDias": 2278.5
     },
     {
       "material": "32004610",
@@ -1990,6 +1999,15 @@
       "rop": 4,
       "riesgo": "ROJO",
       "coberturaDias": 0
+    },
+    {
+      "material": "32004977",
+      "descripcion": "PRE FILTRO P/VAP. N95",
+      "clasificacion": "Baja Rotación",
+      "stock": 2,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "32005014",
@@ -2005,7 +2023,7 @@
       "descripcion": "TAPER CUADRA.C/TA. NRO.18",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 5,
+      "rop": 7,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2014,7 +2032,7 @@
       "descripcion": "TENEDOR MESA 510-2  HOTEL 995100200/739",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 8,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2023,9 +2041,9 @@
       "descripcion": "FRAZADA 1 1/2 PLAZA",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 14,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "32005531",
@@ -2059,7 +2077,7 @@
       "descripcion": "RESPIRADOR 9502 +N95/KN95 3M A:32022303",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 11,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2095,7 +2113,7 @@
       "descripcion": "FILTRO ACEITE DZ118286 JHON DEERE",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 3,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
