@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-11-05T15:38:31.291Z",
-  "totalMaterialesParaReordenar": 266,
+  "publicadoEn": "2026-11-05T15:38:40.169Z",
+  "totalMaterialesParaReordenar": 269,
   "materialesParaReordenar": [
     {
       "material": "32004359",
@@ -60,10 +60,10 @@
       "material": "30000506",
       "descripcion": "LUBRICANTE MULTIUSO WD40",
       "clasificacion": "Mediana Rotación",
-      "stock": 58,
+      "stock": 57,
       "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1371.2857142857142
+      "coberturaDias": 1347.642857142857
     },
     {
       "material": "31008595",
@@ -105,19 +105,19 @@
       "material": "31013761",
       "descripcion": "RODILLO P/PINTAR 3\"",
       "clasificacion": "Mediana Rotación",
-      "stock": 7,
+      "stock": 5,
       "rop": 13,
       "riesgo": "ROJO",
-      "coberturaDias": 25.744444444444444
+      "coberturaDias": 18.38888888888889
     },
     {
       "material": "31015363",
       "descripcion": "BROCHA NY. 2\"",
       "clasificacion": "Alta Rotación",
-      "stock": 20,
+      "stock": 18,
       "rop": 27,
       "riesgo": "ROJO",
-      "coberturaDias": 48.32116788321168
+      "coberturaDias": 43.48905109489051
     },
     {
       "material": "32003811",
@@ -136,6 +136,15 @@
       "rop": 1,
       "riesgo": "AMARILLO",
       "coberturaDias": 976.5
+    },
+    {
+      "material": "32004396",
+      "descripcion": "GUANTE POLI-ALGO.P/MANIO. T/L(9)",
+      "clasificacion": "Alta Rotación",
+      "stock": 24,
+      "rop": 26,
+      "riesgo": "ROJO",
+      "coberturaDias": 43.76470588235294
     },
     {
       "material": "32005051",
@@ -213,19 +222,19 @@
       "material": "32003790",
       "descripcion": "CAJA AGUA ENV.DESCARTABLE 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 37,
+      "stock": 56,
       "rop": 79,
       "riesgo": "ROJO",
-      "coberturaDias": 17.634269258459323
+      "coberturaDias": 26.68970482361411
     },
     {
       "material": "32005434",
       "descripcion": "DESINCRUSTANTE LIQUIDO ACIDO GL",
       "clasificacion": "Baja Rotación",
-      "stock": 5,
+      "stock": 3,
       "rop": 5,
       "riesgo": "ROJO",
-      "coberturaDias": 78.80952380952381
+      "coberturaDias": 47.285714285714285
     },
     {
       "material": "31008471",
@@ -465,10 +474,10 @@
       "material": "20000546",
       "descripcion": "CINTA EMB.TRANSP.2\"X11 YD.45MIC",
       "clasificacion": "Alta Rotación",
-      "stock": 12,
+      "stock": 11,
       "rop": 15,
       "riesgo": "ROJO",
-      "coberturaDias": 70.37837837837837
+      "coberturaDias": 64.51351351351352
     },
     {
       "material": "20001638",
@@ -483,10 +492,10 @@
       "material": "30000377",
       "descripcion": "ACEITE DEL M-15W40 SUPER DEFENSE V3 55GL",
       "clasificacion": "Mediana Rotación",
-      "stock": 325,
+      "stock": 305,
       "rop": 79,
       "riesgo": "AMARILLO",
-      "coberturaDias": 309.56834532374097
+      "coberturaDias": 290.51798561151077
     },
     {
       "material": "30000382",
@@ -525,6 +534,15 @@
       "coberturaDias": 0
     },
     {
+      "material": "31013843",
+      "descripcion": "SILICONA CARTUCHO TRANSP.",
+      "clasificacion": "Alta Rotación",
+      "stock": 8,
+      "rop": 10,
+      "riesgo": "ROJO",
+      "coberturaDias": 39.819548872180455
+    },
+    {
       "material": "31014281",
       "descripcion": "THINNER ACRILIC.PREMIUM 3L",
       "clasificacion": "Baja Rotación",
@@ -537,10 +555,10 @@
       "material": "31015361",
       "descripcion": "BROCHA NY. 1\"",
       "clasificacion": "Baja Rotación",
-      "stock": 25,
+      "stock": 23,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 2068.75
+      "coberturaDias": 1903.25
     },
     {
       "material": "31015445",
@@ -564,10 +582,10 @@
       "material": "31015602",
       "descripcion": "RODILLO P/PINTAR 4\"",
       "clasificacion": "Mediana Rotación",
-      "stock": 15,
+      "stock": 12,
       "rop": 15,
       "riesgo": "ROJO",
-      "coberturaDias": 44.93212669683258
+      "coberturaDias": 35.94570135746606
     },
     {
       "material": "31032188",
@@ -586,6 +604,15 @@
       "rop": 4,
       "riesgo": "AMARILLO",
       "coberturaDias": 840.2307692307693
+    },
+    {
+      "material": "32003555",
+      "descripcion": "BIDON AGUA 20L",
+      "clasificacion": "Alta Rotación",
+      "stock": 14,
+      "rop": 19,
+      "riesgo": "ROJO",
+      "coberturaDias": 18.46215139442231
     },
     {
       "material": "32003567",
@@ -681,10 +708,10 @@
       "material": "32005804",
       "descripcion": "PAPEL HIGIENICO HJ.SIMPLE 550M PQTE.12UN",
       "clasificacion": "Alta Rotación",
-      "stock": 22.447,
+      "stock": 20.447,
       "rop": 4,
       "riesgo": "AMARILLO",
-      "coberturaDias": 276.58186758985244
+      "coberturaDias": 251.93876449457446
     },
     {
       "material": "32007250",
@@ -789,10 +816,10 @@
       "material": "32004469",
       "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
       "clasificacion": "Alta Rotación",
-      "stock": 835,
+      "stock": 829,
       "rop": 169,
       "riesgo": "AMARILLO",
-      "coberturaDias": 286.1128364389234
+      "coberturaDias": 284.05693581780537
     },
     {
       "material": "32004360",
@@ -802,15 +829,6 @@
       "rop": 2,
       "riesgo": "AMARILLO",
       "coberturaDias": 496
-    },
-    {
-      "material": "32005500",
-      "descripcion": "PAPEL TOALLA HJ.SIMPLE AIRFLEX 200MT",
-      "clasificacion": "Alta Rotación",
-      "stock": 181,
-      "rop": 59,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 140.33518312985572
     },
     {
       "material": "32005361",
@@ -1131,7 +1149,7 @@
       "material": "31013183",
       "descripcion": "PINT.ZINC PRIMER 910 GRIS 3COM+CAT 1GL",
       "clasificacion": "Baja Rotación",
-      "stock": 5,
+      "stock": 2,
       "rop": 0,
       "riesgo": "AMARILLO",
       "coberturaDias": null
@@ -1151,6 +1169,15 @@
       "clasificacion": "Baja Rotación",
       "stock": 0,
       "rop": 1,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32005442",
+      "descripcion": "GALONERA 10GL",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1455,10 +1482,10 @@
       "material": "32005354",
       "descripcion": "TRAJE DESCARTABLE BLANCO P/PINTADO T/XL",
       "clasificacion": "Mediana Rotación",
-      "stock": 32,
+      "stock": 27,
       "rop": 74,
       "riesgo": "ROJO",
-      "coberturaDias": 28
+      "coberturaDias": 23.625
     },
     {
       "material": "32005482",
@@ -2416,9 +2443,9 @@
   ],
   "stockHarinaPescado": [
     {
-      "material": "50003970",
-      "descripcion": "HARINA C TAILANDIA",
-      "stock": 104.55
+      "material": "50003940",
+      "descripcion": "HARINA STEAM DRIED STANDAR 66",
+      "stock": 54.55
     },
     {
       "material": "50003916",
@@ -2431,14 +2458,14 @@
       "stock": 50
     },
     {
+      "material": "50003941",
+      "descripcion": "HARINA STEAM DRIED STANDARD 65",
+      "stock": 50
+    },
+    {
       "material": "50003967",
       "descripcion": "HARINA A SUPER PRIME",
       "stock": 16.45
-    },
-    {
-      "material": "50003907",
-      "descripcion": "HARINA NC. CONTAMINACION FISICA",
-      "stock": 14
     },
     {
       "material": "50003971",
@@ -2446,19 +2473,24 @@
       "stock": 11.7
     },
     {
+      "material": "50003935",
+      "descripcion": "HARINA SCRAP",
+      "stock": 8.05
+    },
+    {
       "material": "50003969",
       "descripcion": "HARINA B PRIME",
       "stock": 7.85
     },
     {
-      "material": "50003935",
-      "descripcion": "HARINA SCRAP",
-      "stock": 1.79
+      "material": "50003907",
+      "descripcion": "HARINA NC. CONTAMINACION FISICA",
+      "stock": 4
     }
   ],
   "valorizacion": {
-    "almacenUSD": 949594,
-    "ppttUSD": 397534,
+    "almacenUSD": 948011,
+    "ppttUSD": 358720,
     "pctVencido": 0.63
   }
 }
