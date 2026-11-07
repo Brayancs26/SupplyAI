@@ -1,5 +1,5 @@
 {
-  "actualizadoEn": "2026-10-02T19:23:33.523Z",
+  "actualizadoEn": "2026-11-07T14:53:30.166Z",
   "overrides": {
     "20000628": "Alta Rotación",
     "30000383": "Baja Rotación",
@@ -24,7 +24,15 @@
     "32004763": "Uso Inmediato (confirmado)",
     "32004764": "Uso Inmediato (confirmado)",
     "32004765": "Uso Inmediato (confirmado)",
+    "32006780": "Inactivo",
     "32007195": "Uso Inmediato (confirmado)",
+    "32007250": "Inactivo",
+    "32007478": "Inactivo",
+    "32007862": "Inactivo",
+    "32027929": "Baja Rotación",
+    "32027931": "Baja Rotación",
+    "32027932": "Baja Rotación",
+    "32027933": "Baja Rotación",
     "33034500": "Uso Inmediato (confirmado)"
   }
 }
