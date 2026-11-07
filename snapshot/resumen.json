@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-11-05T20:27:31.968Z",
-  "totalMaterialesParaReordenar": 269,
+  "publicadoEn": "2026-11-07T14:47:42.564Z",
+  "totalMaterialesParaReordenar": 270,
   "materialesParaReordenar": [
     {
       "material": "32004359",
@@ -102,6 +102,15 @@
       "coberturaDias": 40.53061224489796
     },
     {
+      "material": "31011265",
+      "descripcion": "LIMPIACONTACTOS ELECTRICOS/ELECT.",
+      "clasificacion": "Baja Rotación",
+      "stock": 3,
+      "rop": 3,
+      "riesgo": "ROJO",
+      "coberturaDias": 93
+    },
+    {
       "material": "31013761",
       "descripcion": "RODILLO P/PINTAR 3\"",
       "clasificacion": "Mediana Rotación",
@@ -126,7 +135,7 @@
       "stock": 13,
       "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1410.5
+      "coberturaDias": 2097.3333333333335
     },
     {
       "material": "32003920",
@@ -154,15 +163,6 @@
       "rop": 3,
       "riesgo": "AMARILLO",
       "coberturaDias": 390.59999999999997
-    },
-    {
-      "material": "32005052",
-      "descripcion": "ROPA AGUA CASAC.JEBE DOBLE FAZ T/XL",
-      "clasificacion": "Baja Rotación",
-      "stock": 9,
-      "rop": 3,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 488.25
     },
     {
       "material": "32005402",
@@ -336,6 +336,15 @@
       "coberturaDias": 0
     },
     {
+      "material": "32003613",
+      "descripcion": "BOLSITA PROTEC.LENTES SEGUR.",
+      "clasificacion": "Baja Rotación",
+      "stock": 2,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
+    },
+    {
       "material": "31008509",
       "descripcion": "ANILLO PLANO INOX.1/4\"",
       "clasificacion": "Mediana Rotación",
@@ -450,7 +459,7 @@
       "stock": 40,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 8680
+      "coberturaDias": 9680
     },
     {
       "material": "32022274",
@@ -538,9 +547,9 @@
       "descripcion": "SILICONA CARTUCHO TRANSP.",
       "clasificacion": "Alta Rotación",
       "stock": 8,
-      "rop": 10,
+      "rop": 15,
       "riesgo": "ROJO",
-      "coberturaDias": 39.819548872180455
+      "coberturaDias": 23.45945945945946
     },
     {
       "material": "31014281",
@@ -628,9 +637,9 @@
       "descripcion": "CHOMPA DRALON CUELLO ALTO AZUL T/L",
       "clasificacion": "Mediana Rotación",
       "stock": 110,
-      "rop": 10,
+      "rop": 11,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1136.6666666666667
+      "coberturaDias": 1183.111111111111
     },
     {
       "material": "32003967",
@@ -639,25 +648,25 @@
       "stock": 7,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1519
+      "coberturaDias": 1694
     },
     {
       "material": "32003968",
       "descripcion": "CHOMPA DRALON CUELLO ALTO AZUL T/XL",
       "clasificacion": "Mediana Rotación",
       "stock": 7,
-      "rop": 8,
+      "rop": 9,
       "riesgo": "ROJO",
-      "coberturaDias": 116.84615384615385
+      "coberturaDias": 77
     },
     {
       "material": "32003969",
       "descripcion": "CHOMPA DRALON CUELLO ALTO AZUL T/XXL",
       "clasificacion": "Mediana Rotación",
       "stock": 20,
-      "rop": 4,
+      "rop": 3,
       "riesgo": "AMARILLO",
-      "coberturaDias": 723.3333333333333
+      "coberturaDias": 880
     },
     {
       "material": "32004361",
@@ -907,9 +916,9 @@
       "descripcion": "RODAMIENTO 22220 EK/C3",
       "clasificacion": "Baja Rotación",
       "stock": 6,
-      "rop": 4,
+      "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 361.09090909090907
+      "coberturaDias": 434
     },
     {
       "material": "33034771",
@@ -961,9 +970,9 @@
       "descripcion": "CHUMACERA PIE SNL 517",
       "clasificacion": "Baja Rotación",
       "stock": 2,
-      "rop": 3,
-      "riesgo": "ROJO",
-      "coberturaDias": 120.36363636363636
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "30000539",
@@ -982,24 +991,6 @@
       "rop": 0,
       "riesgo": "ROJO",
       "coberturaDias": 0
-    },
-    {
-      "material": "32003814",
-      "descripcion": "CAMISA OXFORD M/LARG.CELESTE T/XL",
-      "clasificacion": "Baja Rotación",
-      "stock": 3,
-      "rop": 3,
-      "riesgo": "ROJO",
-      "coberturaDias": 162.75
-    },
-    {
-      "material": "32004804",
-      "descripcion": "PANTALON DRILL C/LOG.CAQUI T/34",
-      "clasificacion": "Baja Rotación",
-      "stock": 2,
-      "rop": 0,
-      "riesgo": "AMARILLO",
-      "coberturaDias": null
     },
     {
       "material": "30000384",
@@ -1033,18 +1024,18 @@
       "descripcion": "BLUSA OXFORD M/LARG.C/LOG.CELESTE T/M",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 0,
+      "rop": 2,
       "riesgo": "ROJO",
-      "coberturaDias": null
+      "coberturaDias": 0
     },
     {
-      "material": "32003812",
-      "descripcion": "CAMISA OXFORD M/LARG.CELESTE T/M",
+      "material": "32004805",
+      "descripcion": "PANTALON DRILL C/LOG.CAQUI T/36",
       "clasificacion": "Baja Rotación",
-      "stock": 7,
-      "rop": 0,
+      "stock": 6,
+      "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": null
+      "coberturaDias": 2904
     },
     {
       "material": "33030804",
@@ -1096,7 +1087,7 @@
       "descripcion": "CHUMACERA PARED UCF 315-300 D1",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 0,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1114,9 +1105,9 @@
       "descripcion": "RODAMIENTO 6307 C3",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "32004578",
@@ -1362,13 +1353,22 @@
       "coberturaDias": 0
     },
     {
+      "material": "31008164",
+      "descripcion": "ABRAZADERA REGULABLE INOX.3\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 6,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
+    },
+    {
       "material": "31008166",
       "descripcion": "ABRAZADERA REGULABLE INOX.3/4\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 2,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "31009365",
@@ -1396,6 +1396,15 @@
       "rop": 0,
       "riesgo": "AMARILLO",
       "coberturaDias": 2648
+    },
+    {
+      "material": "31014664",
+      "descripcion": "TUERCA FEN.1/2\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 16,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "32003503",
