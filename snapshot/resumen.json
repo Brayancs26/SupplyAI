@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-11-07T15:08:28.539Z",
-  "totalMaterialesParaReordenar": 272,
+  "publicadoEn": "2026-11-07T15:10:09.007Z",
+  "totalMaterialesParaReordenar": 275,
   "materialesParaReordenar": [
     {
       "material": "31012396",
@@ -75,15 +75,6 @@
       "coberturaDias": 361.66666666666663
     },
     {
-      "material": "31009337",
-      "descripcion": "CINTA CAMBRIC C 2520 3/4\"X18MT 3M",
-      "clasificacion": "Mediana Rotación",
-      "stock": 7,
-      "rop": 3,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 273.3888888888889
-    },
-    {
       "material": "31009821",
       "descripcion": "DISCO CORTE INOX.1/8\"X7/8\"X4 1/2\"",
       "clasificacion": "Alta Rotación",
@@ -93,6 +84,15 @@
       "coberturaDias": 608.116564417178
     },
     {
+      "material": "31009837",
+      "descripcion": "DISCO DESBASTE INOX.1/4\"X7/8\"X 4 1/2\"",
+      "clasificacion": "Alta Rotación",
+      "stock": 0,
+      "rop": 6,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
       "material": "31010191",
       "descripcion": "ESCOBILLA COPA FE.2 1/2\"",
       "clasificacion": "Baja Rotación",
@@ -100,6 +100,15 @@
       "rop": 6,
       "riesgo": "ROJO",
       "coberturaDias": 43.04081632653061
+    },
+    {
+      "material": "31010293",
+      "descripcion": "ESPATULA C/MANGO PVC 3\"",
+      "clasificacion": "Mediana Rotación",
+      "stock": 10,
+      "rop": 11,
+      "riesgo": "ROJO",
+      "coberturaDias": 56.24
     },
     {
       "material": "31011265",
@@ -372,6 +381,15 @@
       "coberturaDias": 36.862124035134414
     },
     {
+      "material": "31013867",
+      "descripcion": "SOLDADURA INOX.AW E308L-16 2.50MM",
+      "clasificacion": "Alta Rotación",
+      "stock": 0,
+      "rop": 9,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
       "material": "32004387",
       "descripcion": "GUANTE NITRI.DESECHABLE 6MM T/M",
       "clasificacion": "Mediana Rotación",
@@ -537,10 +555,10 @@
       "material": "32003555",
       "descripcion": "BIDON AGUA 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 14,
+      "stock": 13,
       "rop": 19,
       "riesgo": "ROJO",
-      "coberturaDias": 18.225925925925928
+      "coberturaDias": 16.924074074074074
     },
     {
       "material": "32003567",
@@ -747,7 +765,7 @@
       "stock": 157,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 120.41128205128204
+      "coberturaDias": 113.20102564102564
     },
     {
       "material": "32008682",
@@ -1124,6 +1142,15 @@
       "clasificacion": "Baja Rotación",
       "stock": 0,
       "rop": 5,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "31014091",
+      "descripcion": "TARUGO PVC 3/8\"X2\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 8,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2451,73 +2478,11 @@
       "coberturaDias": 5624
     }
   ],
-  "stockAceitePescado": [
-    {
-      "material": "50003972",
-      "descripcion": "ACEITE DE PESCADO PAMA",
-      "stock": 6.48
-    },
-    {
-      "material": "50003974",
-      "descripcion": "ACEITE CRUDO NO CONFORME",
-      "stock": 1.96
-    },
-    {
-      "material": "50006266",
-      "descripcion": "ACEITE CRUDO OMEGA ALTO EPA ≥ 19%",
-      "stock": 0.65
-    }
-  ],
-  "stockHarinaPescado": [
-    {
-      "material": "50003940",
-      "descripcion": "HARINA STEAM DRIED STANDAR 66",
-      "stock": 54.55
-    },
-    {
-      "material": "50003916",
-      "descripcion": "HARINA NC. FFA",
-      "stock": 50
-    },
-    {
-      "material": "50003939",
-      "descripcion": "HARINA STEAM DRIED STANDAR <65",
-      "stock": 50
-    },
-    {
-      "material": "50003941",
-      "descripcion": "HARINA STEAM DRIED STANDARD 65",
-      "stock": 50
-    },
-    {
-      "material": "50003967",
-      "descripcion": "HARINA A SUPER PRIME",
-      "stock": 16.45
-    },
-    {
-      "material": "50003971",
-      "descripcion": "HARINA D STANDARD",
-      "stock": 11.7
-    },
-    {
-      "material": "50003935",
-      "descripcion": "HARINA SCRAP",
-      "stock": 8.05
-    },
-    {
-      "material": "50003969",
-      "descripcion": "HARINA B PRIME",
-      "stock": 7.85
-    },
-    {
-      "material": "50003907",
-      "descripcion": "HARINA NC. CONTAMINACION FISICA",
-      "stock": 4
-    }
-  ],
+  "stockAceitePescado": [],
+  "stockHarinaPescado": [],
   "valorizacion": {
-    "almacenUSD": 948011,
-    "ppttUSD": 358720,
-    "pctVencido": 0.63
+    "almacenUSD": 946083,
+    "ppttUSD": 0,
+    "pctVencido": 0.41
   }
 }
