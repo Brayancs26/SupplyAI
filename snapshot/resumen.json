@@ -1,16 +1,7 @@
 {
-  "publicadoEn": "2026-11-07T14:47:42.564Z",
-  "totalMaterialesParaReordenar": 270,
+  "publicadoEn": "2026-11-07T14:47:51.047Z",
+  "totalMaterialesParaReordenar": 271,
   "materialesParaReordenar": [
-    {
-      "material": "32004359",
-      "descripcion": "GUANTE CUERO CR.FUEGO T/14\"",
-      "clasificacion": "Mediana Rotación",
-      "stock": 0,
-      "rop": 2,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
     {
       "material": "31012396",
       "descripcion": "PERNO HEX.INOX.1/4\"X1 1/2\"",
@@ -37,15 +28,6 @@
       "rop": 0,
       "riesgo": "AMARILLO",
       "coberturaDias": 4413.333333333333
-    },
-    {
-      "material": "32008682",
-      "descripcion": "BANDERA PERUANA P/RM 1.80MTX1.10MT",
-      "clasificacion": "Baja Rotación",
-      "stock": 21,
-      "rop": 1,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 4557
     },
     {
       "material": "33040389",
@@ -172,15 +154,6 @@
       "rop": 10,
       "riesgo": "AMARILLO",
       "coberturaDias": 439.8219178082192
-    },
-    {
-      "material": "32008505",
-      "descripcion": "PAPEL BOND A4 75GR PQTE.500UN",
-      "clasificacion": "Alta Rotación",
-      "stock": 5,
-      "rop": 8,
-      "riesgo": "ROJO",
-      "coberturaDias": 33.775510204081634
     },
     {
       "material": "33032733",
@@ -318,24 +291,6 @@
       "coberturaDias": 94.57142857142857
     },
     {
-      "material": "32005600",
-      "descripcion": "RESPIRADOR MEDIA CARA REUSABLE 3M T/L",
-      "clasificacion": "Mediana Rotación",
-      "stock": 0,
-      "rop": 1,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32006780",
-      "descripcion": "KIT LENTES SEGUR.TRANSP.SOLUS 1000",
-      "clasificacion": "Mediana Rotación",
-      "stock": 0,
-      "rop": 3,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
       "material": "32003613",
       "descripcion": "BOLSITA PROTEC.LENTES SEGUR.",
       "clasificacion": "Baja Rotación",
@@ -424,42 +379,6 @@
       "rop": 2,
       "riesgo": "AMARILLO",
       "coberturaDias": null
-    },
-    {
-      "material": "32006878",
-      "descripcion": "RESPIRADOR DESCARTABLE POLVO N95 8210",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 17,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32022255",
-      "descripcion": "RESPIRADOR P/VAP.ORG.-HUMOS R95",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 18,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32022272",
-      "descripcion": "GUANTE QUIRURGICO NITRI. 4MM T/L",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 140,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32022265",
-      "descripcion": "ROPA AGUA CASAC.JEBE DOBLE FAZ FLO T/L",
-      "clasificacion": "Baja Rotación",
-      "stock": 40,
-      "rop": 1,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 9680
     },
     {
       "material": "32022274",
@@ -696,24 +615,6 @@
       "coberturaDias": 58.65822784810126
     },
     {
-      "material": "32005599",
-      "descripcion": "MASCARA CARA COMPL.T/M 6800 3M",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 5,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32005601",
-      "descripcion": "RESPIRADOR MEDIA CARA REUSABLE 3M T/M",
-      "clasificacion": "Mediana Rotación",
-      "stock": 0,
-      "rop": 2,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
       "material": "32005804",
       "descripcion": "PAPEL HIGIENICO HJ.SIMPLE 550M PQTE.12UN",
       "clasificacion": "Alta Rotación",
@@ -723,51 +624,6 @@
       "coberturaDias": 251.93876449457446
     },
     {
-      "material": "32007250",
-      "descripcion": "LENTE SEGUR.OSCU.SECUREFIT 402X 3M",
-      "clasificacion": "Alta Rotación",
-      "stock": 0,
-      "rop": 16,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32007478",
-      "descripcion": "LENTE SEGUR.TRANSP.SECUREFIT 401X 3M",
-      "clasificacion": "Alta Rotación",
-      "stock": 0,
-      "rop": 24,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32007837",
-      "descripcion": "OREJERA ADAPT.P/CASCO PELTOR X4P3E",
-      "clasificacion": "Mediana Rotación",
-      "stock": 0,
-      "rop": 0,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32022260",
-      "descripcion": "GUANTE NITRI. 19 T/L (09)",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 3,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32022269",
-      "descripcion": "GUANTE QUIRURGICO NITRI.4MM T/M",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 280,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
       "material": "32022278",
       "descripcion": "ROPA AGUA PANT.JEBE DOBLE FAZ T/XL",
       "clasificacion": "Baja Rotación",
@@ -775,15 +631,6 @@
       "rop": 0,
       "riesgo": "AMARILLO",
       "coberturaDias": 993
-    },
-    {
-      "material": "32024575",
-      "descripcion": "CARTUCHO MULTIGAS VAP.6006 3M",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 9,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
     },
     {
       "material": "31013875",
@@ -892,6 +739,24 @@
       "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
+    },
+    {
+      "material": "32005500",
+      "descripcion": "PAPEL TOALLA HJ.SIMPLE AIRFLEX 200MT",
+      "clasificacion": "Alta Rotación",
+      "stock": 157,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 122.70144284128746
+    },
+    {
+      "material": "32008682",
+      "descripcion": "BANDERA PERUANA P/RM 1.80MTX1.10MT",
+      "clasificacion": "Baja Rotación",
+      "stock": 21,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 262.3018867924528
     },
     {
       "material": "34002480",
@@ -1417,7 +1282,7 @@
     },
     {
       "material": "32003646",
-      "descripcion": "BOTIN AMARILLO P/AC KEVL T-40 A:32009306",
+      "descripcion": "BOTIN AMARILLO P/AC KEVL T-40 A:32027874",
       "clasificacion": "Baja Rotación",
       "stock": 0,
       "rop": 2,
@@ -1426,7 +1291,7 @@
     },
     {
       "material": "32003648",
-      "descripcion": "BOTIN AMARILLO P/AC KEVL T-42 A:32009308",
+      "descripcion": "BOTIN AMARILLO P/AC KEVL T-42 A:32027876",
       "clasificacion": "Baja Rotación",
       "stock": 0,
       "rop": 1,
@@ -1435,7 +1300,7 @@
     },
     {
       "material": "32003650",
-      "descripcion": "BOTIN AMARILLO P/AC KEVL T-44 A:32009310",
+      "descripcion": "BOTIN AMARILLO P/AC KEVL T-44 A:32027878",
       "clasificacion": "Baja Rotación",
       "stock": 0,
       "rop": 1,
@@ -1669,7 +1534,7 @@
     },
     {
       "material": "32000727",
-      "descripcion": "OREJERA CASCO JOCKEY 27 DB MS A:32005858",
+      "descripcion": "OREJERA CASCO JOCKEY 27 DB MS A:32027943",
       "clasificacion": "Baja Rotación",
       "stock": 0,
       "rop": 0,
@@ -2263,7 +2128,7 @@
     },
     {
       "material": "32003649",
-      "descripcion": "BOTIN AMARILLO P/AC KEVL T-43 A:32009309",
+      "descripcion": "BOTIN AMARILLO P/AC KEVL T-43 A:32027877",
       "clasificacion": "Baja Rotación",
       "stock": 0,
       "rop": 1,
@@ -2361,15 +2226,6 @@
       "coberturaDias": 0
     },
     {
-      "material": "32004945",
-      "descripcion": "POLO ALGO.M/LARG.CUELLO ALTO AZUL T/XL",
-      "clasificacion": "Mediana Rotación",
-      "stock": 0,
-      "rop": 0,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
       "material": "33042326",
       "descripcion": "TUBO CONDU. FLEX.PVC C/FO.3/4\"",
       "clasificacion": "Baja Rotación",
@@ -2397,8 +2253,107 @@
       "coberturaDias": null
     },
     {
-      "material": "32021935",
-      "descripcion": "BOTA NEGRO/VERDE BEKINA STEPLITE S5 T/43",
+      "material": "32022265",
+      "descripcion": "ROPA AGUA CASAC.JEBE DOBLE FAZ FLO T/L",
+      "clasificacion": "Baja Rotación",
+      "stock": 40,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 9680
+    },
+    {
+      "material": "32024575",
+      "descripcion": "CARTUCHO MULTIGAS VAP.6006 3M A:32027890",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 9,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32022260",
+      "descripcion": "GUANTE NITRI. 19 T/L (09) A:32027914",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 3,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32007837",
+      "descripcion": "OREJERA ADAPT.P/CASCO P X4P3E A:32027941",
+      "clasificacion": "Mediana Rotación",
+      "stock": 0,
+      "rop": 0,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32007478",
+      "descripcion": "LENTE SEGUR.TRANSP.SECUREFIT A:32027933",
+      "clasificacion": "Alta Rotación",
+      "stock": 0,
+      "rop": 24,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32007250",
+      "descripcion": "LENTE SEGUR.OSCU.SEC 402X 3M A:32027932",
+      "clasificacion": "Alta Rotación",
+      "stock": 0,
+      "rop": 16,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32005601",
+      "descripcion": "RESPIRADOR MEDIA CARA REU 3M  A:32027964",
+      "clasificacion": "Mediana Rotación",
+      "stock": 0,
+      "rop": 2,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32005599",
+      "descripcion": "MASCARA CARA COMPLT/M 6800 3M A:32027938",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 5,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32006780",
+      "descripcion": "KIT LENTES SEGUR.TRANSP.SOLUS A:32027929",
+      "clasificacion": "Mediana Rotación",
+      "stock": 0,
+      "rop": 3,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32022272",
+      "descripcion": "GUANTE QUIRURGICO NITRI. 4MM A:32027923",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 140,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32006878",
+      "descripcion": "RESPIRADOR DESC POLV N95 8210 A:32027957",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 17,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32022269",
+      "descripcion": "GUANTE QUIRURGI NITRI.4MM T/M A:32027925",
       "clasificacion": "Baja Rotación",
       "stock": 0,
       "rop": 0,
@@ -2406,17 +2361,8 @@
       "coberturaDias": 0
     },
     {
-      "material": "32021934",
-      "descripcion": "BOTA NEGRO/VERDE BEKINA STEPLITE S5 T/42",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 0,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32021933",
-      "descripcion": "BOTA NEGRO/VERDE BEKINA STEPLITE S5 T/41",
+      "material": "32022255",
+      "descripcion": "RESPIRADOR P/VAP.ORG.-HUM R95 A:32027953",
       "clasificacion": "Baja Rotación",
       "stock": 0,
       "rop": 0,
@@ -2425,8 +2371,71 @@
     },
     {
       "material": "32021937",
-      "descripcion": "BOTA NEGRO/VERDE BEKINA STEPLITE S5 T/45",
+      "descripcion": "BOTA NEG/VERD B STEPL S5 T/45 A:32027845",
       "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 0,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32021935",
+      "descripcion": "BOTA NEG/VERD B STEPL S5 T/43 A:32027823",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 5,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32021934",
+      "descripcion": "BOTA NEG/VERD B STEPL S5 T/42 A:32027822",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 4,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32021933",
+      "descripcion": "BOTA NEG/VERD B STEPL S5 T/41 A:32027821",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 2,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32004359",
+      "descripcion": "GUANTE CUERO CR.FUEGO T/14\" A:32027895",
+      "clasificacion": "Mediana Rotación",
+      "stock": 0,
+      "rop": 2,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32005036",
+      "descripcion": "RESPIRAD P/VAP.ORG.-HUMOS R95 A:32027953",
+      "clasificacion": "Mediana Rotación",
+      "stock": 0,
+      "rop": 7,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32005600",
+      "descripcion": "RESPIRADOR MEDIA CARA REU 3M  A:32027963",
+      "clasificacion": "Mediana Rotación",
+      "stock": 0,
+      "rop": 1,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
+      "material": "32004945",
+      "descripcion": "POLO ALGO.M/LARG.CUELLO ALT A:32027955",
+      "clasificacion": "Mediana Rotación",
       "stock": 0,
       "rop": 0,
       "riesgo": "ROJO",
