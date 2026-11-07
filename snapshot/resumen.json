@@ -1,24 +1,24 @@
 {
-  "publicadoEn": "2026-11-07T14:47:51.047Z",
-  "totalMaterialesParaReordenar": 271,
+  "publicadoEn": "2026-11-07T15:08:28.539Z",
+  "totalMaterialesParaReordenar": 272,
   "materialesParaReordenar": [
     {
       "material": "31012396",
       "descripcion": "PERNO HEX.INOX.1/4\"X1 1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 17,
-      "rop": 46,
+      "rop": 44,
       "riesgo": "ROJO",
-      "coberturaDias": 38.14915254237288
+      "coberturaDias": 40.51186440677966
     },
     {
       "material": "31012626",
       "descripcion": "PERNO HEX.INOX.5/8\"X3\"",
       "clasificacion": "Mediana Rotación",
       "stock": 10,
-      "rop": 11,
+      "rop": 10,
       "riesgo": "ROJO",
-      "coberturaDias": 43.26797385620915
+      "coberturaDias": 44.77707006369427
     },
     {
       "material": "32008169",
@@ -27,7 +27,16 @@
       "stock": 20,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 4413.333333333333
+      "coberturaDias": 3515
+    },
+    {
+      "material": "33035331",
+      "descripcion": "OIL FILTER RE504836",
+      "clasificacion": "Baja Rotación",
+      "stock": 4,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 703
     },
     {
       "material": "33040389",
@@ -39,13 +48,22 @@
       "coberturaDias": null
     },
     {
+      "material": "30000383",
+      "descripcion": "ACEITE M-MOBILGARD 412 MOBIL 55GL",
+      "clasificacion": "Baja Rotación",
+      "stock": 15,
+      "rop": 16,
+      "riesgo": "ROJO",
+      "coberturaDias": 140.6
+    },
+    {
       "material": "30000506",
       "descripcion": "LUBRICANTE MULTIUSO WD40",
       "clasificacion": "Mediana Rotación",
       "stock": 57,
-      "rop": 2,
+      "rop": 3,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1347.642857142857
+      "coberturaDias": 1144.8857142857144
     },
     {
       "material": "31008595",
@@ -61,9 +79,9 @@
       "descripcion": "CINTA CAMBRIC C 2520 3/4\"X18MT 3M",
       "clasificacion": "Mediana Rotación",
       "stock": 7,
-      "rop": 2,
+      "rop": 3,
       "riesgo": "AMARILLO",
-      "coberturaDias": 331
+      "coberturaDias": 273.3888888888889
     },
     {
       "material": "31009821",
@@ -72,7 +90,7 @@
       "stock": 141,
       "rop": 8,
       "riesgo": "AMARILLO",
-      "coberturaDias": 587.0566037735849
+      "coberturaDias": 608.116564417178
     },
     {
       "material": "31010191",
@@ -81,7 +99,7 @@
       "stock": 3,
       "rop": 6,
       "riesgo": "ROJO",
-      "coberturaDias": 40.53061224489796
+      "coberturaDias": 43.04081632653061
     },
     {
       "material": "31011265",
@@ -99,16 +117,16 @@
       "stock": 5,
       "rop": 13,
       "riesgo": "ROJO",
-      "coberturaDias": 18.38888888888889
+      "coberturaDias": 18.307291666666664
     },
     {
       "material": "31015363",
       "descripcion": "BROCHA NY. 2\"",
-      "clasificacion": "Alta Rotación",
+      "clasificacion": "Mediana Rotación",
       "stock": 18,
-      "rop": 27,
+      "rop": 26,
       "riesgo": "ROJO",
-      "coberturaDias": 43.48905109489051
+      "coberturaDias": 45.847826086956516
     },
     {
       "material": "32003811",
@@ -122,7 +140,7 @@
     {
       "material": "32003920",
       "descripcion": "CASCO POLIET.SEGUR.C/LOG.ROJO",
-      "clasificacion": "Mediana Rotación",
+      "clasificacion": "Baja Rotación",
       "stock": 9,
       "rop": 1,
       "riesgo": "AMARILLO",
@@ -151,9 +169,9 @@
       "descripcion": "WYPALL ROLLO BLANCO X-80",
       "clasificacion": "Alta Rotación",
       "stock": 97,
-      "rop": 10,
+      "rop": 11,
       "riesgo": "AMARILLO",
-      "coberturaDias": 439.8219178082192
+      "coberturaDias": 434.33757961783436
     },
     {
       "material": "33032733",
@@ -169,9 +187,9 @@
       "descripcion": "ELEM.FILTRO PETR./SEP.AGUA RACOR 2020SM",
       "clasificacion": "Baja Rotación",
       "stock": 62,
-      "rop": 22,
+      "rop": 24,
       "riesgo": "AMARILLO",
-      "coberturaDias": 248.75151515151515
+      "coberturaDias": 216.8457711442786
     },
     {
       "material": "31012485",
@@ -180,7 +198,7 @@
       "stock": 36,
       "rop": 3,
       "riesgo": "AMARILLO",
-      "coberturaDias": 992.9999999999999
+      "coberturaDias": 1054.5
     },
     {
       "material": "31009310",
@@ -196,18 +214,18 @@
       "descripcion": "CAJA AGUA ENV.DESCARTABLE 20L",
       "clasificacion": "Alta Rotación",
       "stock": 56,
-      "rop": 79,
+      "rop": 81,
       "riesgo": "ROJO",
-      "coberturaDias": 26.68970482361411
+      "coberturaDias": 25.4151065203357
     },
     {
       "material": "32005434",
       "descripcion": "DESINCRUSTANTE LIQUIDO ACIDO GL",
-      "clasificacion": "Baja Rotación",
+      "clasificacion": "Mediana Rotación",
       "stock": 3,
-      "rop": 5,
+      "rop": 6,
       "riesgo": "ROJO",
-      "coberturaDias": 47.285714285714285
+      "coberturaDias": 36.362068965517246
     },
     {
       "material": "31008471",
@@ -216,7 +234,7 @@
       "stock": 114,
       "rop": 3,
       "riesgo": "AMARILLO",
-      "coberturaDias": 4716.75
+      "coberturaDias": 5008.875
     },
     {
       "material": "31014743",
@@ -225,7 +243,7 @@
       "stock": 142,
       "rop": 10,
       "riesgo": "AMARILLO",
-      "coberturaDias": 728.7131782945737
+      "coberturaDias": 773.8449612403101
     },
     {
       "material": "33040353",
@@ -243,7 +261,7 @@
       "stock": 5,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 300.9090909090909
+      "coberturaDias": 319.54545454545456
     },
     {
       "material": "30000659",
@@ -252,7 +270,7 @@
       "stock": 5,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 827.5
+      "coberturaDias": 878.75
     },
     {
       "material": "32003846",
@@ -268,18 +286,18 @@
       "descripcion": "FASTENER CJ.50UN",
       "clasificacion": "Baja Rotación",
       "stock": 16,
-      "rop": 1,
+      "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 5296
+      "coberturaDias": 5624
     },
     {
       "material": "31012354",
       "descripcion": "PERNO HEX.INOX.1/2\"X2 1/2\"",
       "clasificacion": "Mediana Rotación",
       "stock": 24,
-      "rop": 99,
+      "rop": 96,
       "riesgo": "ROJO",
-      "coberturaDias": 30.553846153846152
+      "coberturaDias": 32.44615384615385
     },
     {
       "material": "31012991",
@@ -288,7 +306,7 @@
       "stock": 4,
       "rop": 4,
       "riesgo": "ROJO",
-      "coberturaDias": 94.57142857142857
+      "coberturaDias": 93.73333333333333
     },
     {
       "material": "32003613",
@@ -304,36 +322,36 @@
       "descripcion": "ANILLO PLANO INOX.1/4\"",
       "clasificacion": "Mediana Rotación",
       "stock": 44,
-      "rop": 213,
+      "rop": 206,
       "riesgo": "ROJO",
-      "coberturaDias": 19.721056194989846
+      "coberturaDias": 20.9424509140149
     },
     {
       "material": "31012348",
       "descripcion": "PERNO HEX.INOX.1/2\"X2\"",
       "clasificacion": "Mediana Rotación",
       "stock": 70,
-      "rop": 320,
+      "rop": 310,
       "riesgo": "ROJO",
-      "coberturaDias": 22.74914089347079
+      "coberturaDias": 24.15807560137457
     },
     {
       "material": "31012390",
       "descripcion": "PERNO HEX.INOX.1/4\"X1\"",
       "clasificacion": "Mediana Rotación",
       "stock": 14,
-      "rop": 114,
+      "rop": 110,
       "riesgo": "ROJO",
-      "coberturaDias": 11.139423076923077
+      "coberturaDias": 11.829326923076923
     },
     {
       "material": "31014747",
       "descripcion": "TUERCA INOX.1/2\"",
       "clasificacion": "Alta Rotación",
       "stock": 76,
-      "rop": 424,
+      "rop": 411,
       "riesgo": "ROJO",
-      "coberturaDias": 16.31916963996108
+      "coberturaDias": 17.32987349983782
     },
     {
       "material": "31015238",
@@ -349,9 +367,9 @@
       "descripcion": "ANILLO PLANO INOX.1/2\"",
       "clasificacion": "Alta Rotación",
       "stock": 197,
-      "rop": 486,
+      "rop": 470,
       "riesgo": "ROJO",
-      "coberturaDias": 34.71227042853341
+      "coberturaDias": 36.862124035134414
     },
     {
       "material": "32004387",
@@ -367,9 +385,9 @@
       "descripcion": "GUANTES LATEX BLANCO C-5 T-L",
       "clasificacion": "Baja Rotación",
       "stock": 948,
-      "rop": 25,
+      "rop": 24,
       "riesgo": "AMARILLO",
-      "coberturaDias": 6213.623762376237
+      "coberturaDias": 6598.455445544555
     },
     {
       "material": "33048363",
@@ -387,7 +405,7 @@
       "stock": 18,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 3971.9999999999995
+      "coberturaDias": 4218
     },
     {
       "material": "32022256",
@@ -396,7 +414,7 @@
       "stock": 64,
       "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 3259.0769230769233
+      "coberturaDias": 2999.4666666666667
     },
     {
       "material": "20000546",
@@ -421,16 +439,16 @@
       "descripcion": "ACEITE DEL M-15W40 SUPER DEFENSE V3 55GL",
       "clasificacion": "Mediana Rotación",
       "stock": 305,
-      "rop": 79,
+      "rop": 77,
       "riesgo": "AMARILLO",
-      "coberturaDias": 290.51798561151077
+      "coberturaDias": 299.8811188811189
     },
     {
       "material": "30000382",
       "descripcion": "ACEITE M-MOBILGARD 312 MOBIL 55GL",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 32,
+      "rop": 31,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -439,9 +457,9 @@
       "descripcion": "ACEITE NUTO H 68 MOBIL CIL.55GL",
       "clasificacion": "Baja Rotación",
       "stock": 550,
-      "rop": 80,
+      "rop": 77,
       "riesgo": "AMARILLO",
-      "coberturaDias": 805.5309734513274
+      "coberturaDias": 855.4203539823009
     },
     {
       "material": "31009822",
@@ -450,7 +468,7 @@
       "stock": 165,
       "rop": 3,
       "riesgo": "AMARILLO",
-      "coberturaDias": 2100.5769230769233
+      "coberturaDias": 2230.6730769230767
     },
     {
       "material": "31012127",
@@ -486,12 +504,12 @@
       "stock": 23,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1903.25
+      "coberturaDias": 1469.909090909091
     },
     {
       "material": "31015445",
       "descripcion": "TIZA P/MARCAR METALES (CALDERERO)",
-      "clasificacion": "Alta Rotación",
+      "clasificacion": "Mediana Rotación",
       "stock": 0,
       "rop": 3,
       "riesgo": "ROJO",
@@ -504,7 +522,7 @@
       "stock": 20,
       "rop": 4,
       "riesgo": "AMARILLO",
-      "coberturaDias": 551.6666666666666
+      "coberturaDias": 585.8333333333333
     },
     {
       "material": "31015602",
@@ -513,25 +531,7 @@
       "stock": 12,
       "rop": 15,
       "riesgo": "ROJO",
-      "coberturaDias": 35.94570135746606
-    },
-    {
-      "material": "31032188",
-      "descripcion": "CINTA AISLANTE NEGRA 600V-33+ 3M",
-      "clasificacion": "Baja Rotación",
-      "stock": 17,
-      "rop": 4,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 304.1621621621622
-    },
-    {
-      "material": "31032189",
-      "descripcion": "CINTA AISLANTE PVC 19MMX20MTX0.15MM",
-      "clasificacion": "Baja Rotación",
-      "stock": 33,
-      "rop": 4,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 840.2307692307693
+      "coberturaDias": 36.05128205128205
     },
     {
       "material": "32003555",
@@ -540,7 +540,7 @@
       "stock": 14,
       "rop": 19,
       "riesgo": "ROJO",
-      "coberturaDias": 18.46215139442231
+      "coberturaDias": 18.225925925925928
     },
     {
       "material": "32003567",
@@ -549,7 +549,7 @@
       "stock": 4,
       "rop": 4,
       "riesgo": "ROJO",
-      "coberturaDias": 61.58139534883721
+      "coberturaDias": 61.1304347826087
     },
     {
       "material": "32003965",
@@ -610,9 +610,9 @@
       "descripcion": "PLUMON INDELEBLE PTA.GRUESA NEGRO",
       "clasificacion": "Alta Rotación",
       "stock": 7,
-      "rop": 8,
+      "rop": 7,
       "riesgo": "ROJO",
-      "coberturaDias": 58.65822784810126
+      "coberturaDias": 61.512499999999996
     },
     {
       "material": "32005804",
@@ -621,7 +621,7 @@
       "stock": 20.447,
       "rop": 4,
       "riesgo": "AMARILLO",
-      "coberturaDias": 251.93876449457446
+      "coberturaDias": 255.26977446279525
     },
     {
       "material": "32022278",
@@ -630,7 +630,7 @@
       "stock": 42,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 993
+      "coberturaDias": 1054.5
     },
     {
       "material": "31013875",
@@ -639,7 +639,7 @@
       "stock": 21,
       "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1463.3684210526314
+      "coberturaDias": 1554
     },
     {
       "material": "34004337",
@@ -673,9 +673,9 @@
       "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
       "clasificacion": "Alta Rotación",
       "stock": 829,
-      "rop": 169,
+      "rop": 167,
       "riesgo": "AMARILLO",
-      "coberturaDias": 284.05693581780537
+      "coberturaDias": 283.18124392614186
     },
     {
       "material": "32004360",
@@ -693,7 +693,7 @@
       "stock": 4,
       "rop": 4,
       "riesgo": "ROJO",
-      "coberturaDias": 71.56756756756756
+      "coberturaDias": 72.1025641025641
     },
     {
       "material": "33034469",
@@ -702,7 +702,7 @@
       "stock": 14,
       "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 772.3333333333333
+      "coberturaDias": 820.1666666666666
     },
     {
       "material": "32004344",
@@ -720,7 +720,7 @@
       "stock": 1,
       "rop": 3,
       "riesgo": "ROJO",
-      "coberturaDias": 41.375
+      "coberturaDias": 43.9375
     },
     {
       "material": "31015587",
@@ -729,7 +729,7 @@
       "stock": 5,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1655
+      "coberturaDias": 1757.5
     },
     {
       "material": "33039665",
@@ -747,7 +747,7 @@
       "stock": 157,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 122.70144284128746
+      "coberturaDias": 120.41128205128204
     },
     {
       "material": "32008682",
@@ -756,7 +756,7 @@
       "stock": 21,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 262.3018867924528
+      "coberturaDias": 278.54716981132077
     },
     {
       "material": "34002480",
@@ -774,7 +774,7 @@
       "stock": 4,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 2648
+      "coberturaDias": 2812
     },
     {
       "material": "33037193",
@@ -792,7 +792,7 @@
       "stock": 1,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 662
+      "coberturaDias": 703
     },
     {
       "material": "32008167",
@@ -801,7 +801,7 @@
       "stock": 17,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 2813.5
+      "coberturaDias": 2390.2
     },
     {
       "material": "32003905",
@@ -817,9 +817,9 @@
       "descripcion": "ACEITE MOBILGEAR 600 XP 680 MOBIL 55GL",
       "clasificacion": "Baja Rotación",
       "stock": 253.5,
-      "rop": 49,
+      "rop": 48,
       "riesgo": "AMARILLO",
-      "coberturaDias": 714.1148936170213
+      "coberturaDias": 758.3425531914894
     },
     {
       "material": "33041267",
@@ -828,7 +828,7 @@
       "stock": 1,
       "rop": 1,
       "riesgo": "ROJO",
-      "coberturaDias": 132.4
+      "coberturaDias": 140.6
     },
     {
       "material": "33031126",
@@ -862,27 +862,27 @@
       "descripcion": "ACEITE MOBILGEAR 600 XP 220 MOBIL 55GL",
       "clasificacion": "Baja Rotación",
       "stock": 57,
-      "rop": 3,
+      "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 2358.375
+      "coberturaDias": 2504.4375
     },
     {
       "material": "30000385",
       "descripcion": "ACEITE MOBILGEAR 600 XP 320 MOBIL 55GL",
       "clasificacion": "Baja Rotación",
       "stock": 62,
-      "rop": 69,
+      "rop": 67,
       "riesgo": "ROJO",
-      "coberturaDias": 97.0307328605201
+      "coberturaDias": 103.04018912529551
     },
     {
       "material": "30000473",
       "descripcion": "GRASA M-MOBILUX EP 2 MOBIL BALDE 35LB",
       "clasificacion": "Baja Rotación",
       "stock": 28,
-      "rop": 3,
+      "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1090.3529411764705
+      "coberturaDias": 1157.8823529411766
     },
     {
       "material": "32003586",
@@ -943,9 +943,9 @@
       "descripcion": "PERNO HEX.INOX.5/8\"X1 1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 5,
-      "rop": 6,
+      "rop": 5,
       "riesgo": "ROJO",
-      "coberturaDias": 97.35294117647058
+      "coberturaDias": 103.38235294117646
     },
     {
       "material": "33031101",
@@ -1017,14 +1017,14 @@
       "stock": 2,
       "rop": 4,
       "riesgo": "ROJO",
-      "coberturaDias": 32.29268292682927
+      "coberturaDias": 31.954545454545457
     },
     {
       "material": "32003602",
       "descripcion": "BOLSA P/BASURA NEGRO 100L PQTE.100UN",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 0,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1089,7 +1089,7 @@
       "stock": 2,
       "rop": 3,
       "riesgo": "ROJO",
-      "coberturaDias": 45.6551724137931
+      "coberturaDias": 45.354838709677416
     },
     {
       "material": "31009836",
@@ -1098,7 +1098,7 @@
       "stock": 29,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1371.2857142857142
+      "coberturaDias": 1456.2142857142858
     },
     {
       "material": "31012450",
@@ -1240,7 +1240,7 @@
       "descripcion": "CINTILLO PLAST.4X400MM",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 136,
+      "rop": 131,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1251,7 +1251,7 @@
       "stock": 1,
       "rop": 1,
       "riesgo": "ROJO",
-      "coberturaDias": 73.55555555555556
+      "coberturaDias": 78.11111111111111
     },
     {
       "material": "31013863",
@@ -1260,7 +1260,7 @@
       "stock": 7,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 2648
+      "coberturaDias": 2812
     },
     {
       "material": "31014664",
@@ -1337,7 +1337,7 @@
     {
       "material": "32004074",
       "descripcion": "CUCHILLO CARNICERO M/WT. 8\"TRAMONTINA",
-      "clasificacion": "Mediana Rotación",
+      "clasificacion": "Baja Rotación",
       "stock": 0,
       "rop": 2,
       "riesgo": "ROJO",
@@ -1368,7 +1368,7 @@
       "stock": 1,
       "rop": 1,
       "riesgo": "ROJO",
-      "coberturaDias": 82.75
+      "coberturaDias": 87.875
     },
     {
       "material": "33030167",
@@ -1411,7 +1411,7 @@
       "descripcion": "CABLE VULCANIZADO NLT 3X14AWG",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 44,
+      "rop": 43,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1447,7 +1447,7 @@
       "descripcion": "DETERGENTE DOMESTICO A:32022281",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 242,
+      "rop": 233,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1467,7 +1467,7 @@
       "stock": 2,
       "rop": 2,
       "riesgo": "ROJO",
-      "coberturaDias": 165.5
+      "coberturaDias": 175.75
     },
     {
       "material": "31012608",
@@ -1519,7 +1519,7 @@
       "descripcion": "PERNO HEX.G5 3/4\"X2 1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 5,
+      "rop": 4,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1548,7 +1548,7 @@
       "stock": 1,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 94.57142857142857
+      "coberturaDias": 100.42857142857143
     },
     {
       "material": "31013395",
@@ -1663,7 +1663,7 @@
       "descripcion": "CODO 90° SCH40 SOLD.4\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 7,
+      "rop": 6,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1690,7 +1690,7 @@
       "descripcion": "ESCOBILLA 4 HILERAS FE.C/MANGO 12\"",
       "clasificacion": "Mediana Rotación",
       "stock": 0,
-      "rop": 8,
+      "rop": 7,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1726,9 +1726,9 @@
       "descripcion": "TORNILLO STOVE BOLT GALV.3/16\"X1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 37,
-      "rop": 158,
+      "rop": 153,
       "riesgo": "ROJO",
-      "coberturaDias": 24.494
+      "coberturaDias": 26.011000000000003
     },
     {
       "material": "31014237",
@@ -1744,7 +1744,7 @@
       "descripcion": "GRASERA REC.NPT 1/4\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 35,
+      "rop": 34,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1843,7 +1843,7 @@
       "descripcion": "CINTILLO PLAST.2.5X100MM",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 201,
+      "rop": 195,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1852,7 +1852,7 @@
       "descripcion": "CINTILLO PLAST.4X300MM",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 277,
+      "rop": 268,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1897,7 +1897,7 @@
       "descripcion": "LUZ EMERG.LED 220V 60HZ",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 4,
+      "rop": 5,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1951,9 +1951,9 @@
       "descripcion": "CINTA MASKING TAPE 1\"X55YDS",
       "clasificacion": "Baja Rotación",
       "stock": 37,
-      "rop": 41,
+      "rop": 42,
       "riesgo": "ROJO",
-      "coberturaDias": 77.75873015873016
+      "coberturaDias": 73.27042253521127
     },
     {
       "material": "32005537",
@@ -2052,7 +2052,7 @@
       "stock": 22,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1213.6666666666665
+      "coberturaDias": 1288.8333333333333
     },
     {
       "material": "31012360",
@@ -2140,9 +2140,9 @@
       "descripcion": "TRAJE DESCARTABLE BLANCO P/PINTADO T/L",
       "clasificacion": "Mediana Rotación",
       "stock": 28,
-      "rop": 36,
+      "rop": 34,
       "riesgo": "ROJO",
-      "coberturaDias": 39.94827586206896
+      "coberturaDias": 42.24034334763949
     },
     {
       "material": "33041869",
@@ -2160,7 +2160,7 @@
       "stock": 30,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1527.6923076923076
+      "coberturaDias": 1506.4285714285716
     },
     {
       "material": "30000470",
@@ -2230,7 +2230,7 @@
       "descripcion": "TUBO CONDU. FLEX.PVC C/FO.3/4\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 8,
+      "rop": 7,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2275,7 +2275,7 @@
       "descripcion": "GUANTE NITRI. 19 T/L (09) A:32027914",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 3,
+      "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2285,24 +2285,6 @@
       "clasificacion": "Mediana Rotación",
       "stock": 0,
       "rop": 0,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32007478",
-      "descripcion": "LENTE SEGUR.TRANSP.SECUREFIT A:32027933",
-      "clasificacion": "Alta Rotación",
-      "stock": 0,
-      "rop": 24,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32007250",
-      "descripcion": "LENTE SEGUR.OSCU.SEC 402X 3M A:32027932",
-      "clasificacion": "Alta Rotación",
-      "stock": 0,
-      "rop": 16,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2321,15 +2303,6 @@
       "clasificacion": "Baja Rotación",
       "stock": 0,
       "rop": 5,
-      "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "32006780",
-      "descripcion": "KIT LENTES SEGUR.TRANSP.SOLUS A:32027929",
-      "clasificacion": "Mediana Rotación",
-      "stock": 0,
-      "rop": 3,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2440,6 +2413,42 @@
       "rop": 0,
       "riesgo": "ROJO",
       "coberturaDias": 0
+    },
+    {
+      "material": "32027933",
+      "descripcion": "LENTE SEGUR.TRANSP.SECUREFIT 401X 3M",
+      "clasificacion": "Baja Rotación",
+      "stock": 83,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 9724.833333333332
+    },
+    {
+      "material": "32027932",
+      "descripcion": "LENTE SEGUR.OSCU.SECUREFIT 402X 3M",
+      "clasificacion": "Baja Rotación",
+      "stock": 52,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 5222.285714285715
+    },
+    {
+      "material": "32027931",
+      "descripcion": "LENTE P/VIGIA SOLDADURA 550 AF U6+W5",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 0,
+      "riesgo": "ROJO",
+      "coberturaDias": null
+    },
+    {
+      "material": "32027929",
+      "descripcion": "KIT LENTES SEGUR.TRANSP.SOLUS 1000",
+      "clasificacion": "Baja Rotación",
+      "stock": 8,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 5624
     }
   ],
   "stockAceitePescado": [
