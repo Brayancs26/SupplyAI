@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-11-07T15:10:09.007Z",
-  "totalMaterialesParaReordenar": 275,
+  "publicadoEn": "2026-11-09T15:26:34.829Z",
+  "totalMaterialesParaReordenar": 282,
   "materialesParaReordenar": [
     {
       "material": "31012396",
@@ -73,6 +73,15 @@
       "rop": 31,
       "riesgo": "AMARILLO",
       "coberturaDias": 361.66666666666663
+    },
+    {
+      "material": "31009337",
+      "descripcion": "CINTA CAMBRIC C 2520 3/4\"X18MT 3M",
+      "clasificacion": "Mediana Rotación",
+      "stock": 3,
+      "rop": 6,
+      "riesgo": "ROJO",
+      "coberturaDias": 36.166666666666664
     },
     {
       "material": "31009821",
@@ -178,9 +187,9 @@
       "descripcion": "WYPALL ROLLO BLANCO X-80",
       "clasificacion": "Alta Rotación",
       "stock": 97,
-      "rop": 11,
+      "rop": 18,
       "riesgo": "AMARILLO",
-      "coberturaDias": 434.33757961783436
+      "coberturaDias": 228.79347826086956
     },
     {
       "material": "33032733",
@@ -228,13 +237,22 @@
       "coberturaDias": 25.4151065203357
     },
     {
+      "material": "32003605",
+      "descripcion": "BOLSA P/BASURA ROJO 140L PQTE.100UN",
+      "clasificacion": "Baja Rotación",
+      "stock": 12,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 651
+    },
+    {
       "material": "32005434",
       "descripcion": "DESINCRUSTANTE LIQUIDO ACIDO GL",
       "clasificacion": "Mediana Rotación",
       "stock": 3,
-      "rop": 6,
+      "rop": 3,
       "riesgo": "ROJO",
-      "coberturaDias": 36.362068965517246
+      "coberturaDias": 59.18181818181818
     },
     {
       "material": "31008471",
@@ -291,15 +309,6 @@
       "coberturaDias": 0
     },
     {
-      "material": "32005539",
-      "descripcion": "FASTENER CJ.50UN",
-      "clasificacion": "Baja Rotación",
-      "stock": 16,
-      "rop": 0,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 5624
-    },
-    {
       "material": "31012354",
       "descripcion": "PERNO HEX.INOX.1/2\"X2 1/2\"",
       "clasificacion": "Mediana Rotación",
@@ -316,6 +325,24 @@
       "rop": 4,
       "riesgo": "ROJO",
       "coberturaDias": 93.73333333333333
+    },
+    {
+      "material": "32005532",
+      "descripcion": "CINTA MASKING TAPE 1/2\"X55YDS",
+      "clasificacion": "Baja Rotación",
+      "stock": 20,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 4340
+    },
+    {
+      "material": "32004165",
+      "descripcion": "ESCOBILLA PLAST.NY.C/MANGO P/LAVAR",
+      "clasificacion": "Baja Rotación",
+      "stock": 3,
+      "rop": 3,
+      "riesgo": "ROJO",
+      "coberturaDias": 93
     },
     {
       "material": "32003613",
@@ -399,13 +426,22 @@
       "coberturaDias": 51.666666666666664
     },
     {
+      "material": "32005020",
+      "descripcion": "REMOVEDOR SARRO DUKTO",
+      "clasificacion": "Baja Rotación",
+      "stock": 3,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
+    },
+    {
       "material": "32006122",
       "descripcion": "GUANTES LATEX BLANCO C-5 T-L",
       "clasificacion": "Baja Rotación",
       "stock": 948,
-      "rop": 24,
+      "rop": 97,
       "riesgo": "AMARILLO",
-      "coberturaDias": 6598.455445544555
+      "coberturaDias": 1028.58
     },
     {
       "material": "33048363",
@@ -493,7 +529,7 @@
       "descripcion": "OXIDO MAGNESIO LIGERO PURIS 97%",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 0,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -552,6 +588,15 @@
       "coberturaDias": 36.05128205128205
     },
     {
+      "material": "31032189",
+      "descripcion": "CINTA AISLANTE PVC 19MMX20MTX0.15MM",
+      "clasificacion": "Baja Rotación",
+      "stock": 25,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 2712.5
+    },
+    {
       "material": "32003555",
       "descripcion": "BIDON AGUA 20L",
       "clasificacion": "Alta Rotación",
@@ -559,15 +604,6 @@
       "rop": 19,
       "riesgo": "ROJO",
       "coberturaDias": 16.924074074074074
-    },
-    {
-      "material": "32003567",
-      "descripcion": "BLOCK FORMATO AST 100HJ",
-      "clasificacion": "Mediana Rotación",
-      "stock": 4,
-      "rop": 4,
-      "riesgo": "ROJO",
-      "coberturaDias": 61.1304347826087
     },
     {
       "material": "32003965",
@@ -628,9 +664,9 @@
       "descripcion": "PLUMON INDELEBLE PTA.GRUESA NEGRO",
       "clasificacion": "Alta Rotación",
       "stock": 7,
-      "rop": 7,
+      "rop": 8,
       "riesgo": "ROJO",
-      "coberturaDias": 61.512499999999996
+      "coberturaDias": 54.25
     },
     {
       "material": "32005804",
@@ -687,13 +723,22 @@
       "coberturaDias": 0
     },
     {
+      "material": "32004888",
+      "descripcion": "PASTILLA DESODORANTE P/BAÑO",
+      "clasificacion": "Baja Rotación",
+      "stock": 13,
+      "rop": 7,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
+    },
+    {
       "material": "32004469",
       "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
       "clasificacion": "Alta Rotación",
       "stock": 829,
-      "rop": 167,
+      "rop": 131,
       "riesgo": "AMARILLO",
-      "coberturaDias": 283.18124392614186
+      "coberturaDias": 361.2309236947791
     },
     {
       "material": "32004360",
@@ -705,13 +750,13 @@
       "coberturaDias": 496
     },
     {
-      "material": "32005361",
-      "descripcion": "TRAPEADOR MOPA ALGO.C/MANGO",
+      "material": "32005491",
+      "descripcion": "BOLSA P/BASURA NEGRO 140L PQTE.100UN",
       "clasificacion": "Mediana Rotación",
-      "stock": 4,
+      "stock": 20,
       "rop": 4,
-      "riesgo": "ROJO",
-      "coberturaDias": 72.1025641025641
+      "riesgo": "AMARILLO",
+      "coberturaDias": 271.25
     },
     {
       "material": "33034469",
@@ -727,7 +772,7 @@
       "descripcion": "GEL ALCOHOL 60-70° X 1 LT C/VALV.",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 2,
+      "rop": 5,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -757,6 +802,15 @@
       "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
+    },
+    {
+      "material": "32004852",
+      "descripcion": "PAPEL HIGIENICO DOBLE HOJA 15MT PQX20ROL",
+      "clasificacion": "Baja Rotación",
+      "stock": 1,
+      "rop": 1,
+      "riesgo": "ROJO",
+      "coberturaDias": 86.8
     },
     {
       "material": "32005500",
@@ -846,7 +900,7 @@
       "stock": 1,
       "rop": 1,
       "riesgo": "ROJO",
-      "coberturaDias": 140.6
+      "coberturaDias": 108.5
     },
     {
       "material": "33031126",
@@ -1035,14 +1089,14 @@
       "stock": 2,
       "rop": 4,
       "riesgo": "ROJO",
-      "coberturaDias": 31.954545454545457
+      "coberturaDias": 43.4
     },
     {
       "material": "32003602",
       "descripcion": "BOLSA P/BASURA NEGRO 100L PQTE.100UN",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 0,
+      "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1267,18 +1321,9 @@
       "descripcion": "CINTILLO PLAST.4X400MM",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 131,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
-    },
-    {
-      "material": "31010154",
-      "descripcion": "ENCHUFE MOVIL 2P+T 16A 220-250V",
-      "clasificacion": "Baja Rotación",
-      "stock": 1,
-      "rop": 1,
-      "riesgo": "ROJO",
-      "coberturaDias": 78.11111111111111
+      "coberturaDias": null
     },
     {
       "material": "31013863",
@@ -1393,9 +1438,9 @@
       "descripcion": "TIJERA 7\"",
       "clasificacion": "Baja Rotación",
       "stock": 1,
-      "rop": 1,
-      "riesgo": "ROJO",
-      "coberturaDias": 87.875
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "33030167",
@@ -1438,7 +1483,7 @@
       "descripcion": "CABLE VULCANIZADO NLT 3X14AWG",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 43,
+      "rop": 74,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1474,7 +1519,7 @@
       "descripcion": "DETERGENTE DOMESTICO A:32022281",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 233,
+      "rop": 10,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1870,16 +1915,16 @@
       "descripcion": "CINTILLO PLAST.2.5X100MM",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 195,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "31009364",
       "descripcion": "CINTILLO PLAST.4X300MM",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 268,
+      "rop": 125,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1920,28 +1965,37 @@
       "coberturaDias": 2278.5
     },
     {
+      "material": "32004433",
+      "descripcion": "HIPOCLORITO SODIO-SODIUM HYPOCHLORITE7.5",
+      "clasificacion": "Baja Rotación",
+      "stock": 40,
+      "rop": 44,
+      "riesgo": "ROJO",
+      "coberturaDias": 96.44444444444444
+    },
+    {
+      "material": "32004443",
+      "descripcion": "HUELLERO DACTILAR TINTA NEGRA",
+      "clasificacion": "Baja Rotación",
+      "stock": 3,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
+    },
+    {
       "material": "32004610",
       "descripcion": "LUZ EMERG.LED 220V 60HZ",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 5,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "32004977",
       "descripcion": "PRE FILTRO P/VAP. N95",
       "clasificacion": "Baja Rotación",
       "stock": 2,
-      "rop": 0,
-      "riesgo": "AMARILLO",
-      "coberturaDias": null
-    },
-    {
-      "material": "32005014",
-      "descripcion": "REGLA PLAST.30CM",
-      "clasificacion": "Baja Rotación",
-      "stock": 3,
       "rop": 0,
       "riesgo": "AMARILLO",
       "coberturaDias": null
@@ -1978,16 +2032,16 @@
       "descripcion": "CINTA MASKING TAPE 1\"X55YDS",
       "clasificacion": "Baja Rotación",
       "stock": 37,
-      "rop": 42,
-      "riesgo": "ROJO",
-      "coberturaDias": 73.27042253521127
+      "rop": 2,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 1338.1666666666665
     },
     {
       "material": "32005537",
       "descripcion": "ENGRAPADOR ALICATE AC.26/6-8",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 0,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2014,16 +2068,16 @@
       "descripcion": "CONEC. CONDU. REC.HERMETICO 1 1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 5,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "33032247",
       "descripcion": "EQUIPO FLUORESCENTE ESTANCO 2X36W 220VAC",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 0,
+      "rop": 9,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2253,11 +2307,20 @@
       "coberturaDias": 0
     },
     {
+      "material": "32003494",
+      "descripcion": "ARCHIVADOR OFICIO 1/2",
+      "clasificacion": "Baja Rotación",
+      "stock": 6,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
+    },
+    {
       "material": "33042326",
       "descripcion": "TUBO CONDU. FLEX.PVC C/FO.3/4\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 7,
+      "rop": 3,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
