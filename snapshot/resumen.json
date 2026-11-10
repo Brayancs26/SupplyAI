@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-11-09T15:26:34.829Z",
+  "publicadoEn": "2026-11-10T13:34:41.191Z",
   "totalMaterialesParaReordenar": 282,
   "materialesParaReordenar": [
     {
@@ -1465,7 +1465,7 @@
       "descripcion": "VALV.BOLA INOX.NPT 150PSI 1 1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 0,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1537,9 +1537,9 @@
       "descripcion": "VALV.BOLA INOX.NPT 150PSI 1/4\"",
       "clasificacion": "Baja Rotación",
       "stock": 2,
-      "rop": 2,
-      "riesgo": "ROJO",
-      "coberturaDias": 175.75
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "31012608",
@@ -1935,7 +1935,7 @@
       "stock": 0,
       "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "32003919",
@@ -2086,7 +2086,7 @@
       "descripcion": "VALV.BOLA INOX.NPT 150PSI 2 1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 2,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
