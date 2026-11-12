@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-11-10T13:34:41.191Z",
-  "totalMaterialesParaReordenar": 282,
+  "publicadoEn": "2026-11-12T15:25:33.167Z",
+  "totalMaterialesParaReordenar": 283,
   "materialesParaReordenar": [
     {
       "material": "31012396",
@@ -34,15 +34,15 @@
       "descripcion": "OIL FILTER RE504836",
       "clasificacion": "Baja Rotación",
       "stock": 4,
-      "rop": 1,
+      "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 703
+      "coberturaDias": null
     },
     {
       "material": "33040389",
       "descripcion": "FILTRO PETR.SEP.AGUA P550690 DONALDSON",
       "clasificacion": "Baja Rotación",
-      "stock": 6,
+      "stock": 3,
       "rop": 3,
       "riesgo": "AMARILLO",
       "coberturaDias": null
@@ -60,10 +60,10 @@
       "material": "30000506",
       "descripcion": "LUBRICANTE MULTIUSO WD40",
       "clasificacion": "Mediana Rotación",
-      "stock": 57,
+      "stock": 56,
       "rop": 3,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1144.8857142857144
+      "coberturaDias": 1124.8
     },
     {
       "material": "31008595",
@@ -111,15 +111,6 @@
       "coberturaDias": 43.04081632653061
     },
     {
-      "material": "31010293",
-      "descripcion": "ESPATULA C/MANGO PVC 3\"",
-      "clasificacion": "Mediana Rotación",
-      "stock": 10,
-      "rop": 11,
-      "riesgo": "ROJO",
-      "coberturaDias": 56.24
-    },
-    {
       "material": "31011265",
       "descripcion": "LIMPIACONTACTOS ELECTRICOS/ELECT.",
       "clasificacion": "Baja Rotación",
@@ -138,13 +129,13 @@
       "coberturaDias": 18.307291666666664
     },
     {
-      "material": "31015363",
-      "descripcion": "BROCHA NY. 2\"",
+      "material": "31015543",
+      "descripcion": "BROCHA NY. 3\"",
       "clasificacion": "Mediana Rotación",
-      "stock": 18,
-      "rop": 26,
-      "riesgo": "ROJO",
-      "coberturaDias": 45.847826086956516
+      "stock": 39,
+      "rop": 5,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 705.25
     },
     {
       "material": "32003811",
@@ -168,10 +159,10 @@
       "material": "32004396",
       "descripcion": "GUANTE POLI-ALGO.P/MANIO. T/L(9)",
       "clasificacion": "Alta Rotación",
-      "stock": 24,
+      "stock": 21,
       "rop": 26,
       "riesgo": "ROJO",
-      "coberturaDias": 43.76470588235294
+      "coberturaDias": 38.294117647058826
     },
     {
       "material": "32005051",
@@ -205,9 +196,9 @@
       "descripcion": "ELEM.FILTRO PETR./SEP.AGUA RACOR 2020SM",
       "clasificacion": "Baja Rotación",
       "stock": 62,
-      "rop": 24,
+      "rop": 16,
       "riesgo": "AMARILLO",
-      "coberturaDias": 216.8457711442786
+      "coberturaDias": 280.29166666666663
     },
     {
       "material": "31012485",
@@ -231,10 +222,10 @@
       "material": "32003790",
       "descripcion": "CAJA AGUA ENV.DESCARTABLE 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 56,
+      "stock": 15,
       "rop": 81,
       "riesgo": "ROJO",
-      "coberturaDias": 25.4151065203357
+      "coberturaDias": 6.807617817947063
     },
     {
       "material": "32003605",
@@ -264,6 +255,15 @@
       "coberturaDias": 5008.875
     },
     {
+      "material": "31009327",
+      "descripcion": "CINCEL PLANO 5/8\"X7\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 1,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
+    },
+    {
       "material": "31014743",
       "descripcion": "TUERCA INOX.3/4\"",
       "clasificacion": "Mediana Rotación",
@@ -291,15 +291,6 @@
       "coberturaDias": 319.54545454545456
     },
     {
-      "material": "30000659",
-      "descripcion": "GRASA SINTETICA PREMALUBE EXTREME 15.9KG",
-      "clasificacion": "Baja Rotación",
-      "stock": 5,
-      "rop": 1,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 878.75
-    },
-    {
       "material": "32003846",
       "descripcion": "CARETA AUTO-OSCURECIBLEA P/SOLDAR",
       "clasificacion": "Baja Rotación",
@@ -316,15 +307,6 @@
       "rop": 96,
       "riesgo": "ROJO",
       "coberturaDias": 32.44615384615385
-    },
-    {
-      "material": "31012991",
-      "descripcion": "PICOTA 12\"X24MM",
-      "clasificacion": "Baja Rotación",
-      "stock": 4,
-      "rop": 4,
-      "riesgo": "ROJO",
-      "coberturaDias": 93.73333333333333
     },
     {
       "material": "32005532",
@@ -438,10 +420,10 @@
       "material": "32006122",
       "descripcion": "GUANTES LATEX BLANCO C-5 T-L",
       "clasificacion": "Baja Rotación",
-      "stock": 948,
+      "stock": 848,
       "rop": 97,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1028.58
+      "coberturaDias": 920.08
     },
     {
       "material": "33048363",
@@ -475,9 +457,9 @@
       "descripcion": "CINTA EMB.TRANSP.2\"X11 YD.45MIC",
       "clasificacion": "Alta Rotación",
       "stock": 11,
-      "rop": 15,
+      "rop": 16,
       "riesgo": "ROJO",
-      "coberturaDias": 64.51351351351352
+      "coberturaDias": 60.5
     },
     {
       "material": "20001638",
@@ -525,6 +507,15 @@
       "coberturaDias": 2230.6730769230767
     },
     {
+      "material": "31009826",
+      "descripcion": "DISCO CORTE INOX.3/64\"X7/8\"X4 1/2\"",
+      "clasificacion": "Alta Rotación",
+      "stock": 37,
+      "rop": 42,
+      "riesgo": "ROJO",
+      "coberturaDias": 22.89700704225352
+    },
+    {
       "material": "31012127",
       "descripcion": "OXIDO MAGNESIO LIGERO PURIS 97%",
       "clasificacion": "Baja Rotación",
@@ -537,10 +528,10 @@
       "material": "31013843",
       "descripcion": "SILICONA CARTUCHO TRANSP.",
       "clasificacion": "Alta Rotación",
-      "stock": 8,
+      "stock": 6,
       "rop": 15,
       "riesgo": "ROJO",
-      "coberturaDias": 23.45945945945946
+      "coberturaDias": 17.594594594594593
     },
     {
       "material": "31014281",
@@ -556,9 +547,9 @@
       "descripcion": "BROCHA NY. 1\"",
       "clasificacion": "Baja Rotación",
       "stock": 23,
-      "rop": 1,
+      "rop": 3,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1469.909090909091
+      "coberturaDias": 713
     },
     {
       "material": "31015445",
@@ -570,15 +561,6 @@
       "coberturaDias": 0
     },
     {
-      "material": "31015544",
-      "descripcion": "BROCHA NY. 4\"",
-      "clasificacion": "Baja Rotación",
-      "stock": 20,
-      "rop": 4,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 585.8333333333333
-    },
-    {
       "material": "31015602",
       "descripcion": "RODILLO P/PINTAR 4\"",
       "clasificacion": "Mediana Rotación",
@@ -586,6 +568,15 @@
       "rop": 15,
       "riesgo": "ROJO",
       "coberturaDias": 36.05128205128205
+    },
+    {
+      "material": "31032188",
+      "descripcion": "CINTA AISLANTE NEGRA 600V-33+ 3M",
+      "clasificacion": "Baja Rotación",
+      "stock": 5,
+      "rop": 9,
+      "riesgo": "ROJO",
+      "coberturaDias": 35
     },
     {
       "material": "31032189",
@@ -597,13 +588,13 @@
       "coberturaDias": 2712.5
     },
     {
-      "material": "32003555",
-      "descripcion": "BIDON AGUA 20L",
-      "clasificacion": "Alta Rotación",
-      "stock": 13,
-      "rop": 19,
+      "material": "32003567",
+      "descripcion": "BLOCK FORMATO AST 100HJ",
+      "clasificacion": "Mediana Rotación",
+      "stock": 2,
+      "rop": 4,
       "riesgo": "ROJO",
-      "coberturaDias": 16.924074074074074
+      "coberturaDias": 39.45454545454545
     },
     {
       "material": "32003965",
@@ -645,10 +636,10 @@
       "material": "32004361",
       "descripcion": "GUANTE CUERO CROMO REF.P/MANIO.T/L(10.5)",
       "clasificacion": "Mediana Rotación",
-      "stock": 91,
+      "stock": 90,
       "rop": 10,
       "riesgo": "AMARILLO",
-      "coberturaDias": 658.2333333333332
+      "coberturaDias": 651
     },
     {
       "material": "32004376",
@@ -673,9 +664,9 @@
       "descripcion": "PAPEL HIGIENICO HJ.SIMPLE 550M PQTE.12UN",
       "clasificacion": "Alta Rotación",
       "stock": 20.447,
-      "rop": 4,
+      "rop": 5,
       "riesgo": "AMARILLO",
-      "coberturaDias": 255.26977446279525
+      "coberturaDias": 196.47518044546783
     },
     {
       "material": "32022278",
@@ -735,10 +726,10 @@
       "material": "32004469",
       "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
       "clasificacion": "Alta Rotación",
-      "stock": 829,
+      "stock": 823,
       "rop": 131,
       "riesgo": "AMARILLO",
-      "coberturaDias": 361.2309236947791
+      "coberturaDias": 358.6164658634538
     },
     {
       "material": "32004360",
@@ -753,10 +744,10 @@
       "material": "32005491",
       "descripcion": "BOLSA P/BASURA NEGRO 140L PQTE.100UN",
       "clasificacion": "Mediana Rotación",
-      "stock": 20,
+      "stock": 19,
       "rop": 4,
       "riesgo": "AMARILLO",
-      "coberturaDias": 271.25
+      "coberturaDias": 257.6875
     },
     {
       "material": "33034469",
@@ -765,7 +756,7 @@
       "stock": 14,
       "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 820.1666666666666
+      "coberturaDias": 303.8
     },
     {
       "material": "32004344",
@@ -784,15 +775,6 @@
       "rop": 3,
       "riesgo": "ROJO",
       "coberturaDias": 43.9375
-    },
-    {
-      "material": "31015587",
-      "descripcion": "ARCO SIERRA 12\"",
-      "clasificacion": "Baja Rotación",
-      "stock": 5,
-      "rop": 0,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 1757.5
     },
     {
       "material": "33039665",
@@ -816,10 +798,10 @@
       "material": "32005500",
       "descripcion": "PAPEL TOALLA HJ.SIMPLE AIRFLEX 200MT",
       "clasificacion": "Alta Rotación",
-      "stock": 157,
+      "stock": 152,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 113.20102564102564
+      "coberturaDias": 116.80615384615385
     },
     {
       "material": "32008682",
@@ -1059,10 +1041,10 @@
       "material": "33033111",
       "descripcion": "FILTRO PETR.RE62420 JHON DEERE",
       "clasificacion": "Baja Rotación",
-      "stock": 2,
+      "stock": 0,
       "rop": 3,
       "riesgo": "ROJO",
-      "coberturaDias": 108.5
+      "coberturaDias": 0
     },
     {
       "material": "31013016",
@@ -1086,10 +1068,10 @@
       "material": "32003569",
       "descripcion": "BLOCK FORMATO PTS BLOCK 100HJ",
       "clasificacion": "Mediana Rotación",
-      "stock": 2,
+      "stock": 0,
       "rop": 4,
       "riesgo": "ROJO",
-      "coberturaDias": 43.4
+      "coberturaDias": 0
     },
     {
       "material": "32003602",
@@ -1195,7 +1177,7 @@
       "descripcion": "RODILLO P/PINTAR 7\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 5,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1213,7 +1195,7 @@
       "descripcion": "TENAZA PORTA ELECTRODO 300AMP",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 0,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1242,6 +1224,15 @@
       "stock": 0,
       "rop": 0,
       "riesgo": "ROJO",
+      "coberturaDias": null
+    },
+    {
+      "material": "31025995",
+      "descripcion": "LLAVE MIXTA 3/4\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 1,
+      "rop": 0,
+      "riesgo": "AMARILLO",
       "coberturaDias": null
     },
     {
@@ -1294,7 +1285,7 @@
       "descripcion": "GRASA SINTETICA PREMALUBE FG 397GR",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 6,
+      "rop": 20,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1515,6 +1506,15 @@
       "coberturaDias": 0
     },
     {
+      "material": "32003553",
+      "descripcion": "BETUN P/CALZADO NEGRO 80ML",
+      "clasificacion": "Baja Rotación",
+      "stock": 21,
+      "rop": 21,
+      "riesgo": "ROJO",
+      "coberturaDias": 78.11111111111111
+    },
+    {
       "material": "32004098",
       "descripcion": "DETERGENTE DOMESTICO A:32022281",
       "clasificacion": "Baja Rotación",
@@ -1528,9 +1528,9 @@
       "descripcion": "GRILLETE LIRA GALV.1\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 2,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "33039678",
@@ -1623,6 +1623,15 @@
       "coberturaDias": 100.42857142857143
     },
     {
+      "material": "31010295",
+      "descripcion": "ESPATULA RASPADOR LARG.48\" 4\" 5FZH4-HYDE",
+      "clasificacion": "Baja Rotación",
+      "stock": 2,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
+    },
+    {
       "material": "31013395",
       "descripcion": "PLATINA INOX.304 1/8\"X1 1/2\"X6MT",
       "clasificacion": "Baja Rotación",
@@ -1638,7 +1647,7 @@
       "stock": 0,
       "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "32004496",
@@ -1672,7 +1681,7 @@
       "descripcion": "ELEM.FLEX.P/ACOPLE OMEGA ES5-R",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 0,
+      "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1717,9 +1726,9 @@
       "descripcion": "BROCA HSS COBALTO 5/32\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 4,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "31009573",
@@ -1762,7 +1771,7 @@
       "descripcion": "ESCOBILLA 4 HILERAS FE.C/MANGO 12\"",
       "clasificacion": "Mediana Rotación",
       "stock": 0,
-      "rop": 7,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1771,7 +1780,7 @@
       "descripcion": "ESCOBILLA CIRC.P/TUB FE.2 1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 5,
+      "rop": 3,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1791,7 +1800,7 @@
       "stock": 0,
       "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "31013946",
@@ -1807,7 +1816,7 @@
       "descripcion": "TENAZA TIERRA 500AMP",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 0,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1816,25 +1825,25 @@
       "descripcion": "GRASERA REC.NPT 1/4\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 34,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "31015576",
       "descripcion": "LLAVE MIXTA 15/16\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "31015581",
       "descripcion": "LLAVE MIXTA 9/16\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1843,7 +1852,7 @@
       "descripcion": "LLAVE STILSON 12\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 0,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1879,7 +1888,7 @@
       "descripcion": "MANOMETRO 0-60PSI Ø4\"INOX.NPT C/I.1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 4,
+      "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1945,15 +1954,6 @@
       "rop": 2,
       "riesgo": "AMARILLO",
       "coberturaDias": 2430.4
-    },
-    {
-      "material": "32004076",
-      "descripcion": "CUCHILLO COCINERO M/PP.10\"",
-      "clasificacion": "Baja Rotación",
-      "stock": 9,
-      "rop": 1,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 976.5
     },
     {
       "material": "32004244",
@@ -2080,6 +2080,15 @@
       "rop": 9,
       "riesgo": "ROJO",
       "coberturaDias": 0
+    },
+    {
+      "material": "33032911",
+      "descripcion": "FILTRO AIRE AH19002 CUMMINS",
+      "clasificacion": "Baja Rotación",
+      "stock": 1,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "33039683",
@@ -2508,19 +2517,19 @@
       "material": "32027933",
       "descripcion": "LENTE SEGUR.TRANSP.SECUREFIT 401X 3M",
       "clasificacion": "Baja Rotación",
-      "stock": 83,
-      "rop": 1,
+      "stock": 80,
+      "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 9724.833333333332
+      "coberturaDias": null
     },
     {
       "material": "32027932",
       "descripcion": "LENTE SEGUR.OSCU.SECUREFIT 402X 3M",
       "clasificacion": "Baja Rotación",
-      "stock": 52,
-      "rop": 1,
+      "stock": 51,
+      "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 5222.285714285715
+      "coberturaDias": null
     },
     {
       "material": "32027931",
@@ -2538,14 +2547,66 @@
       "stock": 8,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 5624
+      "coberturaDias": null
     }
   ],
-  "stockAceitePescado": [],
-  "stockHarinaPescado": [],
+  "stockAceitePescado": [
+    {
+      "material": "50003972",
+      "descripcion": "ACEITE DE PESCADO PAMA",
+      "stock": 6.48
+    },
+    {
+      "material": "50003858",
+      "descripcion": "SOLIDO ESTEARINOSO DE PESCADO",
+      "stock": 1.6
+    },
+    {
+      "material": "50003859",
+      "descripcion": "ACEITE ACIDO N/R -BORRA",
+      "stock": 1.01
+    }
+  ],
+  "stockHarinaPescado": [
+    {
+      "material": "50003916",
+      "descripcion": "HARINA NC. FFA",
+      "stock": 50
+    },
+    {
+      "material": "50003935",
+      "descripcion": "HARINA SCRAP",
+      "stock": 16.54
+    },
+    {
+      "material": "50003967",
+      "descripcion": "HARINA A SUPER PRIME",
+      "stock": 16.45
+    },
+    {
+      "material": "50003969",
+      "descripcion": "HARINA B PRIME",
+      "stock": 7.85
+    },
+    {
+      "material": "50003940",
+      "descripcion": "HARINA STEAM DRIED STANDAR 66",
+      "stock": 4.55
+    },
+    {
+      "material": "50003971",
+      "descripcion": "HARINA D STANDARD",
+      "stock": 1.7
+    },
+    {
+      "material": "50003941",
+      "descripcion": "HARINA STEAM DRIED STANDARD 65",
+      "stock": 0
+    }
+  ],
   "valorizacion": {
-    "almacenUSD": 946083,
-    "ppttUSD": 0,
-    "pctVencido": 0.41
+    "almacenUSD": 938609,
+    "ppttUSD": 144751,
+    "pctVencido": 0.64
   }
 }
