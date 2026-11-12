@@ -17,7 +17,7 @@
 <script src="ia-client.js" defer></script>
 <script src="vendor/jszip.min.js" defer></script>
 <script src="reportes.js" defer></script>
-<script src="app.js?v=20261112a" defer></script>
+<script src="app.js?v=20261112b" defer></script>
 </head>
 <body>
 
@@ -235,6 +235,7 @@
           <label><span title="Capacidad total de tanques de Residual (Petróleo Industrial N°500), en galones">Capacidad Residual (GLN)</span><input type="number" id="comb-cap-residual" min="0" step="1000" /></label>
           <label><span title="Galones ya pedidos y aún no recibidos. No viene en los archivos SAP cargados: ingrésalo a mano">En curso Diesel (GLN)</span><input type="number" id="comb-curso-diesel" min="0" step="1000" /></label>
           <label><span title="Galones ya pedidos y aún no recibidos. No viene en los archivos SAP cargados: ingrésalo a mano">En curso Residual (GLN)</span><input type="number" id="comb-curso-residual" min="0" step="1000" /></label>
+          <label><span title="Un día cuenta como producción si el consumo del día es mayor o igual a este valor. Los días menores no entran al consumo real">Umbral día de producción (GLN)</span><input type="number" id="comb-umbral" min="0" step="500" /></label>
           <label><span>Ventana de consumo</span>
             <select id="comb-ventana">
               <option value="7">Últimos 7 días</option>
@@ -252,7 +253,7 @@
           <div class="comb-card comb-card-tabla">
             <h3>Cobertura en días por centro</h3>
             <table>
-              <thead><tr><th>Tipo de combustible</th><th class="num">Capacidad</th><th class="num">Stock</th><th class="num">% Stock</th><th class="num">Cobertura (días)</th><th class="num">En curso</th></tr></thead>
+              <thead><tr><th>Tipo de combustible</th><th class="num">Capacidad</th><th class="num">Stock</th><th class="num">% Stock</th><th class="num" title="Promedio diario de los días de producción de todo el historial de DATA">Consumo real (gal/día)</th><th class="num" title="Stock ÷ consumo real">Cobertura real (días)</th><th class="num" title="Stock ÷ promedio simple de la ventana elegida (incluye días sin producción)">Cobertura ventana (días)</th><th class="num">En curso</th></tr></thead>
               <tbody id="comb-tabla-body"></tbody>
             </table>
           </div>

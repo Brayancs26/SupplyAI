@@ -697,7 +697,7 @@ function renderHarinaConsolidada() {
 
 // ---------- Combustible: tanques Matarani ----------
 const COMB_MATERIALES = { diesel: '30000527', residual: '30000528' };
-const COMB_DEFAULTS = { capDiesel: 80000, capResidual: 115000, cursoDiesel: 0, cursoResidual: 0, ventana: 30 };
+const COMB_DEFAULTS = { capDiesel: 80000, capResidual: 115000, cursoDiesel: 0, cursoResidual: 0, ventana: 30, umbralProd: 5000 };
 
 function cargarParamsCombustible() {
   try { return Object.assign({}, COMB_DEFAULTS, JSON.parse(localStorage.getItem('supplymind_combustible') || '{}')); }
@@ -705,6 +705,21 @@ function cargarParamsCombustible() {
 }
 function guardarParamsCombustible(p) {
   try { localStorage.setItem('supplymind_combustible', JSON.stringify(p)); } catch (e) { /* sin storage */ }
+}
+
+
+// Consumo REAL: promedio diario de todo el historial de DATA, contando solo los días de producción
+// (consumo del día >= umbral). Los días menores (pruebas, arranques, retiros sueltos) no entran.
+function consumoRealCombustible(dataRows, material, umbral) {
+  const consumos = SupplyEngine.filtrarConsumoReal(dataRows, 'L001', {
+    almacenExtra: 'PI01',
+    materialesCombustible: new Set(Object.values(COMB_MATERIALES)),
+  }).filter((c) => c.material === material);
+  const porDia = new Map();
+  consumos.forEach((c) => porDia.set(c.fechaISO, (porDia.get(c.fechaISO) || 0) + c.demanda));
+  const dias = [...porDia.values()].filter((v) => v >= umbral);
+  const total = dias.reduce((a, v) => a + v, 0);
+  return { consumo: dias.length ? total / dias.length : 0, dias: dias.length, diasTotales: porDia.size };
 }
 
 function consumoDiarioCombustible(dataRows, material, ventanaDias) {
@@ -751,20 +766,24 @@ function renderCombustible() {
   set('comb-cap-diesel', p.capDiesel); set('comb-cap-residual', p.capResidual);
   set('comb-curso-diesel', p.cursoDiesel); set('comb-curso-residual', p.cursoResidual);
   set('comb-ventana', String(p.ventana));
+  set('comb-umbral', p.umbralProd);
 
   const stockDe = (mat) => state.archivos.MB52.filas
     .filter((r) => String(r['Material']).trim() === mat && String(r['Almacén']).trim() === 'L001')
     .reduce((a, r) => a + (Number(r['Libre utilización']) || 0), 0);
   const dataRows = state.archivos.DATA.filas;
   const filas = [
-    { nombre: 'Diesel', stock: stockDe(COMB_MATERIALES.diesel), cap: p.capDiesel, curso: p.cursoDiesel, consumo: consumoDiarioCombustible(dataRows, COMB_MATERIALES.diesel, p.ventana) },
-    { nombre: 'Residual', stock: stockDe(COMB_MATERIALES.residual), cap: p.capResidual, curso: p.cursoResidual, consumo: consumoDiarioCombustible(dataRows, COMB_MATERIALES.residual, p.ventana) },
-  ].map((f) => ({ ...f, pct: f.cap > 0 ? (f.stock / f.cap) * 100 : 0, cobertura: f.consumo > 0 ? f.stock / f.consumo : null }));
+    { nombre: 'Diesel', stock: stockDe(COMB_MATERIALES.diesel), cap: p.capDiesel, curso: p.cursoDiesel, consumo: consumoDiarioCombustible(dataRows, COMB_MATERIALES.diesel, p.ventana), real: consumoRealCombustible(dataRows, COMB_MATERIALES.diesel, p.umbralProd) },
+    { nombre: 'Residual', stock: stockDe(COMB_MATERIALES.residual), cap: p.capResidual, curso: p.cursoResidual, consumo: consumoDiarioCombustible(dataRows, COMB_MATERIALES.residual, p.ventana), real: consumoRealCombustible(dataRows, COMB_MATERIALES.residual, p.umbralProd) },
+  ].map((f) => ({ ...f, pct: f.cap > 0 ? (f.stock / f.cap) * 100 : 0, cobertura: f.consumo > 0 ? f.stock / f.consumo : null, coberturaReal: f.real.consumo > 0 ? f.stock / f.real.consumo : null }));
   const [d, r] = filas;
   const capTot = d.cap + r.cap, stockTot = d.stock + r.stock, cursoTot = d.curso + r.curso;
   const pctTot = capTot > 0 ? (stockTot / capTot) * 100 : 0;
   const consumoTot = d.consumo + r.consumo;
   const covTot = consumoTot > 0 ? stockTot / consumoTot : null;
+  const realTot = d.real.consumo + r.real.consumo;
+  const covRealTot = realTot > 0 ? stockTot / realTot : null;
+  const fmtCov1 = (c) => (c === null ? '—' : fmtNum(c, 1));
   const fmtCov = (c) => (c === null ? '—' : fmtNum(c, 0));
 
   const kpi = (valor, label, tip, color) => `<div class="kpi-card kpi-val-${color}" title="${tip}"><span class="kpi-label">${label}</span><span class="kpi-value">${valor}</span></div>`;
@@ -772,23 +791,24 @@ function renderCombustible() {
     kpi(`${fmtNum(pctTot, 0)} %`, 'Tanques llenos', 'Stock total de Diesel + Residual sobre la capacidad total', 'azul') +
     kpi(`${fmtNum(d.pct, 0)} %`, 'Tanque Diesel', 'Stock de Diesel en L001 sobre su capacidad', 'verde') +
     kpi(`${fmtNum(r.pct, 0)} %`, 'Tanque Residual', 'Stock de Residual (R500) en L001 sobre su capacidad', 'rojo') +
-    kpi(fmtCov(d.cobertura), 'Cobertura días (Diesel)', 'Stock ÷ consumo diario promedio de la ventana elegida', 'amarillo') +
-    kpi(fmtCov(r.cobertura), 'Cobertura días (Residual)', 'Stock ÷ consumo diario promedio de la ventana elegida', 'celeste');
+    kpi(fmtCov1(d.coberturaReal), 'Cobertura real días (Diesel)', 'Stock L001 ÷ consumo real: promedio de los días de producción (consumo del día ≥ umbral) de todo el historial', 'amarillo') +
+    kpi(fmtCov1(r.coberturaReal), 'Cobertura real días (Residual)', 'Stock L001 ÷ consumo real: promedio de los días de producción (consumo del día ≥ umbral) de todo el historial', 'celeste');
 
   document.getElementById('comb-barra-diesel').innerHTML = barraVerticalComb(d.pct, 'MATARANI');
   document.getElementById('comb-barra-residual').innerHTML = barraVerticalComb(r.pct, 'MATARANI');
   document.getElementById('comb-stock-diesel').innerHTML = barraStockVsCapacidad(d.stock, d.cap);
   document.getElementById('comb-stock-residual').innerHTML = barraStockVsCapacidad(r.stock, r.cap);
 
-  const filaTabla = (f) => `<tr class="fila-total-suave"><td>${f.nombre}</td><td class="num">${fmtNum(f.cap, 0)}</td><td class="num">${fmtNum(f.stock, 0)}</td><td class="num">${fmtNum(f.pct, 0)} %</td><td class="num">${fmtCov(f.cobertura)}</td><td class="num">${fmtNum(f.curso, 0)}</td></tr>
-    <tr><td class="muted">&nbsp;&nbsp;MATARANI</td><td class="num">${fmtNum(f.cap, 0)}</td><td class="num">${fmtNum(f.stock, 0)}</td><td class="num">${fmtNum(f.pct, 0)} %</td><td class="num">${fmtCov(f.cobertura)}</td><td class="num">${fmtNum(f.curso, 0)}</td></tr>`;
+  const celdas = (f) => `<td class="num">${fmtNum(f.cap, 0)}</td><td class="num">${fmtNum(f.stock, 0)}</td><td class="num">${fmtNum(f.pct, 0)} %</td><td class="num" title="${f.real.dias} días de producción de ${f.real.diasTotales} con consumo (umbral ${fmtNum(p.umbralProd, 0)} gal)"><strong>${fmtNum(f.real.consumo, 0)}</strong></td><td class="num"><strong>${fmtCov1(f.coberturaReal)}</strong></td><td class="num muted">${fmtCov(f.cobertura)}</td><td class="num">${fmtNum(f.curso, 0)}</td>`;
+  const filaTabla = (f) => `<tr class="fila-total-suave"><td>${f.nombre}</td>${celdas(f)}</tr>
+    <tr><td class="muted">&nbsp;&nbsp;MATARANI</td>${celdas(f)}</tr>`;
   document.getElementById('comb-tabla-body').innerHTML =
     filaTabla(d) + filaTabla(r) +
-    `<tr class="fila-total"><td>Total</td><td class="num">${fmtNum(capTot, 0)}</td><td class="num">${fmtNum(stockTot, 0)}</td><td class="num">${fmtNum(pctTot, 0)} %</td><td class="num">${fmtCov(covTot)}</td><td class="num">${fmtNum(cursoTot, 0)}</td></tr>`;
+    `<tr class="fila-total"><td>Total</td><td class="num">${fmtNum(capTot, 0)}</td><td class="num">${fmtNum(stockTot, 0)}</td><td class="num">${fmtNum(pctTot, 0)} %</td><td class="num">${fmtNum(realTot, 0)}</td><td class="num">${fmtCov1(covRealTot)}</td><td class="num">${fmtCov(covTot)}</td><td class="num">${fmtNum(cursoTot, 0)}</td></tr>`;
 }
 
 function bindParamsCombustible() {
-  const ids = { 'comb-cap-diesel': 'capDiesel', 'comb-cap-residual': 'capResidual', 'comb-curso-diesel': 'cursoDiesel', 'comb-curso-residual': 'cursoResidual', 'comb-ventana': 'ventana' };
+  const ids = { 'comb-cap-diesel': 'capDiesel', 'comb-cap-residual': 'capResidual', 'comb-curso-diesel': 'cursoDiesel', 'comb-curso-residual': 'cursoResidual', 'comb-ventana': 'ventana', 'comb-umbral': 'umbralProd' };
   Object.entries(ids).forEach(([id, clave]) => {
     const el = document.getElementById(id);
     if (!el) return;
