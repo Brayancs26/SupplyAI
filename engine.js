@@ -945,14 +945,18 @@ function calcularValorizacionReal(mb52Rows, monitorRows, tipoCambio) {
  * de "Stock de Aceite de Pescado" y "Stock de Harina de Pescado" — se
  * definen por almacén, no por categoría, tal como me indicaste).
  */
-function stockPorAlmacenes(mb52Rows, almacenes) {
-  const acc = new Map(); // material -> {descripcion, almacen, stock, lotes: Map(lote->stock)}
+function stockPorAlmacenes(mb52Rows, almacenes, opciones = {}) {
+  // opciones.incluirBloqueado: suma la columna "Bloqueado" al libre utilización (stock = libre + bloqueado)
+  const incluirBloq = !!opciones.incluirBloqueado;
+  const acc = new Map(); // material -> {descripcion, almacen, stock, bloqueado, lotes: Map(lote->{stock,bloqueado})}
   for (const row of mb52Rows) {
     const almacen = String(row['Almacén'] || '').trim();
     if (!almacenes.includes(almacen)) continue;
     const material = String(row['Material'] || '').trim();
     const clave = material + '|' + almacen;
-    const stock = Number(row['Libre utilización']) || 0;
+    const libre = Number(row['Libre utilización']) || 0;
+    const bloq = incluirBloq ? Number(row['Bloqueado']) || 0 : 0;
+    const stock = libre + bloq;
     const lote = String(row['Lote'] || '').trim() || 'Sin lote';
     if (!acc.has(clave)) {
       acc.set(clave, {
@@ -960,18 +964,23 @@ function stockPorAlmacenes(mb52Rows, almacenes) {
         descripcion: row['Texto breve de material'] || '',
         almacen,
         stock: 0,
+        bloqueado: 0,
         lotes: new Map(),
       });
     }
     const entry = acc.get(clave);
     entry.stock += stock;
-    entry.lotes.set(lote, (entry.lotes.get(lote) || 0) + stock);
+    entry.bloqueado += bloq;
+    const lt = entry.lotes.get(lote) || { stock: 0, bloqueado: 0 };
+    lt.stock += stock;
+    lt.bloqueado += bloq;
+    entry.lotes.set(lote, lt);
   }
   return [...acc.values()]
     .map((e) => ({
       ...e,
       lotes: [...e.lotes.entries()]
-        .map(([lote, stock]) => ({ lote, stock }))
+        .map(([lote, v]) => ({ lote, stock: v.stock, bloqueado: v.bloqueado }))
         .sort((a, b) => b.stock - a.stock),
     }))
     .sort((a, b) => b.stock - a.stock);

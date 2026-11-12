@@ -623,7 +623,7 @@ function tablaAceiteHarinaHTML(filas, vacioTexto, prefijo) {
     .map((r, i) => {
       const idDetalle = `detalle-lotes-${prefijo}-${i}`;
       const detalleLotes = r.lotes
-        .map((l) => `<div class="fila-lote"><span>${l.lote}</span><span>${fmtNum(l.stock, 2)}</span></div>`)
+        .map((l) => `<div class="fila-lote"><span>${l.lote}${l.bloqueado ? ` <span class="muted">(incl. ${fmtNum(l.bloqueado, 2)} bloqueado)</span>` : ''}</span><span>${fmtNum(l.stock, 2)}</span></div>`)
         .join('');
       return `<tr class="fila-material-expandible" data-target="${idDetalle}">
       <td><span class="chevron">▸</span> ${r.material}</td>
@@ -644,7 +644,7 @@ function renderAceiteHarina() {
   if (!state.archivos.MB52) return;
   const mb52Rows = state.archivos.MB52.filas;
   const aceite = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_ACEITE);
-  const harina = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_HARINA);
+  const harina = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_HARINA, { incluirBloqueado: true });
   document.getElementById('tabla-aceite-body').innerHTML = tablaAceiteHarinaHTML(aceite, 'Sin stock de Aceite de Pescado en estos almacenes.', 'aceite');
   document.getElementById('tabla-harina-body').innerHTML = tablaAceiteHarinaHTML(harina, 'Sin stock de Harina de Pescado en C001.', 'harina');
   renderHarinaConsolidada();
@@ -666,7 +666,7 @@ function grupoDeHarina(descripcion) {
 function renderHarinaConsolidada() {
   const tbody = document.getElementById('tabla-harina-consolidada-body');
   if (!tbody || !state.archivos.MB52) return;
-  const harina = SupplyEngine.stockPorAlmacenes(state.archivos.MB52.filas, ALMACENES_HARINA);
+  const harina = SupplyEngine.stockPorAlmacenes(state.archivos.MB52.filas, ALMACENES_HARINA, { incluirBloqueado: true });
   const grupos = {};
   GRUPOS_HARINA.forEach((g) => (grupos[g] = []));
   harina.forEach((r) => grupos[grupoDeHarina(r.descripcion)].push(r));
@@ -680,7 +680,7 @@ function renderHarinaConsolidada() {
     const id = `detalle-harina-grupo-${i}`;
     const detalle = items.length
       ? items.slice().sort((x, y) => y.stock - x.stock)
-          .map((r) => `<div class="fila-lote fila-lote-ancha"><span>${r.material} · ${r.descripcion}</span><span>${fmtNum(r.stock, 2)}</span></div>`).join('')
+          .map((r) => `<div class="fila-lote fila-lote-ancha"><span>${r.material} · ${r.descripcion}${r.bloqueado ? ` <span class="muted">(incl. ${fmtNum(r.bloqueado, 2)} bloqueado)</span>` : ''}</span><span>${fmtNum(r.stock, 2)}</span></div>`).join('')
       : '<div class="fila-lote"><span class="muted">Sin stock</span></div>';
     html += `<tr class="fila-material-expandible" data-target="${id}">
       <td><span class="chevron">▸</span> ${g}</td>
@@ -2387,7 +2387,7 @@ async function publicarSnapshotParaWhatsApp() {
       descripcion: a.descripcion,
       stock: a.stock,
     }));
-    const stockHarina = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_HARINA).map((h) => ({
+    const stockHarina = SupplyEngine.stockPorAlmacenes(mb52Rows, ALMACENES_HARINA, { incluirBloqueado: true }).map((h) => ({
       material: h.material,
       descripcion: h.descripcion,
       stock: h.stock,
