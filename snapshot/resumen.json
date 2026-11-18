@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-11-18T20:57:00.951Z",
-  "totalMaterialesParaReordenar": 288,
+  "publicadoEn": "2026-11-18T21:19:07.495Z",
+  "totalMaterialesParaReordenar": 289,
   "materialesParaReordenar": [
     {
       "material": "31012396",
@@ -168,10 +168,10 @@
       "material": "32004396",
       "descripcion": "GUANTE POLI-ALGO.P/MANIO. T/L(9)",
       "clasificacion": "Alta Rotación",
-      "stock": 21,
+      "stock": 20,
       "rop": 26,
       "riesgo": "ROJO",
-      "coberturaDias": 38.294117647058826
+      "coberturaDias": 36.47058823529412
     },
     {
       "material": "32005051",
@@ -186,10 +186,10 @@
       "material": "32005402",
       "descripcion": "WYPALL ROLLO BLANCO X-80",
       "clasificacion": "Alta Rotación",
-      "stock": 97,
+      "stock": 96,
       "rop": 18,
       "riesgo": "AMARILLO",
-      "coberturaDias": 228.79347826086956
+      "coberturaDias": 226.43478260869566
     },
     {
       "material": "33032733",
@@ -222,19 +222,19 @@
       "material": "31009310",
       "descripcion": "CHISPERO TRES PIEDRAS P/OXICORTE",
       "clasificacion": "Mediana Rotación",
-      "stock": 1,
+      "stock": 0,
       "rop": 2,
       "riesgo": "ROJO",
-      "coberturaDias": 54.25
+      "coberturaDias": 0
     },
     {
       "material": "32003790",
       "descripcion": "CAJA AGUA ENV.DESCARTABLE 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 15,
+      "stock": 24,
       "rop": 125,
       "riesgo": "ROJO",
-      "coberturaDias": 3.9406779661016946
+      "coberturaDias": 6.305084745762712
     },
     {
       "material": "32003605",
@@ -249,10 +249,10 @@
       "material": "32005434",
       "descripcion": "DESINCRUSTANTE LIQUIDO ACIDO GL",
       "clasificacion": "Mediana Rotación",
-      "stock": 3,
+      "stock": 2,
       "rop": 3,
       "riesgo": "ROJO",
-      "coberturaDias": 59.18181818181818
+      "coberturaDias": 39.45454545454545
     },
     {
       "material": "31008471",
@@ -519,10 +519,10 @@
       "material": "31009826",
       "descripcion": "DISCO CORTE INOX.3/64\"X7/8\"X4 1/2\"",
       "clasificacion": "Alta Rotación",
-      "stock": 37,
+      "stock": 31,
       "rop": 42,
       "riesgo": "ROJO",
-      "coberturaDias": 22.89700704225352
+      "coberturaDias": 19.183978873239436
     },
     {
       "material": "31012127",
@@ -550,6 +550,15 @@
       "rop": 5,
       "riesgo": "AMARILLO",
       "coberturaDias": null
+    },
+    {
+      "material": "31015349",
+      "descripcion": "LIJA FIERRO NRO.40-3",
+      "clasificacion": "Mediana Rotación",
+      "stock": 17,
+      "rop": 18,
+      "riesgo": "ROJO",
+      "coberturaDias": 45.098113207547165
     },
     {
       "material": "31015361",
@@ -582,10 +591,10 @@
       "material": "31032188",
       "descripcion": "CINTA AISLANTE NEGRA 600V-33+ 3M",
       "clasificacion": "Baja Rotación",
-      "stock": 5,
+      "stock": 3,
       "rop": 9,
       "riesgo": "ROJO",
-      "coberturaDias": 35
+      "coberturaDias": 21
     },
     {
       "material": "31032189",
@@ -672,10 +681,10 @@
       "material": "32005804",
       "descripcion": "PAPEL HIGIENICO HJ.SIMPLE 550M PQTE.12UN",
       "clasificacion": "Alta Rotación",
-      "stock": 20.447,
+      "stock": 20.197,
       "rop": 5,
       "riesgo": "AMARILLO",
-      "coberturaDias": 196.47518044546783
+      "coberturaDias": 194.07293096577072
     },
     {
       "material": "32022278",
@@ -735,10 +744,10 @@
       "material": "32004469",
       "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
       "clasificacion": "Alta Rotación",
-      "stock": 823,
+      "stock": 799,
       "rop": 131,
       "riesgo": "AMARILLO",
-      "coberturaDias": 358.6164658634538
+      "coberturaDias": 348.1586345381526
     },
     {
       "material": "32004360",
@@ -748,15 +757,6 @@
       "rop": 2,
       "riesgo": "AMARILLO",
       "coberturaDias": 496
-    },
-    {
-      "material": "32005491",
-      "descripcion": "BOLSA P/BASURA NEGRO 140L PQTE.100UN",
-      "clasificacion": "Mediana Rotación",
-      "stock": 19,
-      "rop": 4,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 257.6875
     },
     {
       "material": "33034469",
@@ -807,10 +807,10 @@
       "material": "32005500",
       "descripcion": "PAPEL TOALLA HJ.SIMPLE AIRFLEX 200MT",
       "clasificacion": "Alta Rotación",
-      "stock": 152,
+      "stock": 130,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 116.80615384615385
+      "coberturaDias": 100.94358974358974
     },
     {
       "material": "32008682",
@@ -1158,10 +1158,10 @@
       "material": "31009823",
       "descripcion": "DISCO CORTE INOX.1/8\"X7/8\"X7\"",
       "clasificacion": "Baja Rotación",
-      "stock": 2,
+      "stock": 0,
       "rop": 3,
       "riesgo": "ROJO",
-      "coberturaDias": 45.354838709677416
+      "coberturaDias": 0
     },
     {
       "material": "31009836",
@@ -2076,10 +2076,10 @@
       "material": "32005531",
       "descripcion": "CINTA MASKING TAPE 1\"X55YDS",
       "clasificacion": "Baja Rotación",
-      "stock": 37,
+      "stock": 36,
       "rop": 2,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1338.1666666666665
+      "coberturaDias": 1302
     },
     {
       "material": "32005537",
@@ -2424,6 +2424,15 @@
       "coberturaDias": 0
     },
     {
+      "material": "32022251",
+      "descripcion": "RESPIRADOR DESCVN95 8212-8516 A:32027961",
+      "clasificacion": "Baja Rotación",
+      "stock": 0,
+      "rop": 1,
+      "riesgo": "ROJO",
+      "coberturaDias": 0
+    },
+    {
       "material": "32007837",
       "descripcion": "OREJERA ADAPT.P/CASCO P X4P3E A:32027941",
       "clasificacion": "Mediana Rotación",
@@ -2562,7 +2571,7 @@
       "material": "32027933",
       "descripcion": "LENTE SEGUR.TRANSP.SECUREFIT 401X 3M",
       "clasificacion": "Baja Rotación",
-      "stock": 80,
+      "stock": 79,
       "rop": 0,
       "riesgo": "AMARILLO",
       "coberturaDias": null
@@ -2616,12 +2625,12 @@
     {
       "material": "50003941",
       "descripcion": "HARINA STEAM DRIED STANDARD 65",
-      "stock": 150
+      "stock": 194.55
     },
     {
-      "material": "50003916",
-      "descripcion": "HARINA NC. FFA",
-      "stock": 50
+      "material": "50003946",
+      "descripcion": "HARINA STEAM DRIED TAILANDIA",
+      "stock": 21.85
     },
     {
       "material": "50003935",
@@ -2629,29 +2638,19 @@
       "stock": 16.54
     },
     {
-      "material": "50003967",
-      "descripcion": "HARINA A SUPER PRIME",
-      "stock": 16.45
-    },
-    {
-      "material": "50003969",
-      "descripcion": "HARINA B PRIME",
-      "stock": 7.85
-    },
-    {
-      "material": "50003940",
-      "descripcion": "HARINA STEAM DRIED STANDAR 66",
-      "stock": 4.55
+      "material": "50003943",
+      "descripcion": "HARINA STEAM DRIED SUPER PRIME",
+      "stock": 12.45
     },
     {
       "material": "50003971",
       "descripcion": "HARINA D STANDARD",
-      "stock": 1.7
+      "stock": 11.7
     }
   ],
   "valorizacion": {
-    "almacenUSD": 938609,
-    "ppttUSD": 144751,
-    "pctVencido": 0.64
+    "almacenUSD": 1041105,
+    "ppttUSD": 143916,
+    "pctVencido": 0.58
   }
 }
