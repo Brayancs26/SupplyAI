@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-11-19T13:48:00.473Z",
+  "publicadoEn": "2026-11-19T14:44:58.630Z",
   "totalMaterialesParaReordenar": 287,
   "materialesParaReordenar": [
     {
@@ -510,19 +510,19 @@
       "material": "31009822",
       "descripcion": "DISCO CORTE FE.1/8\"X7/8\"X7\"",
       "clasificacion": "Mediana Rotación",
-      "stock": 165,
+      "stock": 155,
       "rop": 4,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1705
+      "coberturaDias": 1601.6666666666667
     },
     {
       "material": "31009826",
       "descripcion": "DISCO CORTE INOX.3/64\"X7/8\"X4 1/2\"",
       "clasificacion": "Alta Rotación",
-      "stock": 31,
+      "stock": 26,
       "rop": 35,
       "riesgo": "ROJO",
-      "coberturaDias": 20.2012012012012
+      "coberturaDias": 16.942942942942945
     },
     {
       "material": "31012127",
@@ -672,10 +672,10 @@
       "material": "32005804",
       "descripcion": "PAPEL HIGIENICO HJ.SIMPLE 550M PQTE.12UN",
       "clasificacion": "Alta Rotación",
-      "stock": 20.197,
+      "stock": 19.197,
       "rop": 5,
       "riesgo": "AMARILLO",
-      "coberturaDias": 194.07293096577072
+      "coberturaDias": 184.46393304698225
     },
     {
       "material": "32022278",
@@ -735,10 +735,10 @@
       "material": "32004469",
       "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
       "clasificacion": "Alta Rotación",
-      "stock": 799,
+      "stock": 667,
       "rop": 131,
       "riesgo": "AMARILLO",
-      "coberturaDias": 348.1586345381526
+      "coberturaDias": 290.640562248996
     },
     {
       "material": "32004360",
@@ -2247,9 +2247,9 @@
       "material": "31015471",
       "descripcion": "ABRAZADERA REGULABLE INOX.1/2\"",
       "clasificacion": "Baja Rotación",
-      "stock": 5,
+      "stock": 0,
       "rop": 0,
-      "riesgo": "AMARILLO",
+      "riesgo": "ROJO",
       "coberturaDias": null
     },
     {
@@ -2625,14 +2625,14 @@
       "stock": 12.45
     },
     {
-      "material": "50003971",
-      "descripcion": "HARINA D STANDARD",
+      "material": "50003937",
+      "descripcion": "HARINA STEAM DRIED PRIME",
       "stock": 11.7
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1041105,
-    "ppttUSD": 143916,
-    "pctVencido": 0.58
+    "almacenUSD": 1040704,
+    "ppttUSD": 140040,
+    "pctVencido": 0.57
   }
 }
