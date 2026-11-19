@@ -1,5 +1,5 @@
 {
-  "actualizadoEn": "2026-11-12T16:24:54.215Z",
+  "actualizadoEn": "2026-11-19T15:31:06.824Z",
   "historial": [
     {
       "fecha": "2026-08-25",
@@ -35,6 +35,10 @@
     },
     {
       "fecha": "2026-11-12",
+      "totalRegistros": 114
+    },
+    {
+      "fecha": "2026-11-19",
       "totalRegistros": 114
     }
   ]
