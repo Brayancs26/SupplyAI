@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-11-18T21:19:07.495Z",
-  "totalMaterialesParaReordenar": 289,
+  "publicadoEn": "2026-11-19T13:48:00.473Z",
+  "totalMaterialesParaReordenar": 287,
   "materialesParaReordenar": [
     {
       "material": "31012396",
@@ -88,16 +88,16 @@
       "descripcion": "DISCO CORTE INOX.1/8\"X7/8\"X4 1/2\"",
       "clasificacion": "Alta Rotación",
       "stock": 141,
-      "rop": 8,
+      "rop": 15,
       "riesgo": "AMARILLO",
-      "coberturaDias": 608.116564417178
+      "coberturaDias": 332.57608695652175
     },
     {
       "material": "31009837",
       "descripcion": "DISCO DESBASTE INOX.1/4\"X7/8\"X 4 1/2\"",
       "clasificacion": "Alta Rotación",
       "stock": 0,
-      "rop": 6,
+      "rop": 4,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -106,9 +106,9 @@
       "descripcion": "ESCOBILLA COPA FE.2 1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 3,
-      "rop": 6,
+      "rop": 9,
       "riesgo": "ROJO",
-      "coberturaDias": 43.04081632653061
+      "coberturaDias": 27.125
     },
     {
       "material": "31011265",
@@ -511,18 +511,18 @@
       "descripcion": "DISCO CORTE FE.1/8\"X7/8\"X7\"",
       "clasificacion": "Mediana Rotación",
       "stock": 165,
-      "rop": 3,
+      "rop": 4,
       "riesgo": "AMARILLO",
-      "coberturaDias": 2230.6730769230767
+      "coberturaDias": 1705
     },
     {
       "material": "31009826",
       "descripcion": "DISCO CORTE INOX.3/64\"X7/8\"X4 1/2\"",
       "clasificacion": "Alta Rotación",
       "stock": 31,
-      "rop": 42,
+      "rop": 35,
       "riesgo": "ROJO",
-      "coberturaDias": 19.183978873239436
+      "coberturaDias": 20.2012012012012
     },
     {
       "material": "31012127",
@@ -550,15 +550,6 @@
       "rop": 5,
       "riesgo": "AMARILLO",
       "coberturaDias": null
-    },
-    {
-      "material": "31015349",
-      "descripcion": "LIJA FIERRO NRO.40-3",
-      "clasificacion": "Mediana Rotación",
-      "stock": 17,
-      "rop": 18,
-      "riesgo": "ROJO",
-      "coberturaDias": 45.098113207547165
     },
     {
       "material": "31015361",
@@ -829,15 +820,6 @@
       "rop": 2,
       "riesgo": "AMARILLO",
       "coberturaDias": null
-    },
-    {
-      "material": "34003634",
-      "descripcion": "FUELLE P/VALV.REGUL.PETR.",
-      "clasificacion": "Baja Rotación",
-      "stock": 4,
-      "rop": 0,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 2812
     },
     {
       "material": "33037193",
@@ -1170,7 +1152,7 @@
       "stock": 29,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1456.2142857142858
+      "coberturaDias": 3146.5
     },
     {
       "material": "31012450",
@@ -2187,7 +2169,7 @@
       "stock": 22,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1288.8333333333333
+      "coberturaDias": 954.8
     },
     {
       "material": "31012360",
