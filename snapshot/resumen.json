@@ -1,15 +1,15 @@
 {
-  "publicadoEn": "2026-11-19T14:45:21.509Z",
-  "totalMaterialesParaReordenar": 287,
+  "publicadoEn": "2026-11-21T14:33:33.330Z",
+  "totalMaterialesParaReordenar": 284,
   "materialesParaReordenar": [
     {
-      "material": "31012396",
-      "descripcion": "PERNO HEX.INOX.1/4\"X1 1/2\"",
-      "clasificacion": "Baja Rotación",
-      "stock": 17,
-      "rop": 44,
-      "riesgo": "ROJO",
-      "coberturaDias": 40.51186440677966
+      "material": "31012507",
+      "descripcion": "PERNO HEX.INOX.3/8\"X1 1/2\"",
+      "clasificacion": "Mediana Rotación",
+      "stock": 62,
+      "rop": 13,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "31012626",
@@ -18,7 +18,16 @@
       "stock": 10,
       "rop": 10,
       "riesgo": "ROJO",
-      "coberturaDias": 44.77707006369427
+      "coberturaDias": 45.20833333333333
+    },
+    {
+      "material": "31014683",
+      "descripcion": "TUERCA G5 1\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 25,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 5425
     },
     {
       "material": "32008169",
@@ -120,15 +129,6 @@
       "coberturaDias": 93
     },
     {
-      "material": "31013761",
-      "descripcion": "RODILLO P/PINTAR 3\"",
-      "clasificacion": "Mediana Rotación",
-      "stock": 5,
-      "rop": 13,
-      "riesgo": "ROJO",
-      "coberturaDias": 18.307291666666664
-    },
-    {
       "material": "31015365",
       "descripcion": "JET THINNER STD SIC. (NO CONTROLADO)",
       "clasificacion": "Baja Rotación",
@@ -210,15 +210,6 @@
       "coberturaDias": 280.29166666666663
     },
     {
-      "material": "31012485",
-      "descripcion": "PERNO HEX.INOX.3/4\"X6\"",
-      "clasificacion": "Baja Rotación",
-      "stock": 36,
-      "rop": 3,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 1054.5
-    },
-    {
       "material": "31009310",
       "descripcion": "CHISPERO TRES PIEDRAS P/OXICORTE",
       "clasificacion": "Mediana Rotación",
@@ -226,6 +217,15 @@
       "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
+    },
+    {
+      "material": "31015353",
+      "descripcion": "RODILLO P/PINTAR 9\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 10,
+      "rop": 2,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "32003790",
@@ -259,9 +259,9 @@
       "descripcion": "ANILLO PLANO FEN.1\"",
       "clasificacion": "Baja Rotación",
       "stock": 114,
-      "rop": 3,
+      "rop": 6,
       "riesgo": "AMARILLO",
-      "coberturaDias": 5008.875
+      "coberturaDias": null
     },
     {
       "material": "31009327",
@@ -273,13 +273,13 @@
       "coberturaDias": null
     },
     {
-      "material": "31014743",
-      "descripcion": "TUERCA INOX.3/4\"",
-      "clasificacion": "Mediana Rotación",
-      "stock": 142,
-      "rop": 10,
+      "material": "31012648",
+      "descripcion": "PERNO HEX.INOX.5/8\"X5\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 15,
+      "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 773.8449612403101
+      "coberturaDias": 3255
     },
     {
       "material": "33040348",
@@ -318,15 +318,6 @@
       "coberturaDias": null
     },
     {
-      "material": "31012354",
-      "descripcion": "PERNO HEX.INOX.1/2\"X2 1/2\"",
-      "clasificacion": "Mediana Rotación",
-      "stock": 24,
-      "rop": 96,
-      "riesgo": "ROJO",
-      "coberturaDias": 32.44615384615385
-    },
-    {
       "material": "32005532",
       "descripcion": "CINTA MASKING TAPE 1/2\"X55YDS",
       "clasificacion": "Baja Rotación",
@@ -354,42 +345,6 @@
       "coberturaDias": null
     },
     {
-      "material": "31008509",
-      "descripcion": "ANILLO PLANO INOX.1/4\"",
-      "clasificacion": "Mediana Rotación",
-      "stock": 44,
-      "rop": 206,
-      "riesgo": "ROJO",
-      "coberturaDias": 20.9424509140149
-    },
-    {
-      "material": "31012348",
-      "descripcion": "PERNO HEX.INOX.1/2\"X2\"",
-      "clasificacion": "Mediana Rotación",
-      "stock": 70,
-      "rop": 310,
-      "riesgo": "ROJO",
-      "coberturaDias": 24.15807560137457
-    },
-    {
-      "material": "31012390",
-      "descripcion": "PERNO HEX.INOX.1/4\"X1\"",
-      "clasificacion": "Mediana Rotación",
-      "stock": 14,
-      "rop": 110,
-      "riesgo": "ROJO",
-      "coberturaDias": 11.829326923076923
-    },
-    {
-      "material": "31014747",
-      "descripcion": "TUERCA INOX.1/2\"",
-      "clasificacion": "Alta Rotación",
-      "stock": 76,
-      "rop": 411,
-      "riesgo": "ROJO",
-      "coberturaDias": 17.32987349983782
-    },
-    {
       "material": "31015238",
       "descripcion": "WINCHA METALICA 3MT",
       "clasificacion": "Baja Rotación",
@@ -397,15 +352,6 @@
       "rop": 1,
       "riesgo": "AMARILLO",
       "coberturaDias": null
-    },
-    {
-      "material": "31008508",
-      "descripcion": "ANILLO PLANO INOX.1/2\"",
-      "clasificacion": "Alta Rotación",
-      "stock": 197,
-      "rop": 470,
-      "riesgo": "ROJO",
-      "coberturaDias": 36.862124035134414
     },
     {
       "material": "31013867",
@@ -484,9 +430,9 @@
       "descripcion": "PRECINTO SEGUR.MCLP GRABADO QR 180X800MM",
       "clasificacion": "Baja Rotación",
       "stock": 340,
-      "rop": 4,
+      "rop": 76,
       "riesgo": "AMARILLO",
-      "coberturaDias": 18445
+      "coberturaDias": 798.8349514563106
     },
     {
       "material": "30000382",
@@ -565,18 +511,9 @@
       "descripcion": "TIZA P/MARCAR METALES (CALDERERO)",
       "clasificacion": "Mediana Rotación",
       "stock": 0,
-      "rop": 3,
+      "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
-    },
-    {
-      "material": "31015602",
-      "descripcion": "RODILLO P/PINTAR 4\"",
-      "clasificacion": "Mediana Rotación",
-      "stock": 12,
-      "rop": 15,
-      "riesgo": "ROJO",
-      "coberturaDias": 36.05128205128205
     },
     {
       "material": "31032188",
@@ -702,7 +639,7 @@
       "stock": 2,
       "rop": 1,
       "riesgo": "AMARILLO",
-      "coberturaDias": null
+      "coberturaDias": 968
     },
     {
       "material": "32005595",
@@ -961,9 +898,9 @@
       "descripcion": "ANILLO PLANO G5 7/8\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 2,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "31012196",
@@ -979,18 +916,18 @@
       "descripcion": "PERNO HEX.FEN.1/2\"X2\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 0,
+      "rop": 4,
       "riesgo": "ROJO",
-      "coberturaDias": null
+      "coberturaDias": 0
     },
     {
       "material": "31012602",
       "descripcion": "PERNO HEX.INOX.5/8\"X1 1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 5,
-      "rop": 5,
-      "riesgo": "ROJO",
-      "coberturaDias": 103.38235294117646
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "33031101",
@@ -1105,9 +1042,9 @@
       "descripcion": "PERNO HEX.FEN.1/2\"X1 1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 3,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "32004942",
@@ -1159,7 +1096,7 @@
       "descripcion": "PERNO HEX.INOX.3/4\"X3\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 2,
+      "rop": 7,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1168,9 +1105,9 @@
       "descripcion": "PRISIONERO ALLEN FEN.1/2\"X3/4\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "31013762",
@@ -1213,7 +1150,7 @@
       "descripcion": "PRISIONERO ALLEN FEN.1/2\"X1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 0,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1555,16 +1492,25 @@
       "descripcion": "PERNO HEX.G5 5/8\"X2\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 4,
+      "rop": 9,
       "riesgo": "ROJO",
       "coberturaDias": 0
+    },
+    {
+      "material": "31014691",
+      "descripcion": "TUERCA G5 7/8\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 41,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "31014744",
       "descripcion": "TUERCA INOX.7/8\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 12,
+      "rop": 17,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1573,7 +1519,7 @@
       "descripcion": "PRISIONERO ALLEN FEN.1/2\"X1\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 3,
+      "rop": 0,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1591,7 +1537,7 @@
       "descripcion": "ANILLO PLANO FEN.1/4\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 32,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -1600,9 +1546,9 @@
       "descripcion": "PERNO HEX.G5 3/4\"X2 1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 4,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "32005318",
@@ -1812,6 +1758,15 @@
       "coberturaDias": 0
     },
     {
+      "material": "31012852",
+      "descripcion": "PERNO HILTI 3/8\"X2 1/2\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 18,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
+    },
+    {
       "material": "31013525",
       "descripcion": "PRISIONERO ALLEN FEN.3/8\"X1/2\"",
       "clasificacion": "Baja Rotación",
@@ -1821,6 +1776,15 @@
       "coberturaDias": 0
     },
     {
+      "material": "31013530",
+      "descripcion": "PRISIONERO ALLEN FEN.3/8\"X3/8\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 2,
+      "rop": 4,
+      "riesgo": "ROJO",
+      "coberturaDias": 39.45454545454545
+    },
+    {
       "material": "31013729",
       "descripcion": "REGULADOR DIN GAS PROPANO P/EQ.CORTE",
       "clasificacion": "Baja Rotación",
@@ -1828,15 +1792,6 @@
       "rop": 0,
       "riesgo": "ROJO",
       "coberturaDias": null
-    },
-    {
-      "material": "31013946",
-      "descripcion": "TORNILLO STOVE BOLT GALV.3/16\"X1/2\"",
-      "clasificacion": "Baja Rotación",
-      "stock": 37,
-      "rop": 153,
-      "riesgo": "ROJO",
-      "coberturaDias": 26.011000000000003
     },
     {
       "material": "31014237",
@@ -2073,6 +2028,15 @@
       "coberturaDias": 0
     },
     {
+      "material": "32006187",
+      "descripcion": "LEJIA TRADICIONAL 1L",
+      "clasificacion": "Baja Rotación",
+      "stock": 5,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
+    },
+    {
       "material": "32006251",
       "descripcion": "TRAJE DESCART BLANCO P/PINTADO T-M",
       "clasificacion": "Baja Rotación",
@@ -2163,6 +2127,15 @@
       "coberturaDias": null
     },
     {
+      "material": "31008507",
+      "descripcion": "ANILLO PLANO INOX.1\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 16,
+      "rop": 0,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
+    },
+    {
       "material": "31009839",
       "descripcion": "DISCO DESBASTE 1/4\"X7/8\"X7\"",
       "clasificacion": "Baja Rotación",
@@ -2176,7 +2149,7 @@
       "descripcion": "PERNO HEX.INOX.1/2\"X3\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 2,
+      "rop": 4,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2185,7 +2158,7 @@
       "descripcion": "PERNO HEX.G8 3/4\"X6 1/2\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 0,
+      "rop": 8,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2194,16 +2167,16 @@
       "descripcion": "PERNO HEX.G5 5/8\"X3\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 4,
+      "rop": 0,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": null
     },
     {
       "material": "31015326",
       "descripcion": "TUERCA GALV.1/4\"",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 1,
+      "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
@@ -2338,7 +2311,7 @@
       "descripcion": "GASKET #529628 01",
       "clasificacion": "Baja Rotación",
       "stock": 0,
-      "rop": 2,
+      "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 0
     },
