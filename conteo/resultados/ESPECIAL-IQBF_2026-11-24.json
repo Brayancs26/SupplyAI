@@ -1,0 +1,86 @@
+{
+  "zona": "IQBF (Insumos Químicos)",
+  "categoria": "iqbf",
+  "fecha": "2026-11-24",
+  "contadoPor": "Luis Rafael Camones",
+  "items": [
+    {
+      "material": "10200045",
+      "descripcion": "HIDROXIDO SODIO 98 25KGSACO EM BR-000078",
+      "almacen": "L001",
+      "um": "KG",
+      "cantidadSistema": 4925,
+      "cantidadFisica": 4925,
+      "loteSistema": "1-2545",
+      "loteFisico": "1-2545",
+      "ubicacionSistema": "I.Q.B.F.",
+      "ubicacionFisica": "I.Q.B.F.",
+      "agregada": false
+    },
+    {
+      "material": "10200045",
+      "descripcion": "HIDROXIDO SODIO 98 25KGSACO EM BR-000078",
+      "almacen": "L001",
+      "um": "KG",
+      "cantidadSistema": 6675,
+      "cantidadFisica": 6675,
+      "loteSistema": "LQP2010326",
+      "loteFisico": "LQP2010326",
+      "ubicacionSistema": "I.Q.B.F.",
+      "ubicacionFisica": "I.Q.B.F.",
+      "agregada": false
+    },
+    {
+      "material": "31008189",
+      "descripcion": "ACIDO SULFURICO IND 20KG BIDON - 000046",
+      "almacen": "L001",
+      "um": "KG",
+      "cantidadSistema": 20,
+      "cantidadFisica": 20,
+      "loteSistema": "C-IND-T-01",
+      "loteFisico": "C-IND-T-01",
+      "ubicacionSistema": "I.Q.B.F.",
+      "ubicacionFisica": "I.Q.B.F.",
+      "agregada": false
+    },
+    {
+      "material": "31010949",
+      "descripcion": "HEXANO PA 4L FRC - 000073",
+      "almacen": "L001",
+      "um": "L",
+      "cantidadSistema": 8,
+      "cantidadFisica": 8,
+      "loteSistema": "C08W62",
+      "loteFisico": "C08W62",
+      "ubicacionSistema": "I.Q.B.F.",
+      "ubicacionFisica": "I.Q.B.F.",
+      "agregada": false
+    },
+    {
+      "material": "31011665",
+      "descripcion": "MEK ADITIVO TECNICO 5191 1L BOT - 000034",
+      "almacen": "L001",
+      "um": "L",
+      "cantidadSistema": 2,
+      "cantidadFisica": 2,
+      "loteSistema": "29122025",
+      "loteFisico": "29122025",
+      "ubicacionSistema": "I.Q.B.F.",
+      "ubicacionFisica": "I.Q.B.F.",
+      "agregada": false
+    },
+    {
+      "material": "31011665",
+      "descripcion": "MEK ADITIVO TECNICO 5191 1L BOT - 000034",
+      "almacen": "L001",
+      "um": "L",
+      "cantidadSistema": 7,
+      "cantidadFisica": 7,
+      "loteSistema": "30072025",
+      "loteFisico": "30072025",
+      "ubicacionSistema": "I.Q.B.F.",
+      "ubicacionFisica": "I.Q.B.F.",
+      "agregada": false
+    }
+  ]
+}
