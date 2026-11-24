@@ -295,7 +295,7 @@ async function cargarEspeciales() {
 // Muestra "nada pendiente" solo si no hay tomas por categoría ni programa por zonas
 function actualizarVistaVacia() {
   if (state.hayPrograma === undefined || espState.pendientes === undefined) return;
-  const vacio = !state.hayPrograma && espState.pendientes === 0;
+  const vacio = !state.hayPrograma && espState.pendientes === 0 && !window.ubicActiva;
   const panel = document.getElementById('panel-nada-pendiente');
   if (panel && !panel.dataset.fijo) panel.style.display = vacio ? 'block' : 'none';
   document.getElementById('panel-nombre').style.display = vacio ? 'none' : 'block';

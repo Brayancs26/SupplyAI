@@ -10,6 +10,9 @@
 <script src="engine.js" defer></script>
 <script src="github-sync.js" defer></script>
 <script src="admin.js" defer></script>
+<script src="../vendor/xlsx.full.min.js" defer></script>
+<script src="ubicaciones-comun.js" defer></script>
+<script src="ubicaciones-admin.js" defer></script>
 </head>
 <body>
 
@@ -61,6 +64,48 @@
           <thead><tr><th>Categoría</th><th class="num">Filas</th><th>Enviado</th><th>Estado</th><th>Terminado</th><th>Contado por</th><th class="num">Enlace</th></tr></thead>
           <tbody id="tabla-estado-envios-body"><tr><td colspan="7" class="muted centrado">Cargando…</td></tr></tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- ===================== VERIFICACIÓN DE UBICACIONES ===================== -->
+    <div class="panel" id="panel-ubicaciones">
+      <div class="panel-header">
+        <h2>Verificación de ubicaciones <span id="ubic-enlaces" class="ubic-enlaces" style="display:none">
+          <a id="ubic-link-abrir" class="icono-enlace" target="_blank" rel="noopener" title="Abrir la página de escaneo" aria-label="Abrir página de escaneo">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg></a>
+          <button type="button" id="ubic-link-copiar" class="icono-enlace" title="Copiar el enlace para enviarlo" aria-label="Copiar enlace">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+        </span></h2>
+        <p class="panel-sub">Toma la ubicación de cada material del MB52, la envía al celular, el operario escanea el QR del estante y confirma o corrige. Aquí sale la lista lista para la transacción <strong>Ingreso Ubicación</strong>.</p>
+        <p class="panel-sub" id="ubic-mb52"></p>
+      </div>
+      <div class="acciones-publicar" style="padding: 0 20px 14px; flex-wrap: wrap;">
+        <button type="button" id="ubic-btn-enviar" class="btn-continuar">Enviar al celular</button>
+        <button type="button" id="ubic-btn-actualizar" class="btn-secundario">Actualizar resultados</button>
+        <button type="button" id="ubic-btn-cero" class="btn-secundario" style="display:none">Empezar de cero</button>
+        <button type="button" id="ubic-btn-cerrar" class="btn-secundario" style="display:none">Cerrar verificación</button>
+        <span id="ubic-envio-info" class="muted" style="font-size:12.5px"></span>
+      </div>
+      <div style="padding: 0 20px 6px;"><span id="ubic-estado" class="estado-publicar"></span></div>
+
+      <div id="ubic-cuerpo" style="display:none">
+        <div class="kpi-grid ubic-kpis" id="ubic-kpis"></div>
+        <div class="ubic-barra">
+          <input type="text" id="ubic-filtro" placeholder="Filtrar por material, descripción o ubicación" />
+          <div id="ubic-acciones-sap" class="ubic-acciones">
+            <button type="button" id="ubic-btn-excel-sap" class="btn-continuar">⬇ Excel para SAP</button>
+            <button type="button" id="ubic-btn-copiar-mat" class="btn-secundario">Copiar materiales</button>
+            <button type="button" id="ubic-btn-copiar-ubic" class="btn-secundario">Copiar ubicaciones</button>
+            <button type="button" id="ubic-btn-marcar" class="btn-secundario">✔ Ya los grabé en SAP</button>
+          </div>
+          <button type="button" id="ubic-btn-excel-todo" class="btn-secundario">⬇ Excel completo</button>
+        </div>
+        <div class="table-wrap tall">
+          <table>
+            <thead><tr><th>Material</th><th>Descripción</th><th>Centro</th><th>Ubic. SAP</th><th>Ubic. física</th><th>Estado</th><th>Fecha</th><th>Verificó</th></tr></thead>
+            <tbody id="ubic-tabla-body"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 

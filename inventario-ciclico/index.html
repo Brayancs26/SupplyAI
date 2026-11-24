@@ -10,6 +10,9 @@
 <script src="engine.js" defer></script>
 <script src="github-sync.js" defer></script>
 <script src="contar.js" defer></script>
+<script src="../vendor/html5-qrcode.min.js" defer></script>
+<script src="ubicaciones-comun.js" defer></script>
+<script src="ubicaciones-escaneo.js" defer></script>
 </head>
 <body class="pagina-contar">
 
@@ -64,6 +67,56 @@
       </div>
     </div>
   </div>
+
+  <!-- ===================== VERIFICACIÓN DE UBICACIONES ===================== -->
+  <div class="panel" id="panel-ubic-boton" style="display:none">
+    <div class="panel-header">
+      <h2>Ubicaciones</h2>
+      <p class="panel-sub">Escanea el QR de cada estante y confirma si los materiales están donde dice SAP.</p>
+    </div>
+    <div class="zonas-botones" style="padding: 0 20px 18px;">
+      <button type="button" class="btn-zona" id="ubic-btn-abrir">Verificar ubicaciones</button>
+    </div>
+  </div>
+
+  <div id="ubic-formulario" style="display:none">
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Verificar ubicaciones</h2>
+        <p class="panel-sub" id="ubic-progreso"></p>
+        <div class="ubic-barra-prog"><div id="ubic-progreso-barra"></div></div>
+      </div>
+      <div style="padding: 0 20px 18px;">
+        <button type="button" id="ubic-btn-camara" class="btn-continuar btn-grande" style="width:100%">📷 Abrir cámara</button>
+        <div id="ubic-reader" class="ubic-reader" style="display:none"></div>
+        <div class="ubic-manual">
+          <input type="text" id="ubic-manual" placeholder="o escribe la ubicación: 1.05.1.09" autocomplete="off" inputmode="decimal" />
+          <button type="button" id="ubic-btn-ir" class="btn-secundario">Ir</button>
+        </div>
+        <p class="panel-sub" style="margin-top:8px">Con una ubicación abierta, si escaneas la tarjeta QR de un material queda asignado a esa ubicación.</p>
+        <span id="ubic-nube" class="estado-publicar"></span>
+      </div>
+    </div>
+
+    <div class="panel ubic-actual" id="ubic-actual-box" style="display:none">
+      <span class="ubic-actual-label">Ubicación</span>
+      <span class="ubic-actual-codigo" id="ubic-actual-codigo">—</span>
+      <span class="ubic-actual-label" id="ubic-actual-sub"></span>
+    </div>
+
+    <div class="panel" id="ubic-lista-panel" style="display:none">
+      <div class="panel-header ubic-lista-cab">
+        <h2>¿Qué hay físicamente aquí?</h2>
+        <button type="button" id="ubic-btn-restantes" class="btn-secundario">Restantes = No está</button>
+      </div>
+      <div id="ubic-lista" style="padding: 0 14px;"></div>
+      <div class="ubic-buscar-wrap">
+        <input type="text" id="ubic-buscar" placeholder="+ Material encontrado aquí (código o descripción)" autocomplete="off" />
+        <div id="ubic-resultados" class="ubic-resultados" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+  <div id="ubic-toast" class="ubic-toast" style="display:none"></div>
 
   <div class="panel" id="panel-sin-programa" style="display:none">
     <div class="panel-header">

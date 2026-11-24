@@ -300,3 +300,50 @@ footer { text-align: center; color: var(--text-muted); font-size: 11.5px; paddin
 .banner-ver span strong { display: inline; color: var(--text); margin: 0; }
 body.modo-ver #btn-especial-guardar, body.modo-ver .acciones-publicar { display: none; }
 body.modo-ver .lote-fila input:disabled { opacity: 1; -webkit-text-fill-color: var(--text); }
+
+/* ===================== Verificación de ubicaciones ===================== */
+.chip-rojo { background: var(--red-soft); color: var(--red); }
+.chip-morado { background: rgba(167,139,250,.14); color: var(--purple); }
+.ubic-enlaces { display: inline-flex; vertical-align: middle; margin-left: 6px; }
+.ubic-kpis { padding: 0 20px 14px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+button.kpi-card.ubic-kpi { cursor: pointer; text-align: left; font: inherit; color: inherit; }
+.kpi-card.ubic-kpi.sel { border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan); }
+.kpi-card.kpi-ambar .kpi-value { color: var(--amber); }
+.kpi-card.kpi-verde .kpi-value { color: var(--green); }
+.kpi-card.kpi-morado .kpi-value { color: var(--purple); }
+.ubic-kpi-sub { font-size: 11.5px; color: var(--text-muted); }
+.ubic-barra { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 0 20px 14px; }
+.ubic-barra input { flex: 1; min-width: 220px; }
+.ubic-acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.ubic-nueva { color: var(--amber); }
+
+/* celular */
+.ubic-barra-prog { height: 6px; background: var(--panel-2); border-radius: 6px; overflow: hidden; margin-top: 10px; }
+.ubic-barra-prog div { height: 100%; width: 0; background: var(--cyan); transition: width .3s var(--ease); }
+.ubic-reader { margin-top: 12px; border-radius: 12px; overflow: hidden; border: 2px solid var(--cyan); }
+.ubic-manual { display: flex; gap: 8px; margin-top: 12px; }
+.ubic-manual input { flex: 1; font-size: 16px; padding: 12px; }
+.ubic-actual { display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 2px; border-color: rgba(63,193,214,.4); scroll-margin-top: 12px; }
+.ubic-actual-label { font-size: 12px; color: var(--text-muted); }
+.ubic-actual-codigo { font-family: var(--font-display); font-size: 34px; font-weight: 800; color: var(--cyan); letter-spacing: .02em; }
+.ubic-lista-cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ubic-item { background: var(--panel-2); border: 1px solid var(--border); border-left: 4px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+.ubic-item.ubic-ok { border-left-color: var(--green); }
+.ubic-item.ubic-mov { border-left-color: var(--amber); }
+.ubic-item.ubic-nf { border-left-color: var(--red); }
+.ubic-item.ubic-sap { border-left-color: var(--purple); }
+.ubic-item-cab { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.ubic-item-cab > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ubic-nota { font-size: 12px; color: var(--text-muted); }
+.ubic-nota strong { color: var(--amber); }
+.ubic-item-acc { display: flex; gap: 8px; margin-top: 10px; }
+.ubic-btn { flex: 1; padding: 11px 8px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text); font: 600 13.5px var(--font-ui); cursor: pointer; }
+.ubic-btn:active { transform: scale(.98); }
+.ubic-si { background: var(--green-soft); border-color: var(--green); color: var(--green); }
+.ubic-no { background: var(--red-soft); border-color: var(--red); color: var(--red); }
+.ubic-buscar-wrap { position: relative; padding: 6px 14px 18px; }
+.ubic-buscar-wrap input { width: 100%; font-size: 15px; padding: 12px; }
+.ubic-resultados { position: absolute; left: 14px; right: 14px; top: calc(100% - 12px); background: var(--panel); border: 1px solid var(--border); border-radius: 10px; max-height: 280px; overflow: auto; z-index: 20; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+.ubic-resultados button { display: block; width: 100%; text-align: left; padding: 10px 12px; background: none; border: 0; border-bottom: 1px solid var(--border); color: var(--text); font: 13px var(--font-ui); cursor: pointer; }
+.ubic-resultados button span { display: block; color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+.ubic-toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--panel); border: 1px solid var(--cyan); color: var(--text); padding: 10px 16px; border-radius: 10px; font-weight: 600; z-index: 60; max-width: 92vw; text-align: center; font-size: 13.5px; }
