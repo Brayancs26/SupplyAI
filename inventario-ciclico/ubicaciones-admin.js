@@ -124,10 +124,10 @@ const UbicAdmin = (() => {
   function render() {
     const cont = $('ubic-cuerpo');
     $('ubic-mb52').innerHTML = st.mb52
-      ? `MB52 cargado en este navegador: <strong>${esc(st.mb52.nombreArchivo || 'MB52')}</strong> · ${fmtFecha(st.mb52.fechaCarga)}`
+      ? `Se lee (sin modificarlo) el MB52 de este navegador: <strong>${esc(st.mb52.nombreArchivo || 'MB52')}</strong> · ${fmtFecha(st.mb52.fechaCarga)}`
       : '<span class="texto-error">No hay MB52 en este navegador — cárgalo primero en Abastecimiento.</span>';
     const activa = st.envio && st.envio.activa;
-    $('ubic-btn-enviar').textContent = activa ? 'Reenviar con MB52 actual' : 'Enviar al celular';
+    $('ubic-btn-enviar').textContent = activa ? 'Reenviar lista al celular' : 'Enviar al celular';
     $('ubic-btn-cero').style.display = activa ? '' : 'none';
     $('ubic-btn-cerrar').style.display = activa ? '' : 'none';
     $('ubic-enlaces').style.display = activa ? 'inline-flex' : 'none';
