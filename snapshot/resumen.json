@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-11-24T16:00:31.659Z",
-  "totalMaterialesParaReordenar": 284,
+  "publicadoEn": "2026-11-24T16:01:37.313Z",
+  "totalMaterialesParaReordenar": 285,
   "materialesParaReordenar": [
     {
       "material": "31012507",
@@ -108,7 +108,7 @@
       "stock": 0,
       "rop": 4,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 83.46153846153847
     },
     {
       "material": "31010191",
@@ -141,10 +141,10 @@
       "material": "31015543",
       "descripcion": "BROCHA NY. 3\"",
       "clasificacion": "Mediana Rotación",
-      "stock": 39,
+      "stock": 37,
       "rop": 5,
       "riesgo": "AMARILLO",
-      "coberturaDias": 705.25
+      "coberturaDias": 669.0833333333333
     },
     {
       "material": "32003811",
@@ -168,10 +168,10 @@
       "material": "32004396",
       "descripcion": "GUANTE POLI-ALGO.P/MANIO. T/L(9)",
       "clasificacion": "Alta Rotación",
-      "stock": 20,
+      "stock": 19,
       "rop": 26,
       "riesgo": "ROJO",
-      "coberturaDias": 36.47058823529412
+      "coberturaDias": 437.64705882352945
     },
     {
       "material": "32005051",
@@ -181,6 +181,15 @@
       "rop": 2,
       "riesgo": "AMARILLO",
       "coberturaDias": 726
+    },
+    {
+      "material": "32005158",
+      "descripcion": "SOBRELENTES SEG.OSCU.",
+      "clasificacion": "Mediana Rotación",
+      "stock": 3,
+      "rop": 4,
+      "riesgo": "ROJO",
+      "coberturaDias": 54.25
     },
     {
       "material": "32005402",
@@ -231,10 +240,10 @@
       "material": "32003790",
       "descripcion": "CAJA AGUA ENV.DESCARTABLE 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 24,
+      "stock": 32,
       "rop": 125,
       "riesgo": "ROJO",
-      "coberturaDias": 6.305084745762712
+      "coberturaDias": 8.406779661016948
     },
     {
       "material": "32003605",
@@ -252,7 +261,7 @@
       "stock": 2,
       "rop": 3,
       "riesgo": "ROJO",
-      "coberturaDias": 39.45454545454545
+      "coberturaDias": 276.1818181818182
     },
     {
       "material": "31008471",
@@ -333,7 +342,7 @@
       "stock": 3,
       "rop": 3,
       "riesgo": "ROJO",
-      "coberturaDias": 93
+      "coberturaDias": 186
     },
     {
       "material": "32003613",
@@ -360,7 +369,7 @@
       "stock": 0,
       "rop": 9,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 52.40754716981132
     },
     {
       "material": "32004387",
@@ -375,7 +384,7 @@
       "material": "32005020",
       "descripcion": "REMOVEDOR SARRO DUKTO",
       "clasificacion": "Baja Rotación",
-      "stock": 3,
+      "stock": 2,
       "rop": 1,
       "riesgo": "AMARILLO",
       "coberturaDias": null
@@ -387,7 +396,7 @@
       "stock": 848,
       "rop": 97,
       "riesgo": "AMARILLO",
-      "coberturaDias": 920.08
+      "coberturaDias": 1069.81
     },
     {
       "material": "33048363",
@@ -423,7 +432,7 @@
       "stock": 11,
       "rop": 16,
       "riesgo": "ROJO",
-      "coberturaDias": 60.5
+      "coberturaDias": 143
     },
     {
       "material": "20001638",
@@ -441,7 +450,7 @@
       "stock": 0,
       "rop": 41,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 434
     },
     {
       "material": "30000532",
@@ -456,19 +465,19 @@
       "material": "31009822",
       "descripcion": "DISCO CORTE FE.1/8\"X7/8\"X7\"",
       "clasificacion": "Mediana Rotación",
-      "stock": 155,
+      "stock": 150,
       "rop": 4,
       "riesgo": "AMARILLO",
-      "coberturaDias": 1601.6666666666667
+      "coberturaDias": 1550
     },
     {
       "material": "31009826",
       "descripcion": "DISCO CORTE INOX.3/64\"X7/8\"X4 1/2\"",
       "clasificacion": "Alta Rotación",
-      "stock": 26,
+      "stock": 23,
       "rop": 35,
       "riesgo": "ROJO",
-      "coberturaDias": 16.942942942942945
+      "coberturaDias": 14.987987987987989
     },
     {
       "material": "31012127",
@@ -477,7 +486,7 @@
       "stock": 0,
       "rop": 1,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 434
     },
     {
       "material": "31013843",
@@ -486,7 +495,7 @@
       "stock": 6,
       "rop": 15,
       "riesgo": "ROJO",
-      "coberturaDias": 17.594594594594593
+      "coberturaDias": 35.189189189189186
     },
     {
       "material": "31014281",
@@ -513,7 +522,7 @@
       "stock": 0,
       "rop": 2,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 173.6
     },
     {
       "material": "31032188",
@@ -522,7 +531,7 @@
       "stock": 3,
       "rop": 9,
       "riesgo": "ROJO",
-      "coberturaDias": 21
+      "coberturaDias": 42
     },
     {
       "material": "31032189",
@@ -540,7 +549,7 @@
       "stock": 2,
       "rop": 4,
       "riesgo": "ROJO",
-      "coberturaDias": 39.45454545454545
+      "coberturaDias": 157.8181818181818
     },
     {
       "material": "32003965",
@@ -597,22 +606,31 @@
       "coberturaDias": 96.44444444444444
     },
     {
+      "material": "32004707",
+      "descripcion": "MICA P/CARETA ESMERILAR ADAPT. A CASCO",
+      "clasificacion": "Alta Rotación",
+      "stock": 7,
+      "rop": 8,
+      "riesgo": "ROJO",
+      "coberturaDias": 50.633333333333326
+    },
+    {
       "material": "32005548",
       "descripcion": "PLUMON INDELEBLE PTA.GRUESA NEGRO",
       "clasificacion": "Alta Rotación",
       "stock": 7,
       "rop": 8,
       "riesgo": "ROJO",
-      "coberturaDias": 54.25
+      "coberturaDias": 93
     },
     {
       "material": "32005804",
       "descripcion": "PAPEL HIGIENICO HJ.SIMPLE 550M PQTE.12UN",
       "clasificacion": "Alta Rotación",
-      "stock": 19.197,
+      "stock": 18.697,
       "rop": 5,
       "riesgo": "AMARILLO",
-      "coberturaDias": 184.46393304698225
+      "coberturaDias": 275.7494132754727
     },
     {
       "material": "32022278",
@@ -657,7 +675,7 @@
       "stock": 0,
       "rop": 1,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 1085
     },
     {
       "material": "32004888",
@@ -667,15 +685,6 @@
       "rop": 7,
       "riesgo": "AMARILLO",
       "coberturaDias": null
-    },
-    {
-      "material": "32004469",
-      "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
-      "clasificacion": "Alta Rotación",
-      "stock": 667,
-      "rop": 131,
-      "riesgo": "AMARILLO",
-      "coberturaDias": 290.640562248996
     },
     {
       "material": "32004360",
@@ -702,7 +711,7 @@
       "stock": 0,
       "rop": 5,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 155
     },
     {
       "material": "31013255",
@@ -720,7 +729,7 @@
       "stock": 0,
       "rop": 2,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 62
     },
     {
       "material": "32004852",
@@ -735,10 +744,10 @@
       "material": "32005500",
       "descripcion": "PAPEL TOALLA HJ.SIMPLE AIRFLEX 200MT",
       "clasificacion": "Alta Rotación",
-      "stock": 130,
+      "stock": 124,
       "rop": 0,
       "riesgo": "AMARILLO",
-      "coberturaDias": 100.94358974358974
+      "coberturaDias": 96.6174358974359
     },
     {
       "material": "32008682",
@@ -999,7 +1008,7 @@
       "stock": 0,
       "rop": 4,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 130.2
     },
     {
       "material": "32003602",
@@ -1071,7 +1080,7 @@
       "stock": 0,
       "rop": 10,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 217
     },
     {
       "material": "31009823",
@@ -1374,10 +1383,10 @@
       "material": "32005354",
       "descripcion": "TRAJE DESCARTABLE BLANCO P/PINTADO T/XL",
       "clasificacion": "Mediana Rotación",
-      "stock": 27,
+      "stock": 26,
       "rop": 74,
       "riesgo": "ROJO",
-      "coberturaDias": 23.625
+      "coberturaDias": 22.75
     },
     {
       "material": "32005482",
@@ -1512,7 +1521,7 @@
       "stock": 0,
       "rop": 17,
       "riesgo": "ROJO",
-      "coberturaDias": 0
+      "coberturaDias": 54.25
     },
     {
       "material": "31015284",
@@ -2031,7 +2040,7 @@
       "material": "32006187",
       "descripcion": "LEJIA TRADICIONAL 1L",
       "clasificacion": "Baja Rotación",
-      "stock": 5,
+      "stock": 3,
       "rop": 0,
       "riesgo": "AMARILLO",
       "coberturaDias": null
@@ -2580,32 +2589,27 @@
     {
       "material": "50003941",
       "descripcion": "HARINA STEAM DRIED STANDARD 65",
-      "stock": 194.55
+      "stock": 139.55
     },
     {
-      "material": "50003946",
-      "descripcion": "HARINA STEAM DRIED TAILANDIA",
-      "stock": 21.85
+      "material": "50003940",
+      "descripcion": "HARINA STEAM DRIED STANDAR 66",
+      "stock": 89.30000000000001
     },
     {
       "material": "50003935",
       "descripcion": "HARINA SCRAP",
-      "stock": 16.54
+      "stock": 18.49
     },
     {
-      "material": "50003943",
-      "descripcion": "HARINA STEAM DRIED SUPER PRIME",
-      "stock": 12.45
-    },
-    {
-      "material": "50003937",
-      "descripcion": "HARINA STEAM DRIED PRIME",
-      "stock": 11.7
+      "material": "50003971",
+      "descripcion": "HARINA D STANDARD",
+      "stock": 1.7
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1040704,
-    "ppttUSD": 140040,
-    "pctVencido": 0.57
+    "almacenUSD": 1047156,
+    "ppttUSD": 127736,
+    "pctVencido": 0.55
   }
 }
