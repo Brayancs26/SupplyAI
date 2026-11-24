@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-11-24T19:02:40.852Z",
   "contador": "Luis Rafael Camones",
-  "actualizadoEn": "2026-11-24T22:03:18.504Z",
+  "actualizadoEn": "2026-11-24T22:03:29.965Z",
   "filas": [
     {
       "id": "10200045|L001|I.Q.B.F.|1-2545",
@@ -68,7 +68,7 @@
       "cantidadSistema": 2,
       "loteSistema": "29122025",
       "ubicacionSistema": "I.Q.B.F.",
-      "cantidadFisica": "",
+      "cantidadFisica": "2",
       "loteFisico": "29122025",
       "ubicacionFisica": "I.Q.B.F.",
       "agregada": false
@@ -82,7 +82,7 @@
       "cantidadSistema": 7,
       "loteSistema": "30072025",
       "ubicacionSistema": "I.Q.B.F.",
-      "cantidadFisica": "",
+      "cantidadFisica": "7",
       "loteFisico": "30072025",
       "ubicacionFisica": "I.Q.B.F.",
       "agregada": false
