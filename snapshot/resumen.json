@@ -1,5 +1,5 @@
 {
-  "publicadoEn": "2026-11-24T16:01:37.313Z",
+  "publicadoEn": "2026-11-24T19:01:45.714Z",
   "totalMaterialesParaReordenar": 285,
   "materialesParaReordenar": [
     {
@@ -240,10 +240,10 @@
       "material": "32003790",
       "descripcion": "CAJA AGUA ENV.DESCARTABLE 20L",
       "clasificacion": "Alta Rotación",
-      "stock": 32,
+      "stock": 30,
       "rop": 125,
       "riesgo": "ROJO",
-      "coberturaDias": 8.406779661016948
+      "coberturaDias": 7.881355932203389
     },
     {
       "material": "32003605",
@@ -2589,27 +2589,32 @@
     {
       "material": "50003941",
       "descripcion": "HARINA STEAM DRIED STANDARD 65",
-      "stock": 139.55
+      "stock": 89.55
     },
     {
       "material": "50003940",
       "descripcion": "HARINA STEAM DRIED STANDAR 66",
-      "stock": 89.30000000000001
+      "stock": 83.45
+    },
+    {
+      "material": "50003925",
+      "descripcion": "HARINA NC. VARIOS",
+      "stock": 41.85
+    },
+    {
+      "material": "50003971",
+      "descripcion": "HARINA D STANDARD",
+      "stock": 27.15
     },
     {
       "material": "50003935",
       "descripcion": "HARINA SCRAP",
       "stock": 18.49
-    },
-    {
-      "material": "50003971",
-      "descripcion": "HARINA D STANDARD",
-      "stock": 1.7
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1047156,
-    "ppttUSD": 127736,
+    "almacenUSD": 1047114,
+    "ppttUSD": 246339,
     "pctVencido": 0.55
   }
 }
