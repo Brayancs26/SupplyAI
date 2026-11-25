@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-11-24T19:02:00.082Z",
-  "totalMaterialesParaReordenar": 285,
+  "publicadoEn": "2026-11-25T13:33:41.975Z",
+  "totalMaterialesParaReordenar": 286,
   "materialesParaReordenar": [
     {
       "material": "31012507",
@@ -761,6 +761,15 @@
     {
       "material": "34002480",
       "descripcion": "CARBON SELLO ROTULA P/JUNTA ROTAT.4\"",
+      "clasificacion": "Baja Rotación",
+      "stock": 2,
+      "rop": 2,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
+    },
+    {
+      "material": "33041142",
+      "descripcion": "RODAMIENTO 7210 BECBP",
       "clasificacion": "Baja Rotación",
       "stock": 2,
       "rop": 2,
