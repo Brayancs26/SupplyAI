@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-11-25T21:16:08.273Z",
   "contador": "Brayan",
-  "actualizadoEn": "2026-11-25T21:22:46.012Z",
+  "actualizadoEn": "2026-11-25T21:22:54.819Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -390,7 +390,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L657821",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "L657821",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
@@ -404,7 +404,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L9509",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "L9509",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
@@ -418,7 +418,7 @@
       "cantidadSistema": 1,
       "loteSistema": "Y8250144",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "Y8250144",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
