@@ -1,7 +1,7 @@
 {
   "tipo": "combustibles",
   "titulo": "Combustible",
-  "generadoEn": "2026-10-19T22:57:53.541Z",
+  "generadoEn": "2026-11-25T13:41:17.025Z",
   "items": [
     {
       "id": "30000527|L001|TKMOLLENDO|",
@@ -11,7 +11,7 @@
       "lote": "",
       "ubicacion": "TKMOLLENDO",
       "um": "GLN",
-      "cantidadSistema": 53305.94
+      "cantidadSistema": 48537.34
     },
     {
       "id": "30000528|L001|PLANTA|",
@@ -21,7 +21,7 @@
       "lote": "",
       "ubicacion": "PLANTA",
       "um": "GLN",
-      "cantidadSistema": 110575.46
+      "cantidadSistema": 110888.06
     }
   ]
 }
