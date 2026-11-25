@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-11-25T21:16:08.273Z",
   "contador": "Brayan",
-  "actualizadoEn": "2026-11-25T21:22:54.819Z",
+  "actualizadoEn": "2026-11-25T21:23:10.927Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -432,7 +432,7 @@
       "cantidadSistema": 1,
       "loteSistema": "COSTAGAS",
       "ubicacionSistema": "CHATA",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "COSTAGAS",
       "ubicacionFisica": "CHATA",
       "agregada": false
@@ -446,7 +446,7 @@
       "cantidadSistema": 1,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "CHATA",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "CHATA",
       "agregada": false
@@ -460,7 +460,7 @@
       "cantidadSistema": 1,
       "loteSistema": "LG1790129",
       "ubicacionSistema": "CHATA",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "LG1790129",
       "ubicacionFisica": "CHATA",
       "agregada": false
