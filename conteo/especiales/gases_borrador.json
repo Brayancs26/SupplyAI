@@ -1,7 +1,7 @@
 {
-  "generadoEn": "2026-11-24T19:02:04.299Z",
-  "contador": "Luis Rafael Camones",
-  "actualizadoEn": "2026-11-25T19:59:49.493Z",
+  "generadoEn": "2026-11-25T21:16:08.273Z",
+  "contador": "Brayan",
+  "actualizadoEn": "2026-11-25T21:20:36.758Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -40,7 +40,7 @@
       "cantidadSistema": 46,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "3.01.1.04",
-      "cantidadFisica": "46",
+      "cantidadFisica": "",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "3.01.1.04",
       "agregada": false
@@ -54,7 +54,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L1513344",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "L1513344",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -68,7 +68,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L155985",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "L155985",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -82,7 +82,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L1572995",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "L1572995",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -96,7 +96,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L1790199",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "L1790199",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -110,7 +110,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L2899694",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "L2899694",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -124,7 +124,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L8759",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "L8759",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -138,7 +138,7 @@
       "cantidadSistema": 1,
       "loteSistema": "LEL8190",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "LEL8190",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -152,7 +152,7 @@
       "cantidadSistema": 1,
       "loteSistema": "P968102",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "P968102",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -166,7 +166,7 @@
       "cantidadSistema": 1,
       "loteSistema": "Y5284146",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "Y5284146",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -180,7 +180,7 @@
       "cantidadSistema": 1,
       "loteSistema": "COSTA GAS",
       "ubicacionSistema": "PLANTA",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "COSTA GAS",
       "ubicacionFisica": "PLANTA",
       "agregada": false
@@ -194,7 +194,7 @@
       "cantidadSistema": 4,
       "loteSistema": "COSTAGAS",
       "ubicacionSistema": "PLANTA",
-      "cantidadFisica": "4",
+      "cantidadFisica": "",
       "loteFisico": "COSTAGAS",
       "ubicacionFisica": "PLANTA",
       "agregada": false
@@ -208,7 +208,7 @@
       "cantidadSistema": 9,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "PLANTA",
-      "cantidadFisica": "9",
+      "cantidadFisica": "",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "PLANTA",
       "agregada": false
@@ -222,7 +222,7 @@
       "cantidadSistema": 2,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "MONTACARGA",
-      "cantidadFisica": "2",
+      "cantidadFisica": "",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "MONTACARGA",
       "agregada": false
@@ -236,7 +236,7 @@
       "cantidadSistema": 2,
       "loteSistema": "COSTAGAS",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "2",
+      "cantidadFisica": "",
       "loteFisico": "COSTAGAS",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -250,7 +250,7 @@
       "cantidadSistema": 6,
       "loteSistema": "LIMAGAS",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "6",
+      "cantidadFisica": "",
       "loteFisico": "LIMAGAS",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -264,7 +264,7 @@
       "cantidadSistema": 2,
       "loteSistema": "LLAMAGAS",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "2",
+      "cantidadFisica": "",
       "loteFisico": "LLAMAGAS",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -278,7 +278,7 @@
       "cantidadSistema": 1,
       "loteSistema": "PECSA",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "PECSA",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -292,7 +292,7 @@
       "cantidadSistema": 7,
       "loteSistema": "PRIMAX",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "7",
+      "cantidadFisica": "",
       "loteFisico": "PRIMAX",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -306,7 +306,7 @@
       "cantidadSistema": 20,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "20",
+      "cantidadFisica": "",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -320,7 +320,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L2310285",
       "ubicacionSistema": "ALMC GASES",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "L2310285",
       "ubicacionFisica": "ALMC GASES",
       "agregada": false
@@ -334,7 +334,7 @@
       "cantidadSistema": 1,
       "loteSistema": "LEN1013",
       "ubicacionSistema": "ALMC GASES",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "LEN1013",
       "ubicacionFisica": "ALMC GASES",
       "agregada": false
@@ -348,7 +348,7 @@
       "cantidadSistema": 1,
       "loteSistema": "Y7724074",
       "ubicacionSistema": "ALMC GASES",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "Y7724074",
       "ubicacionFisica": "ALMC GASES",
       "agregada": false
@@ -362,7 +362,7 @@
       "cantidadSistema": 1,
       "loteSistema": "COSTAGAS",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "COSTAGAS",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
@@ -376,7 +376,7 @@
       "cantidadSistema": 4,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "4",
+      "cantidadFisica": "",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
@@ -390,7 +390,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L657821",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "L657821",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
@@ -404,7 +404,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L9509",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "L9509",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
@@ -418,7 +418,7 @@
       "cantidadSistema": 1,
       "loteSistema": "Y8250144",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "Y8250144",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
@@ -432,7 +432,7 @@
       "cantidadSistema": 1,
       "loteSistema": "COSTAGAS",
       "ubicacionSistema": "CHATA",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "COSTAGAS",
       "ubicacionFisica": "CHATA",
       "agregada": false
@@ -446,7 +446,7 @@
       "cantidadSistema": 1,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "CHATA",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "CHATA",
       "agregada": false
@@ -460,7 +460,7 @@
       "cantidadSistema": 1,
       "loteSistema": "LG1790129",
       "ubicacionSistema": "CHATA",
-      "cantidadFisica": "1",
+      "cantidadFisica": "",
       "loteFisico": "LG1790129",
       "ubicacionFisica": "CHATA",
       "agregada": false
