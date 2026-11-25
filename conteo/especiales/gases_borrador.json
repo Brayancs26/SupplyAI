@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-11-25T21:16:08.273Z",
   "contador": "Brayan",
-  "actualizadoEn": "2026-11-25T21:21:13.413Z",
+  "actualizadoEn": "2026-11-25T21:21:24.192Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -180,7 +180,7 @@
       "cantidadSistema": 1,
       "loteSistema": "COSTA GAS",
       "ubicacionSistema": "PLANTA",
-      "cantidadFisica": "",
+      "cantidadFisica": "14",
       "loteFisico": "COSTA GAS",
       "ubicacionFisica": "PLANTA",
       "agregada": false
@@ -222,7 +222,7 @@
       "cantidadSistema": 2,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "MONTACARGA",
-      "cantidadFisica": "",
+      "cantidadFisica": "2",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "MONTACARGA",
       "agregada": false
