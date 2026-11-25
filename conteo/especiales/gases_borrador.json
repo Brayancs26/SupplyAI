@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-11-24T19:02:04.299Z",
   "contador": "Luis Rafael Camones",
-  "actualizadoEn": "2026-11-25T19:57:12.016Z",
+  "actualizadoEn": "2026-11-25T19:57:24.939Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -54,7 +54,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L1513344",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "L1513344",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
@@ -68,7 +68,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L155985",
       "ubicacionSistema": "3.01.1.02",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "L155985",
       "ubicacionFisica": "3.01.1.02",
       "agregada": false
