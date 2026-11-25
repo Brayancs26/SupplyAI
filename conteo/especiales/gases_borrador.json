@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-11-24T19:02:04.299Z",
   "contador": "Luis Rafael Camones",
-  "actualizadoEn": "2026-11-25T19:58:46.880Z",
+  "actualizadoEn": "2026-11-25T19:59:12.069Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -362,7 +362,7 @@
       "cantidadSistema": 1,
       "loteSistema": "COSTAGAS",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "COSTAGAS",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
@@ -376,7 +376,7 @@
       "cantidadSistema": 4,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "",
+      "cantidadFisica": "4",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
@@ -390,7 +390,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L657821",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "L657821",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
@@ -404,7 +404,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L9509",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "L9509",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
@@ -418,7 +418,7 @@
       "cantidadSistema": 1,
       "loteSistema": "Y8250144",
       "ubicacionSistema": "TALLER MEC",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "Y8250144",
       "ubicacionFisica": "TALLER MEC",
       "agregada": false
