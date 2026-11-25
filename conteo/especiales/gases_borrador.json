@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-11-24T19:02:04.299Z",
   "contador": "Luis Rafael Camones",
-  "actualizadoEn": "2026-11-25T19:59:12.069Z",
+  "actualizadoEn": "2026-11-25T19:59:19.133Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -432,7 +432,7 @@
       "cantidadSistema": 1,
       "loteSistema": "COSTAGAS",
       "ubicacionSistema": "CHATA",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "COSTAGAS",
       "ubicacionFisica": "CHATA",
       "agregada": false
