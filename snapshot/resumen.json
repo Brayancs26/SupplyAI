@@ -1,7 +1,16 @@
 {
-  "publicadoEn": "2026-11-25T20:59:34.162Z",
-  "totalMaterialesParaReordenar": 286,
+  "publicadoEn": "2026-11-25T21:16:11.209Z",
+  "totalMaterialesParaReordenar": 279,
   "materialesParaReordenar": [
+    {
+      "material": "31008512",
+      "descripcion": "ANILLO PLANO INOX.3/8\"",
+      "clasificacion": "Mediana Rotación",
+      "stock": 4,
+      "rop": 18,
+      "riesgo": "ROJO",
+      "coberturaDias": 10.585365853658537
+    },
     {
       "material": "31012507",
       "descripcion": "PERNO HEX.INOX.3/8\"X1 1/2\"",
@@ -60,7 +69,7 @@
       "material": "30000383",
       "descripcion": "ACEITE M-MOBILGARD 412 MOBIL 55GL",
       "clasificacion": "Baja Rotación",
-      "stock": 15,
+      "stock": 70,
       "rop": 35,
       "riesgo": "AMARILLO",
       "coberturaDias": null
@@ -102,15 +111,6 @@
       "coberturaDias": 332.57608695652175
     },
     {
-      "material": "31009837",
-      "descripcion": "DISCO DESBASTE INOX.1/4\"X7/8\"X 4 1/2\"",
-      "clasificacion": "Alta Rotación",
-      "stock": 0,
-      "rop": 4,
-      "riesgo": "ROJO",
-      "coberturaDias": 83.46153846153847
-    },
-    {
       "material": "31010191",
       "descripcion": "ESCOBILLA COPA FE.2 1/2\"",
       "clasificacion": "Baja Rotación",
@@ -127,6 +127,15 @@
       "rop": 3,
       "riesgo": "ROJO",
       "coberturaDias": 93
+    },
+    {
+      "material": "31013761",
+      "descripcion": "RODILLO P/PINTAR 3\"",
+      "clasificacion": "Mediana Rotación",
+      "stock": 19,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 2061.5
     },
     {
       "material": "31015365",
@@ -168,10 +177,10 @@
       "material": "32004396",
       "descripcion": "GUANTE POLI-ALGO.P/MANIO. T/L(9)",
       "clasificacion": "Alta Rotación",
-      "stock": 19,
+      "stock": 238,
       "rop": 26,
-      "riesgo": "ROJO",
-      "coberturaDias": 437.64705882352945
+      "riesgo": "AMARILLO",
+      "coberturaDias": 434.00000000000006
     },
     {
       "material": "32005051",
@@ -258,9 +267,9 @@
       "material": "32005434",
       "descripcion": "DESINCRUSTANTE LIQUIDO ACIDO GL",
       "clasificacion": "Mediana Rotación",
-      "stock": 2,
+      "stock": 14,
       "rop": 3,
-      "riesgo": "ROJO",
+      "riesgo": "AMARILLO",
       "coberturaDias": 276.1818181818182
     },
     {
@@ -336,15 +345,6 @@
       "coberturaDias": 4340
     },
     {
-      "material": "32004165",
-      "descripcion": "ESCOBILLA PLAST.NY.C/MANGO P/LAVAR",
-      "clasificacion": "Baja Rotación",
-      "stock": 3,
-      "rop": 3,
-      "riesgo": "ROJO",
-      "coberturaDias": 186
-    },
-    {
       "material": "32003613",
       "descripcion": "BOLSITA PROTEC.LENTES SEGUR.",
       "clasificacion": "Baja Rotación",
@@ -361,15 +361,6 @@
       "rop": 1,
       "riesgo": "AMARILLO",
       "coberturaDias": null
-    },
-    {
-      "material": "31013867",
-      "descripcion": "SOLDADURA INOX.AW E308L-16 2.50MM",
-      "clasificacion": "Alta Rotación",
-      "stock": 0,
-      "rop": 9,
-      "riesgo": "ROJO",
-      "coberturaDias": 52.40754716981132
     },
     {
       "material": "32004387",
@@ -393,7 +384,7 @@
       "material": "32006122",
       "descripcion": "GUANTES LATEX BLANCO C-5 T-L",
       "clasificacion": "Baja Rotación",
-      "stock": 848,
+      "stock": 986,
       "rop": 97,
       "riesgo": "AMARILLO",
       "coberturaDias": 1069.81
@@ -426,15 +417,6 @@
       "coberturaDias": 1984
     },
     {
-      "material": "20000546",
-      "descripcion": "CINTA EMB.TRANSP.2\"X11 YD.45MIC",
-      "clasificacion": "Alta Rotación",
-      "stock": 11,
-      "rop": 16,
-      "riesgo": "ROJO",
-      "coberturaDias": 143
-    },
-    {
       "material": "20001638",
       "descripcion": "PRECINTO SEGUR.MCLP GRABADO QR 180X800MM",
       "clasificacion": "Baja Rotación",
@@ -447,9 +429,9 @@
       "material": "30000382",
       "descripcion": "ACEITE M-MOBILGARD 312 MOBIL 55GL",
       "clasificacion": "Baja Rotación",
-      "stock": 0,
+      "stock": 220,
       "rop": 41,
-      "riesgo": "ROJO",
+      "riesgo": "AMARILLO",
       "coberturaDias": 434
     },
     {
@@ -474,25 +456,16 @@
       "material": "31009826",
       "descripcion": "DISCO CORTE INOX.3/64\"X7/8\"X4 1/2\"",
       "clasificacion": "Alta Rotación",
-      "stock": 23,
+      "stock": 13,
       "rop": 35,
       "riesgo": "ROJO",
-      "coberturaDias": 14.987987987987989
-    },
-    {
-      "material": "31012127",
-      "descripcion": "OXIDO MAGNESIO LIGERO PURIS 97%",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 1,
-      "riesgo": "ROJO",
-      "coberturaDias": 434
+      "coberturaDias": 8.471471471471473
     },
     {
       "material": "31013843",
       "descripcion": "SILICONA CARTUCHO TRANSP.",
       "clasificacion": "Alta Rotación",
-      "stock": 6,
+      "stock": 12,
       "rop": 15,
       "riesgo": "ROJO",
       "coberturaDias": 35.189189189189186
@@ -516,19 +489,10 @@
       "coberturaDias": 713
     },
     {
-      "material": "31015445",
-      "descripcion": "TIZA P/MARCAR METALES (CALDERERO)",
-      "clasificacion": "Mediana Rotación",
-      "stock": 0,
-      "rop": 2,
-      "riesgo": "ROJO",
-      "coberturaDias": 173.6
-    },
-    {
       "material": "31032188",
       "descripcion": "CINTA AISLANTE NEGRA 600V-33+ 3M",
       "clasificacion": "Baja Rotación",
-      "stock": 3,
+      "stock": 6,
       "rop": 9,
       "riesgo": "ROJO",
       "coberturaDias": 42
@@ -541,15 +505,6 @@
       "rop": 1,
       "riesgo": "AMARILLO",
       "coberturaDias": 2712.5
-    },
-    {
-      "material": "32003567",
-      "descripcion": "BLOCK FORMATO AST 100HJ",
-      "clasificacion": "Mediana Rotación",
-      "stock": 2,
-      "rop": 4,
-      "riesgo": "ROJO",
-      "coberturaDias": 157.8181818181818
     },
     {
       "material": "32003965",
@@ -615,19 +570,10 @@
       "coberturaDias": 50.633333333333326
     },
     {
-      "material": "32005548",
-      "descripcion": "PLUMON INDELEBLE PTA.GRUESA NEGRO",
-      "clasificacion": "Alta Rotación",
-      "stock": 7,
-      "rop": 8,
-      "riesgo": "ROJO",
-      "coberturaDias": 93
-    },
-    {
       "material": "32005804",
       "descripcion": "PAPEL HIGIENICO HJ.SIMPLE 550M PQTE.12UN",
       "clasificacion": "Alta Rotación",
-      "stock": 18.697,
+      "stock": 28.697,
       "rop": 5,
       "riesgo": "AMARILLO",
       "coberturaDias": 275.7494132754727
@@ -672,9 +618,9 @@
       "material": "32005352",
       "descripcion": "TRAJE DESCARTABLE AMARILLO QUIMICOS T/L",
       "clasificacion": "Baja Rotación",
-      "stock": 0,
+      "stock": 20,
       "rop": 1,
-      "riesgo": "ROJO",
+      "riesgo": "AMARILLO",
       "coberturaDias": 1085
     },
     {
@@ -687,6 +633,15 @@
       "coberturaDias": null
     },
     {
+      "material": "32004469",
+      "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
+      "clasificacion": "Alta Rotación",
+      "stock": 907,
+      "rop": 131,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 395.218875502008
+    },
+    {
       "material": "32004360",
       "descripcion": "GUANTE CUERO CR.FUEGO T/18\"",
       "clasificacion": "Mediana Rotación",
@@ -696,6 +651,15 @@
       "coberturaDias": 496
     },
     {
+      "material": "32004575",
+      "descripcion": "LIMPIADOR DESINFECTANTE LIQUIDO GL",
+      "clasificacion": "Mediana Rotación",
+      "stock": 23,
+      "rop": 4,
+      "riesgo": "AMARILLO",
+      "coberturaDias": 415.91666666666663
+    },
+    {
       "material": "33034469",
       "descripcion": "LINTERNA MANO 3 PILAS",
       "clasificacion": "Baja Rotación",
@@ -703,15 +667,6 @@
       "rop": 2,
       "riesgo": "AMARILLO",
       "coberturaDias": 303.8
-    },
-    {
-      "material": "32004344",
-      "descripcion": "GEL ALCOHOL 60-70° X 1 LT C/VALV.",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 5,
-      "riesgo": "ROJO",
-      "coberturaDias": 155
     },
     {
       "material": "31013255",
@@ -726,7 +681,7 @@
       "material": "33039665",
       "descripcion": "VALV.BOLA INOX.NPT 150PSI 1\"",
       "clasificacion": "Mediana Rotación",
-      "stock": 0,
+      "stock": 2,
       "rop": 2,
       "riesgo": "ROJO",
       "coberturaDias": 62
@@ -1005,19 +960,10 @@
       "material": "31013183",
       "descripcion": "PINT.ZINC PRIMER 910 GRIS 3COM+CAT 1GL",
       "clasificacion": "Baja Rotación",
-      "stock": 2,
+      "stock": 5,
       "rop": 0,
       "riesgo": "AMARILLO",
       "coberturaDias": null
-    },
-    {
-      "material": "32003569",
-      "descripcion": "BLOCK FORMATO PTS BLOCK 100HJ",
-      "clasificacion": "Mediana Rotación",
-      "stock": 0,
-      "rop": 4,
-      "riesgo": "ROJO",
-      "coberturaDias": 130.2
     },
     {
       "material": "32003602",
@@ -1081,15 +1027,6 @@
       "rop": 0,
       "riesgo": "ROJO",
       "coberturaDias": null
-    },
-    {
-      "material": "31008515",
-      "descripcion": "ANILLO PLANO INOX.7/8\"",
-      "clasificacion": "Baja Rotación",
-      "stock": 0,
-      "rop": 10,
-      "riesgo": "ROJO",
-      "coberturaDias": 217
     },
     {
       "material": "31009823",
@@ -1527,7 +1464,7 @@
       "material": "31014744",
       "descripcion": "TUERCA INOX.7/8\"",
       "clasificacion": "Baja Rotación",
-      "stock": 0,
+      "stock": 12,
       "rop": 17,
       "riesgo": "ROJO",
       "coberturaDias": 54.25
@@ -2148,7 +2085,7 @@
       "material": "31008507",
       "descripcion": "ANILLO PLANO INOX.1\"",
       "clasificacion": "Baja Rotación",
-      "stock": 16,
+      "stock": 40,
       "rop": 0,
       "riesgo": "AMARILLO",
       "coberturaDias": null
@@ -2606,11 +2543,6 @@
       "stock": 83.45
     },
     {
-      "material": "50003925",
-      "descripcion": "HARINA NC. VARIOS",
-      "stock": 41.85
-    },
-    {
       "material": "50003971",
       "descripcion": "HARINA D STANDARD",
       "stock": 27.15
@@ -2622,8 +2554,8 @@
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1047114,
-    "ppttUSD": 246339,
-    "pctVencido": 0.55
+    "almacenUSD": 1060758,
+    "ppttUSD": 120920,
+    "pctVencido": 0.46
   }
 }
