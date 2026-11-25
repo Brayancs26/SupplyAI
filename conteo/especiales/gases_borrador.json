@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-11-25T21:16:08.273Z",
   "contador": "Brayan",
-  "actualizadoEn": "2026-11-25T21:20:36.758Z",
+  "actualizadoEn": "2026-11-25T21:20:44.918Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -40,7 +40,7 @@
       "cantidadSistema": 46,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "3.01.1.04",
-      "cantidadFisica": "",
+      "cantidadFisica": "46",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "3.01.1.04",
       "agregada": false
