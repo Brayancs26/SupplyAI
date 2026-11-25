@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-11-25T13:41:17.025Z",
   "contador": "Luis Rafael Camones",
-  "actualizadoEn": "2026-11-25T20:17:49.787Z",
+  "actualizadoEn": "2026-11-25T20:18:09.318Z",
   "filas": [
     {
       "id": "30000527|L001|TKMOLLENDO|",
@@ -26,7 +26,7 @@
       "cantidadSistema": 110888.06,
       "loteSistema": "",
       "ubicacionSistema": "PLANTA",
-      "cantidadFisica": "110907",
+      "cantidadFisica": "110907.678",
       "loteFisico": "",
       "ubicacionFisica": "PLANTA",
       "agregada": false
