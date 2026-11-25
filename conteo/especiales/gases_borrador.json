@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-11-24T19:02:04.299Z",
   "contador": "Luis Rafael Camones",
-  "actualizadoEn": "2026-11-25T19:59:34.294Z",
+  "actualizadoEn": "2026-11-25T19:59:49.493Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -180,7 +180,7 @@
       "cantidadSistema": 1,
       "loteSistema": "COSTA GAS",
       "ubicacionSistema": "PLANTA",
-      "cantidadFisica": "14",
+      "cantidadFisica": "1",
       "loteFisico": "COSTA GAS",
       "ubicacionFisica": "PLANTA",
       "agregada": false
