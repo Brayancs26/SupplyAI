@@ -1,0 +1,34 @@
+{
+  "zona": "Combustible",
+  "categoria": "combustibles",
+  "fecha": "2026-11-25",
+  "contadoPor": "Luis Rafael Camones",
+  "items": [
+    {
+      "material": "30000527",
+      "descripcion": "PETROLEO DIESEL B5 S50 PD TASA",
+      "almacen": "L001",
+      "um": "GLN",
+      "cantidadSistema": 48537.34,
+      "cantidadFisica": 48555.62,
+      "loteSistema": "",
+      "loteFisico": "",
+      "ubicacionSistema": "TKMOLLENDO",
+      "ubicacionFisica": "TKMOLLENDO",
+      "agregada": false
+    },
+    {
+      "material": "30000528",
+      "descripcion": "PETROLEO INDUSTRIAL NRO.500",
+      "almacen": "L001",
+      "um": "GLN",
+      "cantidadSistema": 110888.06,
+      "cantidadFisica": 110907.678,
+      "loteSistema": "",
+      "loteFisico": "",
+      "ubicacionSistema": "PLANTA",
+      "ubicacionFisica": "PLANTA",
+      "agregada": false
+    }
+  ]
+}
