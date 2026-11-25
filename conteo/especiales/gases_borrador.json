@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-11-24T19:02:04.299Z",
   "contador": "Luis Rafael Camones",
-  "actualizadoEn": "2026-11-25T19:58:37.361Z",
+  "actualizadoEn": "2026-11-25T19:58:46.880Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -320,7 +320,7 @@
       "cantidadSistema": 1,
       "loteSistema": "L2310285",
       "ubicacionSistema": "ALMC GASES",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "L2310285",
       "ubicacionFisica": "ALMC GASES",
       "agregada": false
@@ -334,7 +334,7 @@
       "cantidadSistema": 1,
       "loteSistema": "LEN1013",
       "ubicacionSistema": "ALMC GASES",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "LEN1013",
       "ubicacionFisica": "ALMC GASES",
       "agregada": false
@@ -348,7 +348,7 @@
       "cantidadSistema": 1,
       "loteSistema": "Y7724074",
       "ubicacionSistema": "ALMC GASES",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "Y7724074",
       "ubicacionFisica": "ALMC GASES",
       "agregada": false
