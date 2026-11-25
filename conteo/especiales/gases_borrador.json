@@ -1,7 +1,7 @@
 {
   "generadoEn": "2026-11-24T19:02:04.299Z",
   "contador": "Luis Rafael Camones",
-  "actualizadoEn": "2026-11-25T19:58:11.031Z",
+  "actualizadoEn": "2026-11-25T19:58:37.361Z",
   "filas": [
     {
       "id": "20000669|L001|3.01.1.01|COSTAGAS",
@@ -236,7 +236,7 @@
       "cantidadSistema": 2,
       "loteSistema": "COSTAGAS",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "",
+      "cantidadFisica": "2",
       "loteFisico": "COSTAGAS",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -250,7 +250,7 @@
       "cantidadSistema": 6,
       "loteSistema": "LIMAGAS",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "",
+      "cantidadFisica": "6",
       "loteFisico": "LIMAGAS",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -264,7 +264,7 @@
       "cantidadSistema": 2,
       "loteSistema": "LLAMAGAS",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "",
+      "cantidadFisica": "2",
       "loteFisico": "LLAMAGAS",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -278,7 +278,7 @@
       "cantidadSistema": 1,
       "loteSistema": "PECSA",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "",
+      "cantidadFisica": "1",
       "loteFisico": "PECSA",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -292,7 +292,7 @@
       "cantidadSistema": 7,
       "loteSistema": "PRIMAX",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "",
+      "cantidadFisica": "7",
       "loteFisico": "PRIMAX",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
@@ -306,7 +306,7 @@
       "cantidadSistema": 20,
       "loteSistema": "SOLGAS",
       "ubicacionSistema": "3.01.1.01",
-      "cantidadFisica": "",
+      "cantidadFisica": "20",
       "loteFisico": "SOLGAS",
       "ubicacionFisica": "3.01.1.01",
       "agregada": false
