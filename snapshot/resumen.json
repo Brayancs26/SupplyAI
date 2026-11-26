@@ -1,6 +1,6 @@
 {
-  "publicadoEn": "2026-11-25T21:23:55.731Z",
-  "totalMaterialesParaReordenar": 279,
+  "publicadoEn": "2026-11-26T15:42:49.147Z",
+  "totalMaterialesParaReordenar": 280,
   "materialesParaReordenar": [
     {
       "material": "31008512",
@@ -636,10 +636,10 @@
       "material": "32004469",
       "descripcion": "JABON TOCADOR ANTIBACTERIAL BARRA 75GR",
       "clasificacion": "Alta Rotación",
-      "stock": 907,
+      "stock": 901,
       "rop": 131,
       "riesgo": "AMARILLO",
-      "coberturaDias": 395.218875502008
+      "coberturaDias": 392.6044176706827
     },
     {
       "material": "32004360",
@@ -784,6 +784,15 @@
       "rop": 1,
       "riesgo": "ROJO",
       "coberturaDias": 108.5
+    },
+    {
+      "material": "33037729",
+      "descripcion": "RODAMIENTO NJ 210 ECP",
+      "clasificacion": "Baja Rotación",
+      "stock": 1,
+      "rop": 1,
+      "riesgo": "AMARILLO",
+      "coberturaDias": null
     },
     {
       "material": "33031126",
@@ -2490,7 +2499,7 @@
       "material": "32027932",
       "descripcion": "LENTE SEGUR.OSCU.SECUREFIT 402X 3M",
       "clasificacion": "Baja Rotación",
-      "stock": 51,
+      "stock": 50,
       "rop": 0,
       "riesgo": "AMARILLO",
       "coberturaDias": null
@@ -2535,17 +2544,12 @@
     {
       "material": "50003941",
       "descripcion": "HARINA STEAM DRIED STANDARD 65",
-      "stock": 89.55
+      "stock": 156.55
     },
     {
       "material": "50003940",
       "descripcion": "HARINA STEAM DRIED STANDAR 66",
-      "stock": 83.45
-    },
-    {
-      "material": "50003971",
-      "descripcion": "HARINA D STANDARD",
-      "stock": 27.15
+      "stock": 99.44999999999999
     },
     {
       "material": "50003935",
@@ -2554,8 +2558,8 @@
     }
   ],
   "valorizacion": {
-    "almacenUSD": 1060758,
-    "ppttUSD": 120920,
+    "almacenUSD": 1060750,
+    "ppttUSD": 10081,
     "pctVencido": 0.46
   }
 }
